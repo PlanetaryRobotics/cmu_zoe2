@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
+    <xacro:macro name="wheel" params="name rpy xyz">
+        <link
+            name="${name}">
+            <inertial>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <mass
+                    value="32.3144669983568" />
+                <inertia
+                    ixx="1.03582581735133"
+                    ixy="3.69335039891439E-06"
+                    ixz="9.72371372309766E-09"
+                    iyy="1.97706054850814"
+                    iyz="-4.49800950049796E-08"
+                    izz="1.03582581231329" />
+            </inertial>
+            <visual>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <mesh
+                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/back_right_wheel.STL" />
+                </geometry>
+                <material
+                    name="">
+                    <color
+                        rgba="0.294117647058824 0.294117647058824 0.294117647058824 1" />
+                </material>
+            </visual>
+            <collision>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <mesh
+                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/back_right_wheel.STL" />
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+</robot>
+  

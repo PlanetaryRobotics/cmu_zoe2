@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
+    <xacro:macro name="chassis" params="name rpy xyz">
+        <link
+            name="${name}">
+            <inertial>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <mass
+                    value="651.498299444812" />
+                <inertia
+                    ixx="149.816150034198"
+                    ixy="2.25656686320975E-10"
+                    ixz="1.4248945896711E-08"
+                    iyy="204.954522277079"
+                    iyz="-0.376718299070616"
+                    izz="79.5488628930089" />
+            </inertial>
+            <visual>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <mesh
+                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/chassis.STL" />
+                </geometry>
+                <material
+                    name="">
+                    <color
+                        rgba="0.866666666666667 0.909803921568627 1 1" />
+                </material>
+            </visual>
+            <collision>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <mesh
+                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/chassis.STL" />
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+</robot>
+  

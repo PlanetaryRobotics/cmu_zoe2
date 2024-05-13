@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+    <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot">
+    <!-- all are in meters -->
+    <xacro:property name="robot_width" value="1.875" />
+    <xacro:property name="robot_length" value="2"/>
+
+    <xacro:property name="robot_hinge_length" value="0.2"/>
+    <xacro:property name="front_vertical_limit" value="${pi/4}"/>
+    <xacro:property name="wheel_radius" value="0.4"/>
+</robot>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:include filename="$(find zoe2_description)/urdf/common/inertials.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/common/materials.xacro" />
+
+  <xacro:include filename="$(find zoe2_description)/urdf/components/wheel.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/components/chassis.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/components/axle.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/components/hinge.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/components/params.xacro" />
+
+  <xacro:macro name="zoe2" params="prefix parent *origin">
+    <link name="base_link">
+    </link>
+
+    <joint name="base_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="chassis" />
+        <origin xyz="0 0 ${wheel_radius}" />
+    </joint>
+    <xacro:chassis name="chassis" rpy="0 0 0" xyz="0 0 0" />
+
+
+    <xacro:hinge name="front_roll" rpy="${pi/2} 0 0" xyz="0 0 0" />
+
+    <xacro:wheel name="front_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+
+    <xacro:wheel name="front_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+
+    <xacro:axle name="front_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
+
+
+    <joint name="chassis_front_roll_joint" type="fixed">
+        <parent link="chassis" />
+        <child link="front_roll" />
+        <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
+    </joint>
+
+    <joint name="front_roll_front_axle_joint" type="revolute">
+        <parent link="front_roll" />
+        <child link="front_axle" />
+        <origin xyz="0 ${-robot_hinge_length} -0.075" />
+        <axis xyz="0 0 1"/>
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
+    </joint>
+
+    <joint name="front_right_hinge_joint" type="continuous">
+        <parent link="front_axle" />
+        <child link="front_right_wheel" />
+        <origin xyz="${robot_width/2} 0 0" />
+        <axis xyz="1 0 0" />
+    </joint>
+
+    <joint name="front_left_hinge_joint" type="continuous">
+        <parent link="front_axle" />
+        <child link="front_left_wheel" />
+        <origin xyz="${-robot_width/2} 0 0" />
+        <axis xyz="1 0 0" />
+    </joint>
+
+    <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+
+    <xacro:wheel name="back_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+
+    <xacro:wheel name="back_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+
+    <xacro:axle name="back_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
+
+    <xacro:hinge name="back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
+
+    <joint name="back_roll_back_axle_joint" type="revolute">
+        <parent link="back_roll" />
+        <child link="back_axle" />
+        <origin xyz="0 ${robot_hinge_length} -0.075" />
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <joint name="back_right_hinge_joint" type="continuous">
+        <parent link="back_axle" />
+        <child link="back_right_wheel" />
+        <origin xyz="${robot_width/2} 0 0" />
+        <axis xyz="1 0 0" />
+    </joint>
+
+    <joint name="back_left_hinge_joint" type="continuous">
+        <parent link="back_axle" />
+        <child link="back_left_wheel" />
+        <origin xyz="${-robot_width/2} 0 0" />
+        <axis xyz="1 0 0" />
+    </joint>
+
+
+    <joint name="chassis_back_roll_joint" type="fixed">
+        <parent link="chassis" />
+        <child link="back_roll" />
+        <origin xyz="0 ${+(robot_length/2 - robot_hinge_length)} 0" />
+    </joint>
+
+
+  </xacro:macro>
+</robot>
