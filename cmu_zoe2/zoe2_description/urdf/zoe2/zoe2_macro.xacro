@@ -4,23 +4,15 @@
   <xacro:include filename="$(find zoe2_description)/urdf/common/inertials.xacro" />
   <xacro:include filename="$(find zoe2_description)/urdf/common/materials.xacro" />
 
-  <xacro:include filename="$(find zoe2_description)/urdf/components/wheel.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/components/chassis.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/components/axle.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/components/hinge.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/components/params.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/common/wheel.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/common/chassis.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/common/axle.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/common/hinge.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/common/params.xacro" />
 
   <xacro:macro name="zoe2" params="prefix parent *origin">
-    <link name="base_link">
-    </link>
-
-    <joint name="base_joint" type="fixed">
-        <parent link="base_link" />
-        <child link="chassis" />
-        <origin xyz="0 0 ${wheel_radius}" />
-    </joint>
+    <!-- LINKS -->
     <xacro:chassis name="chassis" rpy="0 0 0" xyz="0 0 0" />
-
 
     <xacro:hinge name="front_roll" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
@@ -29,6 +21,37 @@
     <xacro:wheel name="front_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
 
     <xacro:axle name="front_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
+
+    <xacro:wheel name="back_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+
+    <xacro:wheel name="back_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+
+    <xacro:axle name="back_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
+
+    <xacro:hinge name="back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
+
+    <!-- END LINKS -->
+
+    <!-- JOINTS -->
+
+    <!-- base_joint fixes base_link to the environment -->
+    <!-- <joint name="${prefix}base_joint" type="fixed">
+        <xacro:insert_block name="origin" />
+        <parent link="${parent}" />
+        <child link="base_link" />
+        </joint>
+
+    <joint name="body_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="chassis" />
+        <origin xyz="0 0 ${wheel_radius}" />
+    </joint> -->
+
+    <joint name="${prefix}base_joint" type="fixed">
+        <xacro:insert_block name="origin" />
+        <parent link="${parent}" />
+        <child link="chassis" />
+    </joint>
 
 
     <joint name="chassis_front_roll_joint" type="fixed">
@@ -59,16 +82,6 @@
         <axis xyz="1 0 0" />
     </joint>
 
-    <!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
-
-    <xacro:wheel name="back_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
-
-    <xacro:wheel name="back_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
-
-    <xacro:axle name="back_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
-
-    <xacro:hinge name="back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
-
     <joint name="back_roll_back_axle_joint" type="revolute">
         <parent link="back_roll" />
         <child link="back_axle" />
@@ -98,6 +111,7 @@
         <origin xyz="0 ${+(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 
+    <!-- END JOINTS -->
 
   </xacro:macro>
 </robot>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
-    <xacro:macro name="wheel" params="name rpy xyz">
+    <xacro:macro name="chassis" params="name rpy xyz">
         <link
             name="${name}">
             <inertial>
@@ -8,14 +8,14 @@
                     xyz="${xyz}"
                     rpy="${rpy}" />
                 <mass
-                    value="32.3144669983568" />
+                    value="651.498299444812" />
                 <inertia
-                    ixx="1.03582581735133"
-                    ixy="3.69335039891439E-06"
-                    ixz="9.72371372309766E-09"
-                    iyy="1.97706054850814"
-                    iyz="-4.49800950049796E-08"
-                    izz="1.03582581231329" />
+                    ixx="149.816150034198"
+                    ixy="2.25656686320975E-10"
+                    ixz="1.4248945896711E-08"
+                    iyy="204.954522277079"
+                    iyz="-0.376718299070616"
+                    izz="79.5488628930089" />
             </inertial>
             <visual>
                 <origin
@@ -23,12 +23,12 @@
                     rpy="${rpy}" />
                 <geometry>
                     <mesh
-                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/back_right_wheel.STL" />
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/chassis.STL" />
                 </geometry>
                 <material
                     name="">
                     <color
-                        rgba="0.294117647058824 0.294117647058824 0.294117647058824 1" />
+                        rgba="0.866666666666667 0.909803921568627 1 1" />
                 </material>
             </visual>
             <collision>
@@ -37,7 +37,7 @@
                     rpy="${rpy}" />
                 <geometry>
                     <mesh
-                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/back_right_wheel.STL" />
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/chassis.STL" />
                 </geometry>
             </collision>
         </link>

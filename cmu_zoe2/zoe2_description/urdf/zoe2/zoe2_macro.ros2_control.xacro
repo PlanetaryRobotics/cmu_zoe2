@@ -40,26 +40,22 @@
       <joint name="front_left_hinge_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
-          <command_interface
-              name="velocity" />
+          <command_interface name="velocity" />
       </joint>
       <joint name="front_right_hinge_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
-          <command_interface
-              name="velocity" />
+          <command_interface name="velocity" />
       </joint>
       <joint name="back_right_hinge_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
-          <command_interface
-              name="velocity" />
+          <command_interface name="velocity" />
       </joint>
       <joint name="back_left_hinge_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
-          <command_interface
-              name="velocity" />
+          <command_interface name="velocity" />
       </joint>
 
 

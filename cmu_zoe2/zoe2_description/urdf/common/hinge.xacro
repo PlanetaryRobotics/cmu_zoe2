@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
-    <xacro:macro name="chassis" params="name rpy xyz">
+    <xacro:macro name="hinge" params="name rpy xyz" >
         <link
             name="${name}">
             <inertial>
@@ -8,14 +8,14 @@
                     xyz="${xyz}"
                     rpy="${rpy}" />
                 <mass
-                    value="651.498299444812" />
+                    value="1.60265212368031" />
                 <inertia
-                    ixx="149.816150034198"
-                    ixy="2.25656686320975E-10"
-                    ixz="1.4248945896711E-08"
-                    iyy="204.954522277079"
-                    iyz="-0.376718299070616"
-                    izz="79.5488628930089" />
+                    ixx="0.00789007052519473"
+                    ixy="-4.51083375595945E-06"
+                    ixz="-3.52376942846933E-05"
+                    iyy="0.00778556714593041"
+                    iyz="1.5780343532552E-06"
+                    izz="0.00273377335912292" />
             </inertial>
             <visual>
                 <origin
@@ -23,7 +23,7 @@
                     rpy="${rpy}" />
                 <geometry>
                     <mesh
-                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/chassis.STL" />
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" />
                 </geometry>
                 <material
                     name="">
@@ -37,10 +37,11 @@
                     rpy="${rpy}" />
                 <geometry>
                     <mesh
-                        filename="file://$(find zoe2_description)/description/meshes/zoe2/collision/chassis.STL" />
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" />
                 </geometry>
             </collision>
         </link>
+
     </xacro:macro>
 </robot>
   
