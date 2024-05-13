@@ -1,0 +1,3 @@
+Package containing software for Zoe2 rover. `cmu_zoe2/` is a metapackage containing subpackages that each perform a different function  in operating the rover. This structure is based on [RosTeamWS guidelines](https://rtw.stoglrobotics.de/master/guidelines/robot_package_structure.html).
+
+To use, first locate your ROS workspace. If you do not have one, guidelines to setup a new workspace are found [here](https://rtw.stoglrobotics.de/master/use-cases/operating_system/create_setup_workspace.html). Clone this repo into the `src/` directory of your ROS workspace. At the root of your workspace, run `colcon build`. 
