@@ -1,4 +1,4 @@
-zoe2_description\n\n
+# zoe2_description
 
 Descriptions, meshes, and visualization files for the robots and environments. Corresponding launch and test files are also stored here.
 
@@ -59,3 +59,7 @@ ros2 launch zoe2_description view_zoe2.launch.py
 
 If there are no issues with the description, two windows are opened: `rviz2` and `Joint State Publisher`.
 Rviz2 visualizes the robot's state and Joint state Publisher to changes joint values using sliders or generates random but valid configurations.
+
+## To-Dos
+- Re-implement {prefix} naming scheme
+- Add roll joint capability

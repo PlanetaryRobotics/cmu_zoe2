@@ -12,9 +12,12 @@
 
   <xacro:macro name="zoe2" params="prefix parent *origin">
     <!-- LINKS -->
+    <link name = "base_link">
+    </link>
+
     <xacro:chassis name="chassis" rpy="0 0 0" xyz="0 0 0" />
 
-    <xacro:hinge name="front_roll" rpy="${pi/2} 0 0" xyz="0 0 0" />
+    <xacro:hinge name="front_yaw" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
     <xacro:wheel name="front_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
 
@@ -28,76 +31,69 @@
 
     <xacro:axle name="back_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
-    <xacro:hinge name="back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
+    <xacro:hinge name="back_yaw" rpy="${-pi/2} 0 0" xyz="0 0 0" />
 
     <!-- END LINKS -->
 
     <!-- JOINTS -->
 
-    <!-- base_joint fixes base_link to the environment -->
-    <!-- <joint name="${prefix}base_joint" type="fixed">
+    <joint name="base_joint" type="fixed">
         <xacro:insert_block name="origin" />
         <parent link="${parent}" />
         <child link="base_link" />
-        </joint>
+    </joint>
 
-    <joint name="body_joint" type="fixed">
+    <joint name="chassis_joint" type="fixed">
         <parent link="base_link" />
         <child link="chassis" />
         <origin xyz="0 0 ${wheel_radius}" />
-    </joint> -->
-
-    <joint name="${prefix}base_joint" type="fixed">
-        <xacro:insert_block name="origin" />
-        <parent link="${parent}" />
-        <child link="chassis" />
     </joint>
 
 
-    <joint name="chassis_front_roll_joint" type="fixed">
+    <joint name="chassis_front_yaw_joint" type="fixed">
         <parent link="chassis" />
-        <child link="front_roll" />
+        <child link="front_yaw" />
         <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 
-    <joint name="front_roll_front_axle_joint" type="revolute">
-        <parent link="front_roll" />
+    <joint name="front_yaw_joint" type="revolute">
+        <parent link="front_yaw" />
         <child link="front_axle" />
         <origin xyz="0 ${-robot_hinge_length} -0.075" />
         <axis xyz="0 0 1"/>
         <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
     </joint>
 
-    <joint name="front_right_hinge_joint" type="continuous">
+    <joint name="front_right_wheel_joint" type="continuous">
         <parent link="front_axle" />
         <child link="front_right_wheel" />
         <origin xyz="${robot_width/2} 0 0" />
         <axis xyz="1 0 0" />
     </joint>
 
-    <joint name="front_left_hinge_joint" type="continuous">
+    <joint name="front_left_wheel_joint" type="continuous">
         <parent link="front_axle" />
         <child link="front_left_wheel" />
         <origin xyz="${-robot_width/2} 0 0" />
         <axis xyz="1 0 0" />
     </joint>
 
-    <joint name="back_roll_back_axle_joint" type="revolute">
-        <parent link="back_roll" />
+    <joint name="back_yaw_joint" type="revolute">
+        <parent link="back_yaw" />
         <child link="back_axle" />
         <origin xyz="0 ${robot_hinge_length} -0.075" />
         <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
         <axis xyz="0 0 1"/>
     </joint>
 
-    <joint name="back_right_hinge_joint" type="continuous">
+    <joint name="back_right_wheel_joint" type="continuous">
         <parent link="back_axle" />
         <child link="back_right_wheel" />
         <origin xyz="${robot_width/2} 0 0" />
         <axis xyz="1 0 0" />
     </joint>
 
-    <joint name="back_left_hinge_joint" type="continuous">
+    <joint name="back_left_wheel_joint" type="continuous">
         <parent link="back_axle" />
         <child link="back_left_wheel" />
         <origin xyz="${-robot_width/2} 0 0" />
@@ -105,9 +101,9 @@
     </joint>
 
 
-    <joint name="chassis_back_roll_joint" type="fixed">
+    <joint name="chassis_back_yaw_joint" type="fixed">
         <parent link="chassis" />
-        <child link="back_roll" />
+        <child link="back_yaw" />
         <origin xyz="0 ${+(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 

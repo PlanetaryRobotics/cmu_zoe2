@@ -30,29 +30,29 @@
 
       <!-- Joints -->
 
-      <joint name="front_roll_front_axle_joint">
+      <joint name="front_yaw_joint">
         <state_interface name="position" />
       </joint>
-      <joint name="back_roll_back_axle_joint">
+      <joint name="back_yaw_joint">
           <state_interface name="position" />
       </joint>
 
-      <joint name="front_left_hinge_joint">
+      <joint name="front_left_wheel_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" />
       </joint>
-      <joint name="front_right_hinge_joint">
+      <joint name="front_right_wheel_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" />
       </joint>
-      <joint name="back_right_hinge_joint">
+      <joint name="back_right_wheel_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" />
       </joint>
-      <joint name="back_left_hinge_joint">
+      <joint name="back_left_wheel_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" />

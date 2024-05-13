@@ -7,17 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
-        - /RobotModel1/Link Tree1
-        - /RobotModel1/Link Tree1/world1
-        - /RobotModel1/Link Tree1/world1/chassis1
-        - /RobotModel1/Link Tree1/world1/chassis1/back_roll1/back_axle1
-        - /RobotModel1/Link Tree1/world1/chassis1/back_roll1/back_axle1/back_left_wheel1
-        - /RobotModel1/Link Tree1/world1/chassis1/back_roll1/back_axle1/back_right_wheel1
-        - /RobotModel1/Link Tree1/world1/chassis1/front_roll1
-        - /RobotModel1/Link Tree1/world1/chassis1/front_roll1/front_axle1
-        - /RobotModel1/Link Tree1/world1/chassis1/front_roll1/front_axle1/front_left_wheel1
-        - /RobotModel1/Link Tree1/world1/chassis1/front_roll1/front_axle1/front_left_wheel1/Details1
-        - /RobotModel1/Link Tree1/world1/chassis1/front_roll1/front_axle1/front_right_wheel1
+        - /RobotModel1/Links1
       Splitter Ratio: 0.5985401272773743
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -71,71 +61,65 @@ Visualization Manager:
         Reliability Policy: Reliable
         Value: /robot_description
       Enabled: true
-      Link Tree:
+      Links:
         All Links Enabled: true
         Expand Joint Details: false
         Expand Link Details: false
-        Expand Tree: true
-        Link Tree Style: Tree of links
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+        back_axle:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        back_left_wheel:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        back_right_wheel:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        back_yaw:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        base_link:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+        chassis:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        front_axle:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        front_left_wheel:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        front_right_wheel:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
+        front_yaw:
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
+          Value: true
         world:
-          Details:
-            Alpha: 1
-            Show Axes: true
-            Show Trail: false
-          chassis:
-            Details:
-              Alpha: 1
-              Show Axes: true
-              Show Trail: false
-            Value: true
-            back_roll:
-              Details:
-                Alpha: 1
-                Show Axes: true
-                Show Trail: false
-              Value: true
-              back_axle:
-                Details:
-                  Alpha: 1
-                  Show Axes: true
-                  Show Trail: false
-                Value: true
-                back_left_wheel:
-                  Details:
-                    Alpha: 1
-                    Show Axes: true
-                    Show Trail: false
-                  Value: true
-                back_right_wheel:
-                  Details:
-                    Alpha: 1
-                    Show Axes: true
-                    Show Trail: false
-                  Value: true
-            front_roll:
-              Details:
-                Alpha: 1
-                Show Axes: true
-                Show Trail: false
-              Value: true
-              front_axle:
-                Details:
-                  Alpha: 1
-                  Show Axes: true
-                  Show Trail: false
-                Value: true
-                front_left_wheel:
-                  Details:
-                    Alpha: 1
-                    Show Axes: true
-                    Show Trail: false
-                  Value: true
-                front_right_wheel:
-                  Details:
-                    Alpha: 1
-                    Show Axes: true
-                    Show Trail: false
-                  Value: true
+          Alpha: 1
+          Show Axes: true
+          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -147,7 +131,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: world
+    Fixed Frame: base_link
     Frame Rate: 30
   Name: root
   Tools:
