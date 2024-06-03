@@ -36,6 +36,9 @@
       <joint name="${prefix}back_yaw_joint">
           <state_interface name="position" />
       </joint>
+      <joint name="${prefix}chassis_back_roll_joint">
+          <state_interface name="position" />
+      </joint>
 
       <joint name="${prefix}front_left_wheel_joint">
           <state_interface name="position" />

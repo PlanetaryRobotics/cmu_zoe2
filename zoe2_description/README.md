@@ -61,5 +61,5 @@ If there are no issues with the description, two windows are opened: `rviz2` and
 Rviz2 visualizes the robot's state and Joint state Publisher to changes joint values using sliders or generates random but valid configurations.
 
 ## To-Dos
-- Re-implement {prefix} naming scheme
 - Add roll joint capability
+- Add zoe2 rover instead of zoe1
