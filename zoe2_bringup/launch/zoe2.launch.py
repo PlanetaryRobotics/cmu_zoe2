@@ -20,11 +20,19 @@
 #
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, RegisterEventHandler, TimerAction
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    RegisterEventHandler,
+    TimerAction,
+)
 from launch.event_handlers import OnProcessExit, OnProcessStart
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+import os
+from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
@@ -87,8 +95,8 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "robot_controller",
-            default_value="joint_trajectory_controller",
-            choices=["forward_position_controller", "joint_trajectory_controller"],
+            default_value="velocity_controller",
+            # choices=["forward_position_controller", "joint_trajectory_controller"],
             description="Robot controller to start.",
         )
     )
@@ -102,6 +110,14 @@ def generate_launch_description():
     use_mock_hardware = LaunchConfiguration("use_mock_hardware")
     mock_sensor_commands = LaunchConfiguration("mock_sensor_commands")
     robot_controller = LaunchConfiguration("robot_controller")
+
+    robot_controllers = PathJoinSubstitution(
+        [FindPackageShare(runtime_config_package), "config", controllers_file]
+    )
+
+    rviz_config_file = PathJoinSubstitution(
+        [FindPackageShare(description_package), "rviz", "zoe2.rviz"]
+    )
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -121,17 +137,17 @@ def generate_launch_description():
             "mock_sensor_commands:=",
             mock_sensor_commands,
             " ",
+            "sim_gazebo_classic:=true",
+            " ",
+            "sim_gazebo:=false",
+            " ",
+            "simulation_controllers:=",
+            robot_controllers,
+            " ",
         ]
     )
 
     robot_description = {"robot_description": robot_description_content}
-
-    robot_controllers = PathJoinSubstitution(
-        [FindPackageShare(runtime_config_package), "config", controllers_file]
-    )
-    rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare(description_package), "rviz", "zoe2.rviz"]
-    )
 
     control_node = Node(
         package="controller_manager",
@@ -152,6 +168,18 @@ def generate_launch_description():
         output="log",
         arguments=["-d", rviz_config_file],
     )
+    gazebo = IncludeLaunchDescription(
+     PythonLaunchDescriptionSource(
+         [os.path.join(get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]
+         ),
+    )
+
+
+    spawn_entity = Node(
+        package='gazebo_ros', 
+        executable='spawn_entity.py',
+        arguments=['-topic', 'robot_description', '-entity', 'zoe2'],
+        output='screen')
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -170,16 +198,16 @@ def generate_launch_description():
             )
         ]
 
-    inactive_robot_controller_names = ["add_some_controller_name"]
-    inactive_robot_controller_spawners = []
-    for controller in inactive_robot_controller_names:
-        inactive_robot_controller_spawners += [
-            Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[controller, "-c", "/controller_manager", "--inactive"],
-            )
-        ]
+    # inactive_robot_controller_names = ["add_some_controller_name"]
+    # inactive_robot_controller_spawners = []
+    # for controller in inactive_robot_controller_names:
+    #     inactive_robot_controller_spawners += [
+    #         Node(
+    #             package="controller_manager",
+    #             executable="spawner",
+    #             arguments=[controller, "-c", "/controller_manager", "--inactive"],
+    #         )
+    #     ]
 
     # Delay loading and activation of `joint_state_broadcaster` after start of ros2_control_node
     delay_joint_state_broadcaster_spawner_after_ros2_control_node = RegisterEventHandler(
@@ -208,28 +236,30 @@ def generate_launch_description():
             )
         ]
 
-    # Delay start of inactive_robot_controller_names after other controllers
-    delay_inactive_robot_controller_spawners_after_joint_state_broadcaster_spawner = []
-    for i, controller in enumerate(inactive_robot_controller_spawners):
-        delay_inactive_robot_controller_spawners_after_joint_state_broadcaster_spawner += [
-            RegisterEventHandler(
-                event_handler=OnProcessExit(
-                    target_action=inactive_robot_controller_spawners[i - 1]
-                    if i > 0
-                    else robot_controller_spawners[-1],
-                    on_exit=[controller],
-                )
-            )
-        ]
+    # # Delay start of inactive_robot_controller_names after other controllers
+    # delay_inactive_robot_controller_spawners_after_joint_state_broadcaster_spawner = []
+    # for i, controller in enumerate(inactive_robot_controller_spawners):
+    #     delay_inactive_robot_controller_spawners_after_joint_state_broadcaster_spawner += [
+    #         RegisterEventHandler(
+    #             event_handler=OnProcessExit(
+    #                 target_action=inactive_robot_controller_spawners[i - 1]
+    #                 if i > 0
+    #                 else robot_controller_spawners[-1],
+    #                 on_exit=[controller],
+    #             )
+    #         )
+    #     ]
 
     return LaunchDescription(
         declared_arguments
         + [
+            gazebo,
+            spawn_entity,
             control_node,
             robot_state_pub_node,
             rviz_node,
             delay_joint_state_broadcaster_spawner_after_ros2_control_node,
         ]
         + delay_robot_controller_spawners_after_joint_state_broadcaster_spawner
-        + delay_inactive_robot_controller_spawners_after_joint_state_broadcaster_spawner
+        # + delay_inactive_robot_controller_spawners_after_joint_state_broadcaster_spawner
     )

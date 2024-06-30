@@ -61,7 +61,7 @@
         <child link="${prefix}front_axle" />
         <origin xyz="0 ${-robot_hinge_length} -0.075" />
         <axis xyz="0 0 1"/>
-        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
     </joint>
 
     <joint name="${prefix}front_right_wheel_joint" type="continuous">
@@ -82,7 +82,7 @@
         <parent link="${prefix}back_roll" />
         <child link="${prefix}back_axle" />
         <origin xyz="0 ${robot_hinge_length} -0.075" />
-        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
         <axis xyz="0 0 1"/>
     </joint>
 
@@ -105,7 +105,7 @@
         <parent link="${prefix}chassis" />
         <child link="${prefix}back_roll" />
         <origin xyz="0 ${+(robot_length/2 - robot_hinge_length)} 0" />
-        <limit lower="-0.5" upper="0.5" effort="0" velocity="0"/>
+        <limit lower="-0.5" upper="0.5" effort="10" velocity="10"/>
         <axis xyz="0 1 0" />
     </joint>
 
