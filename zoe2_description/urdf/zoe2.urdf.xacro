@@ -13,12 +13,9 @@
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/zoe2_macro.xacro"/>
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/zoe2_macro.ros2_control.xacro"/>
 
-  <!-- create link fixed to the "world" -->
-  <link name="world" />
-
   <!-- Load robot's macro with parameters -->
   <!-- set prefix if multiple robots are used -->
-  <xacro:zoe2 prefix="$(arg prefix)" parent="world" >
+  <xacro:zoe2 prefix="$(arg prefix)" >
     <origin xyz="0 0 0" rpy="0 0 0" />          <!-- position robot in the world -->
   </xacro:zoe2>
 

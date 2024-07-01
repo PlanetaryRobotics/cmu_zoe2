@@ -10,7 +10,7 @@
   <xacro:include filename="$(find zoe2_description)/urdf/common/hinge.xacro" />
   <xacro:include filename="$(find zoe2_description)/urdf/common/params.xacro" />
 
-  <xacro:macro name="zoe2" params="prefix parent *origin">
+  <xacro:macro name="zoe2" params="prefix *origin">
     <!-- LINKS -->
     <link name = "${prefix}base_link">
     </link>
@@ -36,12 +36,6 @@
     <!-- END LINKS -->
 
     <!-- JOINTS -->
-
-    <joint name="${prefix}base_joint" type="fixed">
-        <xacro:insert_block name="origin" />
-        <parent link="${parent}" />
-        <child link="${prefix}base_link" />
-    </joint>
 
     <joint name="${prefix}chassis_joint" type="fixed">
         <parent link="${prefix}base_link" />
