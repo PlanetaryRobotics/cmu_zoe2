@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- This macro defines the actual link-joint structure of the robot. -->
+<!-- The macro can be called by other files via <xacro:zoe2 prefix="$(arg prefix)" > -->
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
 
   <xacro:include filename="$(find zoe2_description)/urdf/common/inertials.xacro" />
@@ -50,12 +52,13 @@
         <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 
-    <joint name="${prefix}front_yaw_joint" type="revolute">
+    <!-- temp set to fixed -->
+    <joint name="${prefix}front_yaw_joint" type="fixed"> 
         <parent link="${prefix}front_roll" />
         <child link="${prefix}front_axle" />
         <origin xyz="0 ${-robot_hinge_length} -0.075" />
-        <axis xyz="0 0 1"/>
-        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
+        <!-- <axis xyz="0 0 1"/>
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/> -->
     </joint>
 
     <joint name="${prefix}front_right_wheel_joint" type="continuous">
@@ -72,12 +75,13 @@
         <axis xyz="1 0 0" />
     </joint>
 
-    <joint name="${prefix}back_yaw_joint" type="revolute">
+    <!-- temp set to fixed -->
+    <joint name="${prefix}back_yaw_joint" type="fixed">
         <parent link="${prefix}back_roll" />
         <child link="${prefix}back_axle" />
         <origin xyz="0 ${robot_hinge_length} -0.075" />
-        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
-        <axis xyz="0 0 1"/>
+        <!-- <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
+        <axis xyz="0 0 1"/> -->
     </joint>
 
     <joint name="${prefix}back_right_wheel_joint" type="continuous">

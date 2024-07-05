@@ -6,7 +6,7 @@
                prefix
                use_mock_hardware:=false
                mock_sensor_commands:=false
-               sim_gazebo_classic:=true
+               sim_gazebo_classic:=false
                sim_gazebo:=false
                simulation_controllers"
                >
@@ -28,59 +28,50 @@
         </xacro:unless>
       </hardware>
 
-      <!-- Joints -->
+      <!-- Pivot Joints -->
 
-      <joint name="${prefix}front_yaw_joint">
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
+      <!-- <joint name="${prefix}front_yaw_joint">
+        <state_interface name="position" />
       </joint>
       <joint name="${prefix}back_yaw_joint">
-          <state_interface name="position">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-      </joint>
+          <state_interface name="position" />
+      </joint> -->
       <joint name="${prefix}chassis_back_roll_joint">
-          <state_interface name="position">
-            <param name="initial_value">0.0</param>
-          </state_interface>
+          <state_interface name="position" />
       </joint>
 
+      <!-- Wheel Joints -->
       <joint name="${prefix}front_left_wheel_joint">
-          <state_interface name="position">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <state_interface name="velocity">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <command_interface name="velocity" />
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <command_interface name="velocity" >
+            <param name="min">-10.0</param>
+            <param name="max">10.0</param>
+          </command_interface>
       </joint>
       <joint name="${prefix}front_right_wheel_joint">
-          <state_interface name="position">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <state_interface name="velocity">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <command_interface name="velocity" />
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <command_interface name="velocity" >
+            <param name="min">-10.0</param>
+            <param name="max">10.0</param>
+          </command_interface>
       </joint>
       <joint name="${prefix}back_right_wheel_joint">
-          <state_interface name="position">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <state_interface name="velocity">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <command_interface name="velocity" />
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <command_interface name="velocity" >
+            <param name="min">-10.0</param>
+            <param name="max">10.0</param>
+          </command_interface>
       </joint>
       <joint name="${prefix}back_left_wheel_joint">
-          <state_interface name="position">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <state_interface name="velocity">
-            <param name="initial_value">0.0</param>
-          </state_interface>
-          <command_interface name="velocity" />
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <command_interface name="velocity" >
+            <param name="min">-10.0</param>
+            <param name="max">10.0</param>
+          </command_interface>
       </joint>
 
 

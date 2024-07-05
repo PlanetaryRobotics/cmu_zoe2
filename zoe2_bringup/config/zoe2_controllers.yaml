@@ -1,18 +1,22 @@
 controller_manager:
   ros__parameters:
-    update_rate: 100  # Hz
+    update_rate: 30  # Hz
     use_sim_time: true
 
-    joint_state_broadcaster:
+    joint_broad:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-    velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
 
-velocity_controller:
+diff_cont:
   ros__parameters:
-    joints:
-      - front_left_wheel_joint
-      - front_right_wheel_joint
-      - back_left_wheel_joint
-      - back_right_wheel_joint
+    publish_rate: 30.0 # You can set this higher than the controller manager update rate, but it will be throttled
+    base_frame_id: base_link
+
+    left_wheel_names: ['front_left_wheel_joint', 'back_left_wheel_joint']
+    right_wheel_names: ['front_right_wheel_joint', back_right_wheel_joint]
+    wheel_separation: 1.875
+    wheel_radius: 0.4
+
+    use_stamped_vel: false
