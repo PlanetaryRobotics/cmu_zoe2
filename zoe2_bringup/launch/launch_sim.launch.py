@@ -40,7 +40,7 @@ def generate_launch_description():
     )
 
     
-    world_path = PathJoinSubstitution([FindPackageShare(package_name), 'worlds', world_file])
+    world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
 
     # Include the Gazebo launch file, provided by the gazebo_ros package
     gazebo = IncludeLaunchDescription(

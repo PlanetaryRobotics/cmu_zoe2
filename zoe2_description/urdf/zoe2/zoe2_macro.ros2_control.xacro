@@ -30,12 +30,12 @@
 
       <!-- Pivot Joints -->
 
-      <!-- <joint name="${prefix}front_yaw_joint">
+      <joint name="${prefix}front_yaw_joint">
         <state_interface name="position" />
       </joint>
       <joint name="${prefix}back_yaw_joint">
           <state_interface name="position" />
-      </joint> -->
+      </joint>
       <joint name="${prefix}chassis_back_roll_joint">
           <state_interface name="position" />
       </joint>
