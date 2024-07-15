@@ -17,6 +17,8 @@
 
   <exec_depend>zoe2_description</exec_depend>
 
+  <exec_depend>gazebo_ros</exec_depend>
+
   <!-- Ros2 control dependencies -->
 
   <exec_depend>controller_manager</exec_depend>
@@ -33,5 +35,7 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <!-- gazebo export working based on this comment https://answers.gazebosim.org//question/6568/uri-paths-to-packages-in-the-sdf-model-file/ -->
+    <gazebo_ros gazebo_model_path="${prefix}/../../../../src/zoe2_bringup/worlds/models"/>
   </export>
 </package>
