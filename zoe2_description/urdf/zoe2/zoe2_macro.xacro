@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- This macro defines the actual link-joint structure of the robot. -->
+<!-- The macro can be called by other files via <xacro:zoe2 prefix="$(arg prefix)" > -->
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
 
   <xacro:include filename="$(find zoe2_description)/urdf/common/inertials.xacro" />
@@ -10,7 +12,7 @@
   <xacro:include filename="$(find zoe2_description)/urdf/common/hinge.xacro" />
   <xacro:include filename="$(find zoe2_description)/urdf/common/params.xacro" />
 
-  <xacro:macro name="zoe2" params="prefix parent *origin">
+  <xacro:macro name="zoe2" params="prefix *origin">
     <!-- LINKS -->
     <link name = "${prefix}base_link">
     </link>
@@ -33,20 +35,43 @@
 
     <xacro:hinge name="${prefix}back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
 
+    <!-- Link gazebo params -->
+    <gazebo reference="back_left_wheel">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="back_right_wheel">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="front_right_wheel">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="front_left_wheel">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="chassis">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <gazebo reference="front_axle">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <gazebo reference="back_axle">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
     <!-- END LINKS -->
 
     <!-- JOINTS -->
 
-    <joint name="${prefix}base_joint" type="fixed">
-        <xacro:insert_block name="origin" />
-        <parent link="${parent}" />
-        <child link="${prefix}base_link" />
-    </joint>
-
     <joint name="${prefix}chassis_joint" type="fixed">
         <parent link="${prefix}base_link" />
         <child link="${prefix}chassis" />
-        <origin xyz="0 0 ${wheel_radius}" />
+        <origin xyz="0 0 ${base_link_height}" />
     </joint>
 
 
@@ -56,12 +81,12 @@
         <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 
-    <joint name="${prefix}front_yaw_joint" type="revolute">
+    <joint name="${prefix}front_yaw_joint" type="revolute"> 
         <parent link="${prefix}front_roll" />
         <child link="${prefix}front_axle" />
         <origin xyz="0 ${-robot_hinge_length} -0.075" />
         <axis xyz="0 0 1"/>
-        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
     </joint>
 
     <joint name="${prefix}front_right_wheel_joint" type="continuous">
@@ -78,11 +103,12 @@
         <axis xyz="1 0 0" />
     </joint>
 
+    <!-- temp set to fixed -->
     <joint name="${prefix}back_yaw_joint" type="revolute">
         <parent link="${prefix}back_roll" />
         <child link="${prefix}back_axle" />
         <origin xyz="0 ${robot_hinge_length} -0.075" />
-        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="0" velocity="0"/>
+        <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
         <axis xyz="0 0 1"/>
     </joint>
 
@@ -105,7 +131,7 @@
         <parent link="${prefix}chassis" />
         <child link="${prefix}back_roll" />
         <origin xyz="0 ${+(robot_length/2 - robot_hinge_length)} 0" />
-        <limit lower="-0.5" upper="0.5" effort="0" velocity="0"/>
+        <limit lower="-0.5" upper="0.5" effort="10" velocity="10"/>
         <axis xyz="0 1 0" />
     </joint>
 

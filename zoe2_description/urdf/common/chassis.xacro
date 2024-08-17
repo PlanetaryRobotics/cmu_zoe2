@@ -33,11 +33,12 @@
             </visual>
             <collision>
                 <origin
-                    xyz="${xyz}"
+                    xyz="0 0 ${chassis_height/2-axle_box_width/2}"
                     rpy="${rpy}" />
                 <geometry>
-                    <mesh
-                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/chassis.STL" />
+                    <!-- <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/chassis.STL" /> -->
+                    <box size="${chassis_width} ${chassis_length} ${chassis_height}" />
                 </geometry>
             </collision>
         </link>

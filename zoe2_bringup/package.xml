@@ -9,25 +9,33 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>rviz2</exec_depend>
+
+  <exec_depend>xacro</exec_depend>
+
+  <!-- Other packages -->
+
   <exec_depend>zoe2_description</exec_depend>
+
+  <exec_depend>gazebo_ros</exec_depend>
+
+  <!-- Ros2 control dependencies -->
 
   <exec_depend>controller_manager</exec_depend>
 
-  <exec_depend>forward_command_controller</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+
+  <exec_depend>velocity_controllers</exec_depend>
 
   <exec_depend>joint_state_broadcaster</exec_depend>
-
-  <exec_depend>joint_trajectory_controller</exec_depend>
 
   <exec_depend>robot_state_publisher</exec_depend>
 
   <exec_depend>ros2_controllers_test_nodes</exec_depend>
 
-  <exec_depend>rviz2</exec_depend>
-
-  <exec_depend>xacro</exec_depend>
-
   <export>
     <build_type>ament_cmake</build_type>
+    <!-- gazebo export working based on this comment https://answers.gazebosim.org//question/6568/uri-paths-to-packages-in-the-sdf-model-file/ -->
+    <gazebo_ros gazebo_model_path="${prefix}/../../../../src/zoe2_bringup/worlds/models"/>
   </export>
 </package>

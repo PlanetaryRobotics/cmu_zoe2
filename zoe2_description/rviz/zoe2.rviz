@@ -5,9 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /Status1
-        - /RobotModel1
-        - /RobotModel1/Links1
+        - /TF1/Frames1/base_link1
       Splitter Ratio: 0.5985401272773743
     Tree Height: 719
   - Class: rviz_common/Selection
@@ -69,57 +67,53 @@ Visualization Manager:
         Link Tree Style: Links in Alphabetic Order
         back_axle:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         back_left_wheel:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         back_right_wheel:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
-        back_yaw:
+        back_roll:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         base_link:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
         chassis:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         front_axle:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         front_left_wheel:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
         front_right_wheel:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
-        front_yaw:
+        front_roll:
           Alpha: 1
-          Show Axes: true
+          Show Axes: false
           Show Trail: false
           Value: true
-        world:
-          Alpha: 1
-          Show Axes: true
-          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -128,6 +122,53 @@ Visualization Manager:
       Update Interval: 0
       Value: true
       Visual Enabled: true
+    - Class: rviz_default_plugins/TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+        back_axle:
+          Value: true
+        back_left_wheel:
+          Value: true
+        back_right_wheel:
+          Value: true
+        back_roll:
+          Value: true
+        base_link:
+          Value: true
+        chassis:
+          Value: true
+        front_axle:
+          Value: true
+        front_left_wheel:
+          Value: true
+        front_right_wheel:
+          Value: true
+        front_roll:
+          Value: true
+      Marker Scale: 1
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        base_link:
+          chassis:
+            back_roll:
+              back_axle:
+                back_left_wheel:
+                  {}
+                back_right_wheel:
+                  {}
+            front_roll:
+              front_axle:
+                front_left_wheel:
+                  {}
+                front_right_wheel:
+                  {}
+      Update Interval: 0
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -189,10 +230,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5253992080688477
+      Pitch: 0.7503980398178101
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.815390408039093
+      Yaw: 0.5603766441345215
     Saved: ~
 Window Geometry:
   Displays:
