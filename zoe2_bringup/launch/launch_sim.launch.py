@@ -85,10 +85,16 @@ def generate_launch_description():
                         output='screen')
 
 
-    diff_drive_spawner = Node(
+    # diff_drive_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["diff_cont"],
+    # )
+
+    zoe_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["diff_cont"],
+        arguments=["zoe_controller"],
     )
 
     joint_broad_spawner = Node(
@@ -97,12 +103,19 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster"],
     )
 
-    delayed_diff_drive_spawner = RegisterEventHandler(
+    # delayed_diff_drive_spawner = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=spawn_entity,
+    #         on_exit=[diff_drive_spawner],
+    #     )
+    # )    
+
+    delayed_zoe_controller_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=spawn_entity,
-            on_exit=[diff_drive_spawner],
+            on_exit=[zoe_controller_spawner],
         )
-    )    
+    )
 
     # Launch them all!
     return LaunchDescription(
@@ -112,5 +125,6 @@ def generate_launch_description():
         gazebo,
         spawn_entity,
         joint_broad_spawner,
-        delayed_diff_drive_spawner,
+        # delayed_diff_drive_spawner,
+        delayed_zoe_controller_spawner
     ])

@@ -6,6 +6,9 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    zoe_controller:
+      type: zoe_controller/ZoeController
+
     diff_cont:
       type: diff_drive_controller/DiffDriveController
 
@@ -20,3 +23,13 @@ diff_cont:
     wheel_radius: 0.325
 
     use_stamped_vel: false
+
+zoe_controller:
+  ros__parameters:
+    front_left_wheel: front_left_wheel_joint
+    front_right_wheel: front_right_wheel_joint
+    back_left_wheel: back_left_wheel_joint
+    back_right_wheel: back_right_wheel_joint
+    front_yaw: front_yaw_joint
+    back_yaw: back_yaw_joint
+    publish_rate: 50.0

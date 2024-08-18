@@ -1,0 +1,34 @@
+zoe_controller:
+  front_left_wheel: {
+    type: string,
+    default_value: "front_left_wheel",
+    description: "Link names of the left side wheels",
+  }
+  front_right_wheel: {
+    type: string,
+    default_value: "front_left_wheel",
+    description: "Link names of the left side wheels",
+  }
+  back_left_wheel: {
+    type: string,
+    default_value: "front_left_wheel",
+    description: "Link names of the left side wheels",
+  }
+  back_right_wheel: {
+    type: string,
+    default_value: "front_left_wheel",
+    description: "Link names of the left side wheels",
+  }
+  front_yaw: {
+    type: string,
+    default_value: "front_roll_front_axle_joint"
+  }
+  back_yaw: {
+    type: string,
+    default_value: "back_roll_back_axle_joint"
+  }
+  publish_rate: {
+    type: double,
+    default_value: 50.0, # Hz
+    description: "Publishing rate (Hz) of the odometry and TF messages.",
+  }
