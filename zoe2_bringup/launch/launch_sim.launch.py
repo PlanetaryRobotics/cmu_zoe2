@@ -4,7 +4,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, RegisterEventHandler
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, RegisterEventHandler, ExecuteProcess
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
@@ -84,6 +84,11 @@ def generate_launch_description():
                                    ],
                         output='screen')
 
+    joint_broad_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+    )
 
     # diff_drive_spawner = Node(
     #     package="controller_manager",
@@ -91,24 +96,18 @@ def generate_launch_description():
     #     arguments=["diff_cont"],
     # )
 
-    zoe_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["zoe_controller"],
-    )
-
-    joint_broad_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["joint_state_broadcaster"],
-    )
-
     # delayed_diff_drive_spawner = RegisterEventHandler(
     #     event_handler=OnProcessExit(
     #         target_action=spawn_entity,
     #         on_exit=[diff_drive_spawner],
     #     )
-    # )    
+    # )  
+
+    zoe_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["zoe_controller"],
+    )
 
     delayed_zoe_controller_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -116,6 +115,22 @@ def generate_launch_description():
             on_exit=[zoe_controller_spawner],
         )
     )
+
+    # Call a drive arc command
+    # want to mimic ros2 service call /zoe_drive zoe2_interfaces/srv/DriveCommand '{drive_arc: {radius: 10, speed: -2, time: 1000, sender: "hello"}}'
+    send_drive_arc = ExecuteProcess(
+        cmd=['ros2', 'service', 'call', '/zoe_drive', 'zoe2_interfaces/srv/DriveCommand', '{drive_arc: {radius: 10, speed: -1, time: 1000, sender: "hello"}}'],
+        output='screen'
+    )
+
+    # delay after control has started
+    delayed_send_drive_arc = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=zoe_controller_spawner,
+            on_exit=[send_drive_arc],
+        )
+    )
+
 
     # Launch them all!
     return LaunchDescription(
@@ -126,5 +141,6 @@ def generate_launch_description():
         spawn_entity,
         joint_broad_spawner,
         # delayed_diff_drive_spawner,
-        delayed_zoe_controller_spawner
+        delayed_zoe_controller_spawner,
+        delayed_send_drive_arc
     ])

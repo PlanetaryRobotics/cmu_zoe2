@@ -86,6 +86,15 @@
         <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
           <parameters>${simulation_controllers}</parameters>
         </plugin>
+        <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+          <!-- <alwaysOn>true</alwaysOn> -->
+          <update_rate>50.0</update_rate>
+          <body_name>base_link</body_name>
+          <gaussian_noise>0.01</gaussian_noise>
+          <frame_name>world</frame_name>
+          <xyz_offset>0 0 0</xyz_offset>
+          <rpy_offset>0 0 0</rpy_offset>
+        </plugin>
       </gazebo>
     </xacro:if>
 
