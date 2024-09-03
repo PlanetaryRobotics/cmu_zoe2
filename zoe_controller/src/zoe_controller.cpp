@@ -110,7 +110,8 @@ controller_interface::CallbackReturn ZoeController::on_init() {
     currDriveArc->sender = "";
     currDriveArc->time = 0;
     currDriveTimer = nullptr;
-    controller = std::make_shared<DrivingController>(1.63, 0.32, 1.89, 2.0);
+    // TODO: Change following to load in params from xacro
+    controller = std::make_shared<DrivingController>(1.64, 0.325, 1.91, 2.0);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
