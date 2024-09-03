@@ -111,7 +111,7 @@ controller_interface::CallbackReturn ZoeController::on_init() {
     currDriveArc->time = 0;
     currDriveTimer = nullptr;
     // TODO: Change following to load in params from xacro
-    controller = std::make_shared<DrivingController>(1.64, 0.325, 1.91, 2.0);
+    controller = std::make_shared<DrivingController>(1.64, 0.325, 1.91, 5.0);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -220,6 +220,11 @@ ZoeController::update(const rclcpp::Time &time,
             "back: \n\t\t left: %f \n\t\t right: %f",
             controller->getcVfl(), controller->getcVfr(),
             controller->getcVbl(), controller->getcVbr());
+    RCLCPP_INFO(log(),
+        "actual command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
+        "back: \n\t\t left: %f \n\t\t right: %f",
+        controller->getVfl(), controller->getVfr(),
+        controller->getVbl(), controller->getVbr());
     currDriveArcMutex.unlock();
 
     if(test_hardware) {
