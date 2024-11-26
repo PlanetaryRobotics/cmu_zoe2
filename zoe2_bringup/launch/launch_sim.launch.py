@@ -116,20 +116,20 @@ def generate_launch_description():
         )
     )
 
-    # Call a drive arc command
-    # want to mimic ros2 service call /zoe_drive zoe2_interfaces/srv/DriveCommand '{drive_arc: {radius: 10, speed: -2, time: 1000, sender: "hello"}}'
-    send_drive_arc = ExecuteProcess(
-        cmd=['ros2', 'service', 'call', '/zoe_drive', 'zoe2_interfaces/srv/DriveCommand', '{drive_arc: {radius: 10, speed: -1, time: 1000, sender: "hello"}}'],
-        output='screen'
-    )
+    # # Call a drive arc command
+    # # want to mimic ros2 service call /zoe_drive zoe2_interfaces/srv/DriveCommand '{drive_arc: {radius: 10, speed: -2, time: 1000, sender: "hello"}}'
+    # send_drive_arc = ExecuteProcess(
+    #     cmd=['ros2', 'service', 'call', '/zoe_drive', 'zoe2_interfaces/srv/DriveCommand', '{drive_arc: {radius: 10, speed: -1, time: 1000, sender: "hello"}}'],
+    #     output='screen'
+    # )
 
-    # delay after control has started
-    delayed_send_drive_arc = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=zoe_controller_spawner,
-            on_exit=[send_drive_arc],
-        )
-    )
+    # # delay after control has started
+    # delayed_send_drive_arc = RegisterEventHandler(
+    #     event_handler=OnProcessExit(
+    #         target_action=zoe_controller_spawner,
+    #         on_exit=[send_drive_arc],
+    #     )
+    # )
 
 
     # Launch them all!
@@ -142,5 +142,5 @@ def generate_launch_description():
         joint_broad_spawner,
         # delayed_diff_drive_spawner,
         delayed_zoe_controller_spawner,
-        delayed_send_drive_arc
+        # delayed_send_drive_arc
     ])
