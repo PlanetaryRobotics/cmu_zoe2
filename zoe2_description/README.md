@@ -13,8 +13,6 @@ The general package structure is the following:
 <manufacturer|robot_name>_description/             # Robot's description files
 ├── [CMakeLists.txt]                               # if ament_cmake is used (recommended)
 ├── package.xml
-├── [setup.py]                                     # if amend_python is used
-├── [setup.cfg]                                    # if amend_python is used
 ├── config/                                        # general YAML files for a robot
 │   └── <robot_name>_<someting_specific>.yaml
 ├── launch/                                        # launch files related to testing robots' description
@@ -45,7 +43,6 @@ The general package structure is the following:
 2. Install the package by calling `colcon build --symlink-install --packages-select zoe2_description`
 3. (Re-)Source environment `source install/setup.bash`
 
-
 > **NOTE:** If you use [RosTeamWorkspace (RTW)](https://rtw.stoglrobotics.de) than instead of the previous three steps, use `cb zoe2_description` command.
 
 Now, launch description test:
@@ -61,5 +58,5 @@ If there are no issues with the description, two windows are opened: `rviz2` and
 Rviz2 visualizes the robot's state and Joint state Publisher to changes joint values using sliders or generates random but valid configurations.
 
 ## To-Dos
-- Add roll joint capability
-- Add zoe2 rover instead of zoe1
+- Find a way to share physical dimensions with other packages, like the controller?
+- Update the CAD/dimensions from Zoë1 to Zoë2
