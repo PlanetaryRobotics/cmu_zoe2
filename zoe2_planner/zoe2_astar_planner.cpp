@@ -70,6 +70,7 @@ public:
     }
 
     std::vector<std::tuple<double, double, double, double, double>> a_star() {
+        
         std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_list;
         std::set<std::tuple<int, int, int>> closed_list; // Discretized state space
         std::unordered_map<std::tuple<int, int, int>, double, TupleHash> g_cost_map;
@@ -127,6 +128,8 @@ public:
                 }
             }
         }
+        
+
 
         return {}; // Return empty path if no solution
     }
@@ -144,7 +147,12 @@ int main() {
     double th_gain = 0.1;
 
     AStarPlanner planner(0, 0, 4, 4, {dt, rad, width, wheelbase, wgt_heur, goal_radius, th_gain});
+    auto start_time = std::chrono::high_resolution_clock::now(); // Start timing
     auto path = planner.a_star();
+    auto end_time = std::chrono::high_resolution_clock::now(); // End timing
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "Computation Time: " << elapsed.count() << " seconds" << std::endl;
+
 
     for (const auto& step : path) {
         std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "

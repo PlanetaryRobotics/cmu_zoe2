@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <limits>
 #include <tuple>
+#include <chrono> 
 
 class RRTNode {
 public:
@@ -113,6 +114,7 @@ public:
     }
 
     std::vector<std::tuple<double, double, double, double, double>> plan() {
+    auto start_time = std::chrono::high_resolution_clock::now(); // Start timing
     RRTNode* start_node = new RRTNode(start_x, start_y, 0, 0, 0, 0, 0);
     RRTNode* goal_node = new RRTNode(goal_x, goal_y, 0, 0, 0, 0, 0);
 
@@ -122,6 +124,7 @@ public:
         for (int i = 0; i < max_samples; ++i) {
             auto [sample_x, sample_y, sample_theta] = random_sample();
 
+
             RRTNode* nearest_start = nearest_neighbor(tree_start, sample_x, sample_y);
             RRTNode* new_start_node = steer(nearest_start, sample_x, sample_y, sample_theta);
 
@@ -129,31 +132,31 @@ public:
                 tree_start.push_back(new_start_node);
 
                 RRTNode* connect_node = connect(tree_goal, new_start_node->x, new_start_node->y, new_start_node->theta);
-                if (connect_node != nullptr) {
-                    // Reconstruct path
+                if (connect_node != nullptr) { 
                     std::vector<std::tuple<double, double, double, double, double>> path;
 
-                    // Path from start to connection point
                     RRTNode* current = new_start_node;
                     while (current != nullptr) {
                         path.emplace_back(current->x, current->y, current->theta, current->arc_rad, current->v_comm);
                         current = current->parent;
                     }
                     std::reverse(path.begin(), path.end());
-
-                    // Path from connection point to goal
                     current = connect_node;
                     while (current != nullptr) {
                         path.emplace_back(current->x, current->y, current->theta, current->arc_rad, current->v_comm);
                         current = current->parent;
                     }
 
-                    return path; // Combined path
+                    return path;
                 }
             }
             std::swap(tree_start, tree_goal);
         }
-        return {}; // Return empty path if no solution found
+        auto end_time = std::chrono::high_resolution_clock::now(); // End timing
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "Computation Time: " << elapsed.count() << " seconds" << std::endl;
+
+        return {}; 
     }
 };
 
@@ -162,15 +165,19 @@ int main() {
     double rad = 0.325;        
     double width = 1.64;       
     double wheelbase = 1.91;   
-    double goal_radius = 0.1;  // Goal radius for termination
-    int max_samples = 1000;    // Maximum number of iterations
+    double goal_radius = 0.1;  
+    int max_samples = 1000;    
 
-    double start_x = 0, start_y = 0; // Start position
-    double goal_x = 4, goal_y = 4;   // Goal position
+    double start_x = 0, start_y = 0; 
+    double goal_x = 4, goal_y = 4;  
 
     std::vector<double> params = {dt, rad, width, wheelbase, goal_radius, static_cast<double>(max_samples)};
     RRTConnectPlanner planner(start_x, start_y, goal_x, goal_y, params);
-    auto plan = planner.plan();  // Plan with RRT-Connect
+    auto start_time = std::chrono::high_resolution_clock::now(); // Start timing
+    auto plan = planner.plan();  
+    auto end_time = std::chrono::high_resolution_clock::now(); // End timing
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "Computation Time: " << elapsed.count() << " seconds" << std::endl;
 
     for (const auto& p : plan) {
         std::cout << std::get<0>(p) << ", " << std::get<1>(p) << ", " << std::get<2>(p) << ", "
