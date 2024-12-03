@@ -64,6 +64,11 @@ def generate_launch_description():
                 )]), launch_arguments={'use_sim_time': 'true'}.items()
     )
 
+    rviz = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
+            )])
+    )
     
     world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
 
@@ -137,6 +142,7 @@ def generate_launch_description():
         declared_arguments +
         [
         rsp,
+        rviz,
         gazebo,
         spawn_entity,
         joint_broad_spawner,
