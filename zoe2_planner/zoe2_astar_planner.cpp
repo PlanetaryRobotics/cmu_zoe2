@@ -63,10 +63,36 @@ public:
         double vl = velo_comm - width / 2 * ang_velo;
         double vr = velo_comm + width / 2 * ang_velo;
 
-        vl += th_gain * (th_comm - th_prev);
-        vr += th_gain * (th_comm - th_prev);
+        // Calculate the physical term matrix multiplication
+        double cos_th_comm = std::cos(th_comm);
+        std::array<std::array<double, 2>, 2> phys_matrix = {
+            {{1 / cos_th_comm, -width / 2}, {1 / cos_th_comm, width / 2}}
+        };
+        std::array<double, 2> input_vector = {velo_comm, ang_velo};
+        std::array<double, 2> phys_term = {
+            phys_matrix[0][0] * input_vector[0] + phys_matrix[0][1] * input_vector[1],
+            phys_matrix[1][0] * input_vector[0] + phys_matrix[1][1] * input_vector[1]
+        };
 
-        return {vl, vr};
+        // Calculate the gain term
+        double th_diff = th_comm - th_prev;
+        std::array<double, 2> gain_term = { -th_gain * (-th_diff), th_gain * th_diff };
+
+        std::array<double, 2> velos;
+        for (size_t i = 0; i < velos.size(); ++i) {
+            velos[i] = phys_term[i] + gain_term[i];
+        }
+        return velos;
+
+            // return {vl, vr};
+    }
+
+    std::vector<double> createRange(double start, double end, double step) {
+        std::vector<double> range;
+        for (double value = start; value < end; value += step) {
+            range.push_back(value);
+            }
+        return range;
     }
 
     std::vector<std::tuple<double, double, double, double, double>> a_star() {
@@ -75,8 +101,8 @@ public:
         std::set<std::tuple<int, int, int>> closed_list; // Discretized state space
         std::unordered_map<std::tuple<int, int, int>, double, TupleHash> g_cost_map;
 
-        std::vector<double> poss_R = {-10, -5, 0, 5, 10};
-        std::vector<double> poss_vel = {1, 2, 3, 4, 5};
+        std::vector<double> poss_R = createRange(-10, 10, 3);
+        std::vector<double> poss_vel = createRange(1, 10, 0.5);
 
         Node start_node(start_x, start_y, 0, 0, 0, 0, heuristic(start_x, start_y), 0, 0, nullptr);
         open_list.push(start_node);
@@ -128,7 +154,6 @@ public:
                 }
             }
         }
-        
 
 
         return {}; // Return empty path if no solution
@@ -149,16 +174,16 @@ int main() {
     AStarPlanner planner(0, 0, 4, 4, {dt, rad, width, wheelbase, wgt_heur, goal_radius, th_gain});
     auto start_time = std::chrono::high_resolution_clock::now(); // Start timing
     auto path = planner.a_star();
-    auto end_time = std::chrono::high_resolution_clock::now(); // End timing
-        std::chrono::duration<double> elapsed = end_time - start_time;
-        std::cout << "Computation Time: " << elapsed.count() << " seconds" << std::endl;
-
+    
 
     for (const auto& step : path) {
         std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "
                   << std::get<2>(step) << " " << std::get<3>(step) << " "
                   << std::get<4>(step) << std::endl;
     }
+    auto end_time = std::chrono::high_resolution_clock::now(); // End timing
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "Computation Time: " << elapsed.count() << " seconds" << std::endl;
 
     return 0;
 }

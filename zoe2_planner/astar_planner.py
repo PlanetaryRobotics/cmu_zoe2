@@ -1,6 +1,7 @@
 import numpy as np
 import itertools
 import heapq
+import time
 
 class Node:
     def __init__(self, x, y, theta, vl, vr, g, h, v_comm, arc_rad, parent=None):
@@ -111,9 +112,14 @@ if __name__ == '__main__':
 
     start_x, start_y = 0, 0    
     goal_x, goal_y = 4, 4      
-
+    
     new_planner = A_Star_Planner(start_x, start_y, goal_x, goal_y, [dt, rad, width, wheelbase, wgt_heur, goal_radius, gain]) 
+    start_time = time.time()
     plan = new_planner.a_star() 
+    end_time = time.time()
+
+    execution_time = end_time - start_time
+    print(f"The code execution took {execution_time:.6f} seconds.")
     print(plan)
 
     
