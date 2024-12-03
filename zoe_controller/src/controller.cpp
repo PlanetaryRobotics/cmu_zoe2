@@ -43,9 +43,9 @@ void DrivingController::computeFront() {
     float E2 = -E1;
     cVfl += Kp * E1;
     cVfr += Kp * E2;
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Error Front: %f", E1);
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Thetaf: %f", Thetaf);
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "cTheta: %f", cTheta());
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Error Front: %f", E1);
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Thetaf: %f", Thetaf);
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "cTheta: %f", cTheta());
 }
 
 void DrivingController::computeBack() {
@@ -53,9 +53,9 @@ void DrivingController::computeBack() {
     float E2 = -E1;
     cVbl += Kp * E1;
     cVbr += Kp * E2; 
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Error Back: %f", E1);
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Thetab: %f", Thetab);
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Target cTheta: %f", -cTheta());
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Error Back: %f", E1);
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Thetab: %f", Thetab);
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "Target cTheta: %f", -cTheta());
 }
 
 void DrivingController::computeWheelSpeed() {
@@ -75,9 +75,9 @@ void DrivingController::computeWheelSpeed() {
     cVbl = commonTerm - adjustment;
     cVbr = commonTerm + adjustment;
 
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
     computeBack();
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
     computeFront();
-    RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
+    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
 }

@@ -215,16 +215,16 @@ ZoeController::update(const rclcpp::Time &time,
     //             controller->getVfl(), controller->getVfr(),
     //             controller->getVbl(), controller->getVbr());
     // RCLCPP_INFO(log(),  "frontRoll:  %f backRoll: %f", frontRoll->yaw.get().get_value(), backRoll->yaw.get().get_value());
-    RCLCPP_INFO(log(),
-            "curr command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
-            "back: \n\t\t left: %f \n\t\t right: %f",
-            controller->getcVfl(), controller->getcVfr(),
-            controller->getcVbl(), controller->getcVbr());
-    RCLCPP_INFO(log(),
-        "actual command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
-        "back: \n\t\t left: %f \n\t\t right: %f",
-        controller->getVfl(), controller->getVfr(),
-        controller->getVbl(), controller->getVbr());
+    // RCLCPP_INFO(log(),
+    //         "curr command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
+    //         "back: \n\t\t left: %f \n\t\t right: %f",
+    //         controller->getcVfl(), controller->getcVfr(),
+    //         controller->getcVbl(), controller->getcVbr());
+    // RCLCPP_INFO(log(),
+    //     "actual command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
+    //     "back: \n\t\t left: %f \n\t\t right: %f",
+    //     controller->getVfl(), controller->getVfr(),
+    //     controller->getVbl(), controller->getVbr());
     currDriveArcMutex.unlock();
 
     if(test_hardware) {
