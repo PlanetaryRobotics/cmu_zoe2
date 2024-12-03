@@ -11,7 +11,7 @@
 4. At the root of your workspace, run `colcon build`.
 ## Operation
 1. Source your package using `source install/setup.bash` at the root of your workspace. This needs to be done in any new terminal instance.
-2. Launch the robot in an empty world using `ros2 launch zoe2_bringup launch_sim.launch.py`.
-3. Alternatively, launch the robot in a custom world using `ros2 launch zoe2_bringup launch_sim.launch.py world:="moon.world"`, or any other world stored in `zoe2_bringup/worlds`.
+2. Launch the robot in an empty world using `ros2 launch zoe2_bringup zoe2.launch.py`.
+3. Alternatively, launch the robot in a custom world using `ros2 launch zoe2_bringup zoe2.launch.py world:="moon.world z:=1"`, or any other world stored in `zoe2_bringup/worlds`.
 4. To control the robot, open an additional terminal and `source install/setup.bash`.
 5. Then send a drive arc command: `ros2 service call /zoe_drive zoe2_interfaces/srv/DriveCommand '{drive_arc: {radius: 10, speed: 1, time: 1000, sender: "example"}}'`
