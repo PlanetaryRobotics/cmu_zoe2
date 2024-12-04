@@ -5,23 +5,27 @@
 #include <cmath>
 #include <chrono>
 #include <iostream>
-#include "astar_planner.cpp"
 #include "zoe2_interfaces/srv/drive_command.hpp"
+#include "astar_planner.cpp" // Include the new planner definition
 
 class AStarPlannerNode : public rclcpp::Node {
 public:
     AStarPlannerNode()
         : Node("a_star_planner_node"),
           robot_x_(0.0), robot_y_(0.0), robot_theta_(0.0),
-          axle_radius_(0.325), axle_width_(1.64), axle_wheelbase_(1.91) {
-        // Initialize the service client
-        // drive_command_client_ = this->create_client<zoe2_interfaces::srv::DriveCommand>("/zoe_drive");
+          axle_radius_(0.325), axle_width_(1.64), axle_wheelbase_(1.91),
+          goal_x_(5.0), goal_y_(2.0),
+          map_bounds_{0, 0, 7, 7},
+          poss_R_{-10, 10, 0.5},
+          poss_dt_{0.5, 6, 0.25},
+          wgt_heur_(10), velocity_(1.0), goal_radius_(0.05), th_gain_(0.1) {
+        
         drive_command_client_ = this->create_client<zoe2_interfaces::srv::DriveCommand>("/zoe_drive");
+
         // Subscribe to the /odom topic
         odom_subscription_ = this->create_subscription<nav_msgs::msg::Odometry>(
             "/odom", 10, std::bind(&AStarPlannerNode::odom_callback, this, std::placeholders::_1));
 
-        // Axle configuration assumed to be static for simplicity
         RCLCPP_INFO(this->get_logger(), "A* Planner Node Initialized");
     }
 
@@ -31,9 +35,12 @@ private:
 
     double robot_x_, robot_y_, robot_theta_;
     double axle_radius_, axle_width_, axle_wheelbase_;
+    double goal_x_, goal_y_;
+    std::vector<double> map_bounds_;
+    std::vector<double> poss_R_, poss_dt_;
+    double wgt_heur_, velocity_, goal_radius_, th_gain_;
 
     void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
-        // Update robot position and orientation from odometry
         robot_x_ = msg->pose.pose.position.x;
         robot_y_ = msg->pose.pose.position.y;
         robot_theta_ = atan2(
@@ -49,33 +56,33 @@ private:
     }
 
     void plan_path() {
-        // Goal position (example, can be dynamic)
-        double goal_x = 4.0, goal_y = 4.0;
+        double dt = 2.0; // Time step duration
+        auto start_time = std::chrono::high_resolution_clock::now();
 
-        // A* parameters
-        double dt = 0.1;
-        double wgt_heur = 5.0;
-        double goal_radius = 0.1;
-        double th_gain = 0.1;
+        // Initialize planner
+        AStarPlanner planner(robot_x_, robot_y_, robot_theta_, goal_x_, goal_y_,
+                             {velocity_, axle_radius_, axle_width_, axle_wheelbase_, wgt_heur_, goal_radius_, th_gain_},
+                             map_bounds_, poss_R_, poss_dt_);
 
-        // Create the A* planner
-        AStarPlanner planner(robot_x_, robot_y_, goal_x, goal_y,
-                             {dt, axle_radius_, axle_width_, axle_wheelbase_, wgt_heur, goal_radius, th_gain});
-
+        // Compute the path
         auto path = planner.a_star();
 
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration<double>(end_time - start_time).count();
+        RCLCPP_INFO(this->get_logger(), "Planning completed in %.4f seconds.", elapsed);
+
+        // Publish drive commands for each step in the path
         int step_number = 1;
         for (const auto& step : path) {
             double radius = std::get<3>(step);
             double speed = std::get<4>(step);
-            auto request = std::make_shared<zoe2_interfaces::srv::DriveCommand::Request>();
 
+            auto request = std::make_shared<zoe2_interfaces::srv::DriveCommand::Request>();
             request->drive_arc.radius = radius;
             request->drive_arc.speed = speed;
             request->drive_arc.time = step_number * 1000;
             request->drive_arc.sender = "step_" + std::to_string(step_number);
 
-            // Wait for the service to be available
             if (!drive_command_client_->wait_for_service(std::chrono::seconds(1))) {
                 RCLCPP_ERROR(this->get_logger(), "Service /zoe_drive not available.");
                 return;
@@ -89,7 +96,7 @@ private:
                 } else {
                     RCLCPP_WARN(this->get_logger(), "Step %d execution failed.", step_number);
                 }
-            } catch (const std::exception &e) {
+            } catch (const std::exception& e) {
                 RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
             }
 
@@ -97,3 +104,11 @@ private:
         }
     }
 };
+
+int main(int argc, char** argv) {
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<AStarPlannerNode>();
+    rclcpp::spin(node);
+    rclcpp::shutdown();
+    return 0;
+}
