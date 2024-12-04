@@ -56,6 +56,7 @@ public:
         map_bounds = bounds;
         possR = pR;
         possdt = pdt;
+        std::cout << "Goal pose, " << goal_x << ", " << goal_y << std::endl;
     }
 
     double heuristic(double x, double y) {
