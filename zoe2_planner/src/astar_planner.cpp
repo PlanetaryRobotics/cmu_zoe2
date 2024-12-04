@@ -106,7 +106,7 @@ public:
         std::set<std::tuple<int, int, int>> closed_list; // Discretized state space
         std::unordered_map<std::tuple<int, int, int>, double, TupleHash> g_cost_map;
 
-        std::vector<double> poss_R = createRange(possR[0], possR[1], possR[2]);
+        std::vector<double> poss_R = possR;
         std::vector<double> poss_dt = createRange(possdt[0], possdt[1], possdt[2]);
 
         Node start_node(start_x, start_y, start_th, 0, 0, 0, heuristic(start_x, start_y), 0, 0, nullptr);

@@ -83,5 +83,5 @@ def generate_launch_description():
         odom,
         rviz,
         sim,
-        # planner
+        planner
     ])

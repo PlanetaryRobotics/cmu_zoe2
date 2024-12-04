@@ -16,7 +16,7 @@ public:
           axle_radius_(0.325), axle_width_(1.64), axle_wheelbase_(1.91),
           goal_x_(5.0), goal_y_(2.0),
           map_bounds_{0, 0, 7, 7},
-          poss_R_{-10, 10, 0.5},
+          poss_R_{-10, -5, -2.5, 2.5, 5, 10, 1000000},
           poss_dt_{0.5, 6, 0.25},
           wgt_heur_(10), velocity_(1.0), goal_radius_(0.05), th_gain_(0.1) {
         
@@ -148,7 +148,7 @@ private:
         return;
     }
 
-    // auto future = drive_command_client_->async_send_request(request);
+    auto future = drive_command_client_->async_send_request(request);
     // try {
     //     auto response = future.get();
     //     if (response->success) {
