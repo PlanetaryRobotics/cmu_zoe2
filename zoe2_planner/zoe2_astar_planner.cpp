@@ -23,11 +23,11 @@ double normalize_angle(double theta) {
 
 class Node {
 public:
-    double x, y, theta, vl, vr, arc_radius, transl_velocity, g, h, f;
+    double x, y, theta, vl, vr, arc_radius, dt, g, h, f;
     Node* parent;
 
-    Node(double x, double y, double theta, double vl, double vr, double g, double h, double v_comm, double arc_rad, Node* parent = nullptr)
-        : x(x), y(y), theta(theta), vl(vl), vr(vr), arc_radius(arc_rad), transl_velocity(v_comm), g(g), h(h), parent(parent) {
+    Node(double x, double y, double theta, double vl, double vr, double g, double h, double dt_comm, double arc_rad, Node* parent = nullptr)
+        : x(x), y(y), theta(theta), vl(vl), vr(vr), arc_radius(arc_rad), dt(dt_comm), g(g), h(h), parent(parent) {
         f = g + h;
     }
 
@@ -41,9 +41,11 @@ class AStarPlanner {
 public:
     double start_x, start_y, start_th, goal_x, goal_y;
     double fixed_v, rad, width, wheelbase, wgt_heur, goal_radius, th_gain;
-    std::vector<double> map_bounds, possR, possdt;
+    std::vector<int> map_bounds;
+    std::vector<double> possR, possdt;
+    std::vector<std::vector<double>> cost_map;
 
-    AStarPlanner(double start_x, double start_y, double start_th, double goal_x, double goal_y, const std::vector<double>& other_args, const std::vector<double>& bounds, const std::vector<double>& pR, const std::vector<double>& pdt)
+    AStarPlanner(double start_x, double start_y, double start_th, double goal_x, double goal_y, const std::vector<double>& other_args, const std::vector<int>& bounds, const std::vector<double>& pR, const std::vector<double>& pdt, const std::vector<std::vector<double>>& map)
         : start_x(start_x), start_y(start_y), start_th(start_th),goal_x(goal_x), goal_y(goal_y) {
         fixed_v = other_args[0];
         rad = other_args[1];
@@ -55,6 +57,7 @@ public:
         map_bounds = bounds;
         possR = pR;
         possdt = pdt;
+        cost_map = map;
     }
 
     double heuristic(double x, double y) {
@@ -120,14 +123,14 @@ public:
             if (heuristic(curr.x, curr.y)/wgt_heur <= goal_radius) {
                 std::vector<std::tuple<double, double, double, double, double>> path;
                 while (curr.parent) {
-                    path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.transl_velocity);
+                    path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt);
                     curr = *curr.parent;
                 }
                 std::reverse(path.begin(), path.end());
                 return path;
             }
 
-            auto curr_state = std::make_tuple(int(curr.x * 10), int(curr.y * 10), int(curr.theta * 10));
+            auto curr_state = std::make_tuple(curr.x, curr.y, curr.theta);
             closed_list.insert(curr_state);
 
             for (double arc_rad : poss_R) {
@@ -154,7 +157,8 @@ public:
                     auto next_state = std::make_tuple(next_x, next_y, next_th);
                     if (closed_list.count(next_state)) continue;
 
-                    double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr));
+                    // std::cout << "Time to Complete: " << cost_map[(int)floor(next_x)][(int)floor(next_y)] << " seconds" << std::endl;
+                    double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr)) + cost_map[(int)floor(next_x)][(int)floor(next_y)];
                     if (g_cost_map.count(next_state) && g_cost >= g_cost_map[next_state]) continue;
 
                     g_cost_map[next_state] = g_cost;
@@ -182,11 +186,20 @@ int main() {
     double th_gain = 0.1;
     double velocity = 1;
     std::vector<double> init = {0,0, M_PI/4};
-    std::vector<double> goal = {5,2};
-    std::vector<double> bounds = {0,0,7,7};
+    std::vector<double> goal = {5,5};
+    std::vector<int> bounds = {0,0,7,7};
 
     std::vector<double> poss_R = {-10, 10, .5};
     std::vector<double> poss_dt = {.5, 6, 0.25};
+
+    std::vector<std::vector<double>> cost_map(bounds[2]-bounds[0], std::vector<double>(bounds[3]-bounds[1], 0.0));
+
+    // Populate the cost map using the given formula
+    for (int i = 0; i < (bounds[2]-bounds[0]); ++i) {
+        for (int j = 0; j < (bounds[3]-bounds[1]); ++j) {
+            cost_map[i][j] = 100 * std::max(10 - 2 * std::abs(i - j), 0);
+        }
+    }
 
     auto start = std::chrono::high_resolution_clock::now();
     double last_plan = 0;  // Time of the last plan completion
@@ -201,18 +214,19 @@ int main() {
         if (last_plan != 0) {
             wgt_heur = std::max(wgt_heur / 1.5, 1.0);  // Adjust weight
         }
-        AStarPlanner planner(init[0], init[1], init[2], goal[0], goal[1], {velocity, rad, width, wheelbase, wgt_heur, goal_radius, th_gain}, bounds, poss_R, poss_dt);
+        AStarPlanner planner(init[0], init[1], init[2], goal[0], goal[1], {velocity, rad, width, wheelbase, wgt_heur, goal_radius, th_gain}, bounds, poss_R, poss_dt, cost_map);
         path = planner.a_star();
 
         // Print the time taken for this plan
         auto plan_end = std::chrono::high_resolution_clock::now();
         auto plan_duration = std::chrono::duration<double>(plan_end - plan_start).count();
-        std::cout << "Time to Complete: " << plan_duration << " seconds" << std::endl;
+        std::cout << "Time to Complete: " << plan_duration << " seconds for heuristic bias: " << wgt_heur << std::endl;
 
         // Update last_plan with the time taken for this iteration
         last_plan = plan_duration;
     }
     // Initialize the A_Star_Planner object and call a_star method
+    std::cout << "Path (x, y, theta, radius, dt):"  << wgt_heur << std::endl;
     for (const auto& step : path) {
         std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "
                   << std::get<2>(step) << " " << std::get<3>(step) << " "
