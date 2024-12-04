@@ -21,13 +21,17 @@ double normalize_angle(double theta) {
     return fmod(theta + 2 * M_PI, 2 * M_PI);
 }
 
+double steer_angle(double arc_rad, double wheelbase) {
+    return M_PI / 2 - std::asin(std::abs(arc_rad) / std::sqrt(arc_rad * arc_rad + (wheelbase / 2) * (wheelbase / 2)));
+}
+
 class Node {
 public:
-    double x, y, theta, vl, vr, arc_radius, dt, g, h, f;
+    double x, y, theta, vl, vr, arc_radius, dt, g, h, f, v;
     Node* parent;
 
-    Node(double x, double y, double theta, double vl, double vr, double g, double h, double dt_comm, double arc_rad, Node* parent = nullptr)
-        : x(x), y(y), theta(theta), vl(vl), vr(vr), arc_radius(arc_rad), dt(dt_comm), g(g), h(h), parent(parent) {
+    Node(double x, double y, double theta, double vl, double vr, double g, double h, double dt_comm, double velo, double arc_rad, Node* parent = nullptr)
+        : x(x), y(y), theta(theta), vl(vl), vr(vr), arc_radius(arc_rad), dt(dt_comm), v(velo),  g(g), h(h), parent(parent) {
         f = g + h;
     }
 
@@ -40,24 +44,25 @@ public:
 class AStarPlanner {
 public:
     double start_x, start_y, start_th, goal_x, goal_y;
-    double fixed_v, rad, width, wheelbase, wgt_heur, goal_radius, th_gain;
+    double rad, width, wheelbase, wgt_heur, goal_radius, th_gain, steer_angle_smooth;
     std::vector<int> map_bounds;
-    std::vector<double> possR, possdt;
+    std::vector<double> possR, possdt, poss_v;
     std::vector<std::vector<double>> cost_map;
 
-    AStarPlanner(double start_x, double start_y, double start_th, double goal_x, double goal_y, const std::vector<double>& other_args, const std::vector<int>& bounds, const std::vector<double>& pR, const std::vector<double>& pdt, const std::vector<std::vector<double>>& map)
+    AStarPlanner(double start_x, double start_y, double start_th, double goal_x, double goal_y, const std::vector<double>& other_args, const std::vector<int>& bounds, const std::vector<double>& pR, const std::vector<double>& pdt, const std::vector<double>& pv, const std::vector<std::vector<double>>& map)
         : start_x(start_x), start_y(start_y), start_th(start_th),goal_x(goal_x), goal_y(goal_y) {
-        fixed_v = other_args[0];
-        rad = other_args[1];
-        width = other_args[2];
-        wheelbase = other_args[3];
-        wgt_heur = other_args[4];
-        goal_radius = other_args[5];
-        th_gain = other_args[6];
+        rad = other_args[0];
+        width = other_args[1];
+        wheelbase = other_args[2];
+        wgt_heur = other_args[3];
+        goal_radius = other_args[4];
+        th_gain = other_args[5];
         map_bounds = bounds;
         possR = pR;
         possdt = pdt;
+        poss_v = pv;
         cost_map = map;
+        steer_angle_smooth = other_args[6];
     }
 
     double heuristic(double x, double y) {
@@ -102,7 +107,7 @@ public:
         return range;
     }
 
-    std::vector<std::tuple<double, double, double, double, double>> a_star() {
+    std::vector<std::tuple<double, double, double, double, double, double>> a_star() {
 
         std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_list;
         std::set<std::tuple<int, int, int>> closed_list; // Discretized state space
@@ -111,7 +116,7 @@ public:
         std::vector<double> poss_R = createRange(possR[0], possR[1], possR[2]);
         std::vector<double> poss_dt = createRange(possdt[0], possdt[1], possdt[2]);
 
-        Node start_node(start_x, start_y, start_th, 0, 0, 0, heuristic(start_x, start_y), 0, 0, nullptr);
+        Node start_node(start_x, start_y, start_th, 0, 0, 0, heuristic(start_x, start_y), 0,0, 0, nullptr);
         open_list.push(start_node);
         g_cost_map[{start_x, start_y, start_th}] = 0;
 
@@ -121,9 +126,9 @@ public:
 
             // Goal condition
             if (heuristic(curr.x, curr.y)/wgt_heur <= goal_radius) {
-                std::vector<std::tuple<double, double, double, double, double>> path;
+                std::vector<std::tuple<double, double, double, double, double, double>> path;
                 while (curr.parent) {
-                    path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt);
+                    path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v);
                     curr = *curr.parent;
                 }
                 std::reverse(path.begin(), path.end());
@@ -135,37 +140,48 @@ public:
 
             for (double arc_rad : poss_R) {
                 for (double dt_comm : poss_dt) {
-                    auto comm_velos = velocity_control(arc_rad, fixed_v, curr.theta);
-                    double vl = comm_velos[0];
-                    double vr = comm_velos[1];
+                    for (double fixed_v : poss_v) {
+                        double prev_sa;
+                        if (curr.arc_radius != 0) {
+                            prev_sa = steer_angle(curr.arc_radius, wheelbase);
+                        } else {
+                            prev_sa = 0;
+                        }
+                        double curr_sa = steer_angle(arc_rad, wheelbase);
 
-                    double velo = fixed_v/arc_rad;
-                    double ang_velo = (rad / wheelbase) * (vr - vl);
-                    double next_th = normalize_angle(curr.theta-ang_velo*dt_comm);
+                        auto comm_velos = velocity_control(arc_rad, fixed_v, curr.theta);
+                        double vl = comm_velos[0];
+                        double vr = comm_velos[1];
 
-                    double next_x, next_y;
-                    if (arc_rad > 0) {
-                        next_x = curr.x + arc_rad*(cos(-next_th)-cos(-curr.theta));
-                        next_y = curr.y + arc_rad*(sin(-next_th)-sin(-curr.theta));
+                        // double velo = fixed_v/arc_rad;
+                        double ang_velo = fixed_v/arc_rad;
+                        double next_th = normalize_angle(curr.theta-ang_velo*dt_comm);
+
+                        double next_x, next_y;
+                        if (arc_rad > 0) {
+                            next_x = curr.x + arc_rad*(cos(-next_th)-cos(-curr.theta));
+                            next_y = curr.y + arc_rad*(sin(-next_th)-sin(-curr.theta));
+                        }
+                        else {
+                            next_x = curr.x + (-arc_rad)*(cos(M_PI-next_th)-cos(M_PI-curr.theta));
+                            next_y = curr.y + (-arc_rad)*(sin(M_PI-next_th)-sin(M_PI-curr.theta));
+                        }
+                        if (!(map_bounds[0] <= next_x && next_x <= map_bounds[2] && map_bounds[1] <= next_y && next_y <= map_bounds[3])) continue;
+
+                        auto next_state = std::make_tuple(next_x, next_y, next_th);
+                        if (closed_list.count(next_state)) continue;
+
+                        // std::cout << "Time to Complete: " << cost_map[(int)floor(next_x)][(int)floor(next_y)] << " seconds" << std::endl;
+                        //double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr)) + cost_map[(int)floor(next_x)][(int)floor(next_y)];
+                        double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-prev_sa)) + cost_map[(int)floor(next_x)-map_bounds[0]][(int)floor(next_y)-map_bounds[1]];
+                        if (g_cost_map.count(next_state) && g_cost >= g_cost_map[next_state]) continue;
+
+                        g_cost_map[next_state] = g_cost;
+                        double h_cost = wgt_heur * heuristic(next_x, next_y);
+                        Node neighbor_node(next_x, next_y, next_th, vl, vr, g_cost, h_cost, dt_comm,fixed_v, arc_rad, new Node(curr));
+
+                        open_list.push(neighbor_node);
                     }
-                    else {
-                        next_x = curr.x + (-arc_rad)*(cos(M_PI-next_th)-cos(M_PI-curr.theta));
-                        next_y = curr.y + (-arc_rad)*(sin(M_PI-next_th)-sin(M_PI-curr.theta));
-                    }
-                    if (!(map_bounds[0] <= next_x && next_x <= map_bounds[2] && map_bounds[1] <= next_y && next_y <= map_bounds[3])) continue;
-
-                    auto next_state = std::make_tuple(next_x, next_y, next_th);
-                    if (closed_list.count(next_state)) continue;
-
-                    // std::cout << "Time to Complete: " << cost_map[(int)floor(next_x)][(int)floor(next_y)] << " seconds" << std::endl;
-                    double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr)) + cost_map[(int)floor(next_x)][(int)floor(next_y)];
-                    if (g_cost_map.count(next_state) && g_cost >= g_cost_map[next_state]) continue;
-
-                    g_cost_map[next_state] = g_cost;
-                    double h_cost = wgt_heur * heuristic(next_x, next_y);
-                    Node neighbor_node(next_x, next_y, next_th, vl, vr, g_cost, h_cost, dt_comm, arc_rad, new Node(curr));
-
-                    open_list.push(neighbor_node);
                 }
             }
         }
@@ -177,20 +193,20 @@ public:
 };
 
 int main() {
-    double dt = 2;
     double rad = 0.325;
     double width = 1.64;
     double wheelbase = 1.91;
     double wgt_heur = 10;
     double goal_radius = 0.05;
     double th_gain = 0.1;
-    double velocity = 1;
-    std::vector<double> init = {0,0, M_PI/4};
-    std::vector<double> goal = {5,5};
-    std::vector<int> bounds = {0,0,7,7};
+    double steer_angle_smooth = 10;
+    std::vector<double> init = {0,0, 3*M_PI/2};
+    std::vector<double> goal = {-7,2};
+    std::vector<int> bounds = {-7,-7,7,7};
 
     std::vector<double> poss_R = {-10, 10, .5};
     std::vector<double> poss_dt = {.5, 6, 0.25};
+    std::vector<double> poss_velo = {-1,1};
 
     std::vector<std::vector<double>> cost_map(bounds[2]-bounds[0], std::vector<double>(bounds[3]-bounds[1], 0.0));
 
@@ -207,15 +223,20 @@ int main() {
 
     // AStarPlanner planner;
     // auto path = planner.a_star();
-    std::vector<std::tuple<double, double, double, double, double>> path;
+    std::vector<std::tuple<double, double, double, double, double, double>> path;
+    std::vector<std::tuple<double, double, double, double, double, double>> path_tmp;
     while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - start).count() + 2 * last_plan <= completion_time) {
         auto plan_start = std::chrono::high_resolution_clock::now();
 
         if (last_plan != 0) {
             wgt_heur = std::max(wgt_heur / 1.5, 1.0);  // Adjust weight
         }
-        AStarPlanner planner(init[0], init[1], init[2], goal[0], goal[1], {velocity, rad, width, wheelbase, wgt_heur, goal_radius, th_gain}, bounds, poss_R, poss_dt, cost_map);
-        path = planner.a_star();
+        AStarPlanner planner(init[0], init[1], init[2], goal[0], goal[1], {rad, width, wheelbase, wgt_heur, goal_radius, th_gain, steer_angle_smooth}, bounds, poss_R, poss_dt, poss_velo, cost_map);
+        path_tmp = planner.a_star();
+
+        if (path_tmp.size() > 0) {
+            path = path_tmp;
+        }
 
         // Print the time taken for this plan
         auto plan_end = std::chrono::high_resolution_clock::now();
@@ -226,11 +247,12 @@ int main() {
         last_plan = plan_duration;
     }
     // Initialize the A_Star_Planner object and call a_star method
-    std::cout << "Path (x, y, theta, radius, dt):"  << wgt_heur << std::endl;
+    std::cout << "Path (x, y, theta, radius, dt):"  << " " << wgt_heur << std::endl;
     for (const auto& step : path) {
         std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "
                   << std::get<2>(step) << " " << std::get<3>(step) << " "
-                  << std::get<4>(step) << std::endl;
+                  << std::get<4>(step) << " " << std::get<5>(step) <<
+                      std::endl;
     }
 
     return 0;
