@@ -132,7 +132,7 @@ private:
 
     auto request = std::make_shared<zoe2_interfaces::srv::DriveCommand::Request>();
     request->drive_arc.radius = radius;
-    request->drive_arc.speed = speed;
+    request->drive_arc.speed = speed/10;
     request->drive_arc.time = dt * 1000; // Time in milliseconds for this step
     request->drive_arc.sender = "planner";
 
@@ -148,17 +148,17 @@ private:
         return;
     }
 
-    auto future = drive_command_client_->async_send_request(request);
-    try {
-        auto response = future.get();
-        if (response->success) {
-            RCLCPP_INFO(this->get_logger(), "Command executed successfully.");
-        } else {
-            RCLCPP_WARN(this->get_logger(), "Command execution failed.");
-        }
-    } catch (const std::exception& e) {
-        RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
-    }
+    // auto future = drive_command_client_->async_send_request(request);
+    // try {
+    //     auto response = future.get();
+    //     if (response->success) {
+    //         RCLCPP_INFO(this->get_logger(), "Command executed successfully.");
+    //     } else {
+    //         RCLCPP_WARN(this->get_logger(), "Command execution failed.");
+    //     }
+    // } catch (const std::exception& e) {
+    //     RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
+    // }
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto elapsed = std::chrono::duration<double>(end_time - start_time).count();
