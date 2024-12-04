@@ -8,6 +8,8 @@ from ament_index_python.packages import get_package_share_directory
 
 bringup_package_name = 'zoe2_bringup'
 odom_package_name = 'zoe2_odom'
+planner_package_name = 'zoe2_planner' 
+
 
 def generate_launch_description():
     # Declare Launch Arguments. 
@@ -69,10 +71,17 @@ def generate_launch_description():
         }.items()
     )
 
+    # Include the planner launch file
+    planner = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory(planner_package_name), 'launch', 'planner_launch.py'
+        )])
+    )
     return LaunchDescription(
         declared_arguments + 
         [
         odom,
         rviz,
-        sim
+        sim,
+        # planner
     ])
