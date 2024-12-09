@@ -1,0 +1,7 @@
+# Request
+geometry_msgs/PoseStamped target_pose
+geometry_msgs/PoseStamped goal_pose
+
+---
+# Response
+zoe2_interfaces/DrivePlan drive_plan
