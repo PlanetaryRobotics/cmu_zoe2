@@ -5,6 +5,8 @@
 #include <cmath>
 #include <set>
 #include <tuple>
+#include <iomanip>
+#include <fstream>
 
 // Custom hash function for std::tuple<int, int, int>
 struct TupleHash {
@@ -22,16 +24,56 @@ double normalize_angle(double theta) {
 }
 
 double steer_angle(double arc_rad, double wheelbase) {
-    return M_PI / 2 - std::asin(std::abs(arc_rad) / std::sqrt(arc_rad * arc_rad + (wheelbase / 2) * (wheelbase / 2)));
+    if (arc_rad <= 0) {
+        return M_PI / 2 - std::asin(std::abs(arc_rad) / std::sqrt(arc_rad * arc_rad + (wheelbase / 2) * (wheelbase / 2)));
+    } else {
+        return -(M_PI / 2 - std::asin(std::abs(arc_rad) / std::sqrt(arc_rad * arc_rad + (wheelbase / 2) * (wheelbase / 2))));
+    }
+
+}
+
+// Function to log the contents of the vector to a file
+void logToFile(const std::vector<std::tuple<double, double, double, double, double, double>>& vec, const std::string& filename, const std::vector<double>& init_goal_write) {
+    // Open the file for writing
+    std::ofstream outFile(filename);
+
+    if (!outFile) {
+        std::cerr << "Failed to open the file!" << std::endl;
+        return;
+    }
+
+    // Optionally set precision for floating point numbers
+    outFile << std::fixed << std::setprecision(6);
+
+    outFile
+            << init_goal_write[0] << " "
+            << init_goal_write[1] << " "
+            << init_goal_write[2] << " "
+            << init_goal_write[3] << " "
+            << init_goal_write[4] << "\n";
+
+    // Iterate over the vector and write each tuple as a line
+    for (const auto& tup : vec) {
+        outFile
+            << std::get<0>(tup) << " "
+            << std::get<1>(tup) << " "
+            << std::get<2>(tup) << " "
+            << std::get<3>(tup) << " "
+            << std::get<4>(tup) << " "
+            << std::get<5>(tup) << "\n";
+    }
+
+    // Close the file
+    outFile.close();
 }
 
 class Node {
 public:
-    double x, y, theta, vl, vr, arc_radius, dt, g, h, f, v;
+    double x, y, theta, vl, vr, arc_radius, dt, sa, g, h, f, v;
     Node* parent;
 
-    Node(double x, double y, double theta, double vl, double vr, double g, double h, double dt_comm, double velo, double arc_rad, Node* parent = nullptr)
-        : x(x), y(y), theta(theta), vl(vl), vr(vr), arc_radius(arc_rad), dt(dt_comm), v(velo),  g(g), h(h), parent(parent) {
+    Node(double x, double y, double theta, double vl, double vr, double g, double h, double dt_comm, double velo, double arc_rad, double steer_angle, Node* parent = nullptr)
+        : x(x), y(y), theta(theta), vl(vl), vr(vr), arc_radius(arc_rad), dt(dt_comm), v(velo),  g(g), h(h), sa(steer_angle), parent(parent) {
         f = g + h;
     }
 
@@ -66,7 +108,7 @@ public:
     }
 
     double heuristic(double x, double y) {
-        return sqrt(pow(x - goal_x, 2) + pow(y - goal_y, 2));
+        return pow(x - goal_x, 2) + pow(y - goal_y, 2);
     }
 
     std::array<double, 2> velocity_control(double rad_comm, double velo_comm, double th_prev) {
@@ -116,7 +158,7 @@ public:
         std::vector<double> poss_R = createRange(possR[0], possR[1], possR[2]);
         std::vector<double> poss_dt = createRange(possdt[0], possdt[1], possdt[2]);
 
-        Node start_node(start_x, start_y, start_th, 0, 0, 0, heuristic(start_x, start_y), 0,0, 0, nullptr);
+        Node start_node(start_x, start_y, start_th, 0, 0, 0, heuristic(start_x, start_y), 0,0, 0,0, nullptr);
         open_list.push(start_node);
         g_cost_map[{start_x, start_y, start_th}] = 0;
 
@@ -131,6 +173,7 @@ public:
                     path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v);
                     curr = *curr.parent;
                 }
+                path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v);
                 std::reverse(path.begin(), path.end());
                 return path;
             }
@@ -139,14 +182,11 @@ public:
             closed_list.insert(curr_state);
 
             for (double arc_rad : poss_R) {
+                if (arc_rad == 0) {
+                    continue;
+                }
                 for (double dt_comm : poss_dt) {
                     for (double fixed_v : poss_v) {
-                        double prev_sa;
-                        if (curr.arc_radius != 0) {
-                            prev_sa = steer_angle(curr.arc_radius, wheelbase);
-                        } else {
-                            prev_sa = 0;
-                        }
                         double curr_sa = steer_angle(arc_rad, wheelbase);
 
                         auto comm_velos = velocity_control(arc_rad, fixed_v, curr.theta);
@@ -173,12 +213,15 @@ public:
 
                         // std::cout << "Time to Complete: " << cost_map[(int)floor(next_x)][(int)floor(next_y)] << " seconds" << std::endl;
                         //double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr)) + cost_map[(int)floor(next_x)][(int)floor(next_y)];
-                        double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-prev_sa)) + cost_map[(int)floor(next_x)-map_bounds[0]][(int)floor(next_y)-map_bounds[1]];
-                        if (g_cost_map.count(next_state) && g_cost >= g_cost_map[next_state]) continue;
+                        double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-curr.sa)) + cost_map[(int)floor(next_x)-map_bounds[0]][(int)floor(next_y)-map_bounds[1]];
+                        //if (g_cost_map.count(next_state) && g_cost >= g_cost_map[next_state]) continue;
 
-                        g_cost_map[next_state] = g_cost;
+                        //g_cost_map[next_state] = g_cost;
                         double h_cost = wgt_heur * heuristic(next_x, next_y);
-                        Node neighbor_node(next_x, next_y, next_th, vl, vr, g_cost, h_cost, dt_comm,fixed_v, arc_rad, new Node(curr));
+                        if (arc_rad == -5 && fixed_v == 1 && dt_comm == 4.5 && curr.x == 0 && curr.y == 0 && curr.theta == 3*M_PI/2) {
+                             std::cout << "Time to Complete: " << next_x << " " << next_y << " " << next_th << std::endl;
+                        }
+                        Node neighbor_node(next_x, next_y, next_th, vl, vr, g_cost, h_cost, dt_comm,fixed_v, arc_rad,curr_sa, new Node(curr));
 
                         open_list.push(neighbor_node);
                     }
@@ -197,12 +240,12 @@ int main() {
     double width = 1.64;
     double wheelbase = 1.91;
     double wgt_heur = 10;
-    double goal_radius = 0.05;
-    double th_gain = 0.1;
-    double steer_angle_smooth = 10;
+    double goal_radius = 0.0707;
+    double th_gain = 1;
+    double steer_angle_smooth = 20;
     std::vector<double> init = {0,0, 3*M_PI/2};
-    std::vector<double> goal = {-7,2};
-    std::vector<int> bounds = {-7,-7,7,7};
+    std::vector<double> goal = {-1,5};
+    std::vector<int> bounds = {-5,-5,5,5};
 
     std::vector<double> poss_R = {-10, 10, .5};
     std::vector<double> poss_dt = {.5, 6, 0.25};
@@ -213,13 +256,13 @@ int main() {
     // Populate the cost map using the given formula
     for (int i = 0; i < (bounds[2]-bounds[0]); ++i) {
         for (int j = 0; j < (bounds[3]-bounds[1]); ++j) {
-            cost_map[i][j] = 100 * std::max(10 - 2 * std::abs(i - j), 0);
+            cost_map[i][j] = std::max(10 - 2 * std::abs(i - j), 0);
         }
     }
 
     auto start = std::chrono::high_resolution_clock::now();
     double last_plan = 0;  // Time of the last plan completion
-    double completion_time = 1.0; // Completion time in seconds
+    double completion_time = 1.00; // Completion time in seconds
 
     // AStarPlanner planner;
     // auto path = planner.a_star();
@@ -247,13 +290,16 @@ int main() {
         last_plan = plan_duration;
     }
     // Initialize the A_Star_Planner object and call a_star method
-    std::cout << "Path (x, y, theta, radius, dt):"  << " " << wgt_heur << std::endl;
+    std::cout << "Path (x, y, theta, radius, dt, velo):"  << " " << wgt_heur << std::endl;
     for (const auto& step : path) {
         std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "
                   << std::get<2>(step) << " " << std::get<3>(step) << " "
                   << std::get<4>(step) << " " << std::get<5>(step) <<
                       std::endl;
     }
+
+    std::vector<double> init_goal_write = {init[0], init[1], init[2], goal[0], goal[1]};
+    logToFile(path, "../output.txt",init_goal_write);
 
     return 0;
 }
