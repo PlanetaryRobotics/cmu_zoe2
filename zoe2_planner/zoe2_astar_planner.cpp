@@ -33,7 +33,7 @@ double steer_angle(double arc_rad, double wheelbase) {
 }
 
 // Function to log the contents of the vector to a file
-void logToFile(const std::vector<std::tuple<double, double, double, double, double, double>>& vec, const std::string& filename, const std::vector<double>& init_goal_write) {
+void logToFile(const std::vector<std::tuple<double, double, double, double, double, double, double>>& vec, const std::string& filename, const std::vector<double>& init_goal_write) {
     // Open the file for writing
     std::ofstream outFile(filename);
 
@@ -87,11 +87,11 @@ class AStarPlanner {
 public:
     double start_x, start_y, start_th, goal_x, goal_y;
     double rad, width, wheelbase, wgt_heur, goal_radius, th_gain, steer_angle_smooth;
-    std::vector<int> map_bounds;
+    std::vector<double> map_bounds;
     std::vector<double> possR, possdt, poss_v;
     std::vector<std::vector<double>> cost_map;
 
-    AStarPlanner(double start_x, double start_y, double start_th, double goal_x, double goal_y, const std::vector<double>& other_args, const std::vector<int>& bounds, const std::vector<double>& pR, const std::vector<double>& pdt, const std::vector<double>& pv, const std::vector<std::vector<double>>& map)
+    AStarPlanner(double start_x, double start_y, double start_th, double goal_x, double goal_y, const std::vector<double>& other_args, const std::vector<double>& bounds, const std::vector<double>& pR, const std::vector<double>& pdt, const std::vector<double>& pv, const std::vector<std::vector<double>>& map)
         : start_x(start_x), start_y(start_y), start_th(start_th),goal_x(goal_x), goal_y(goal_y) {
         rad = other_args[0];
         width = other_args[1];
@@ -149,13 +149,15 @@ public:
         return range;
     }
 
-    std::vector<std::tuple<double, double, double, double, double, double>> a_star() {
+    std::vector<std::tuple<double, double, double, double, double, double, double>> a_star() {
 
         std::priority_queue<Node, std::vector<Node>, std::greater<Node>> open_list;
         std::set<std::tuple<int, int, int>> closed_list; // Discretized state space
         std::unordered_map<std::tuple<int, int, int>, double, TupleHash> g_cost_map;
 
-        std::vector<double> poss_R = createRange(possR[0], possR[1], possR[2]);
+        std::vector<double> poss_R = createRange(possR[0], -0.1, possR[2]);
+        std::vector<double> poss_R_2 = createRange(0.1, possR[1], possR[2]);
+        poss_R.insert( poss_R.end(), poss_R_2.begin(), poss_R_2.end());
         std::vector<double> poss_dt = createRange(possdt[0], possdt[1], possdt[2]);
 
         Node start_node(start_x, start_y, start_th, 0, 0, 0, heuristic(start_x, start_y), 0,0, 0,0, nullptr);
@@ -168,12 +170,12 @@ public:
 
             // Goal condition
             if (heuristic(curr.x, curr.y)/wgt_heur <= goal_radius) {
-                std::vector<std::tuple<double, double, double, double, double, double>> path;
+                std::vector<std::tuple<double, double, double, double, double, double, double>> path;
                 while (curr.parent) {
-                    path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v);
+                    path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v, curr.g);
                     curr = *curr.parent;
                 }
-                path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v);
+                path.emplace_back(curr.x, curr.y, curr.theta, curr.arc_radius, curr.dt, curr.v, curr.g);
                 std::reverse(path.begin(), path.end());
                 return path;
             }
@@ -213,7 +215,7 @@ public:
 
                         // std::cout << "Time to Complete: " << cost_map[(int)floor(next_x)][(int)floor(next_y)] << " seconds" << std::endl;
                         //double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr)) + cost_map[(int)floor(next_x)][(int)floor(next_y)];
-                        double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-curr.sa)) + cost_map[(int)floor(next_x)-map_bounds[0]][(int)floor(next_y)-map_bounds[1]];
+                        double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-curr.sa)) + cost_map[(int)floor(next_x)-floor(map_bounds[0])][(int)floor(next_y)-std::floor(map_bounds[1])];
                         //if (g_cost_map.count(next_state) && g_cost >= g_cost_map[next_state]) continue;
 
                         //g_cost_map[next_state] = g_cost;
@@ -245,17 +247,17 @@ int main() {
     double steer_angle_smooth = 20;
     std::vector<double> init = {0,0, 3*M_PI/2};
     std::vector<double> goal = {-1,5};
-    std::vector<int> bounds = {-5,-5,5,5};
+    std::vector<double> bounds = {-5.5,-5.5,5.5,5.5};
 
     std::vector<double> poss_R = {-10, 10, .5};
     std::vector<double> poss_dt = {.5, 6, 0.25};
     std::vector<double> poss_velo = {-1,1};
 
-    std::vector<std::vector<double>> cost_map(bounds[2]-bounds[0], std::vector<double>(bounds[3]-bounds[1], 0.0));
+    std::vector<std::vector<double>> cost_map(std::ceil(bounds[2])-std::floor(bounds[0]), std::vector<double>(std::ceil(bounds[3])-std::floor(bounds[1]), 0.0));
 
     // Populate the cost map using the given formula
-    for (int i = 0; i < (bounds[2]-bounds[0]); ++i) {
-        for (int j = 0; j < (bounds[3]-bounds[1]); ++j) {
+    for (int i = 0; i < std::ceil(bounds[2])-std::floor(bounds[0]); ++i) {
+        for (int j = 0; j < std::ceil(bounds[3])-std::floor(bounds[1]); ++j) {
             cost_map[i][j] = std::max(10 - 2 * std::abs(i - j), 0);
         }
     }
@@ -266,8 +268,8 @@ int main() {
 
     // AStarPlanner planner;
     // auto path = planner.a_star();
-    std::vector<std::tuple<double, double, double, double, double, double>> path;
-    std::vector<std::tuple<double, double, double, double, double, double>> path_tmp;
+    std::vector<std::tuple<double, double, double, double, double, double, double>> path;
+    std::vector<std::tuple<double, double, double, double, double, double, double>> path_tmp;
     while (std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - start).count() + 2 * last_plan <= completion_time) {
         auto plan_start = std::chrono::high_resolution_clock::now();
 
@@ -294,9 +296,12 @@ int main() {
     for (const auto& step : path) {
         std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "
                   << std::get<2>(step) << " " << std::get<3>(step) << " "
-                  << std::get<4>(step) << " " << std::get<5>(step) <<
+                  << std::get<4>(step) << " " << std::get<5>(step) << " "
+                  << std::get<6>(step) <<
                       std::endl;
     }
+
+    std::cout << "Path Cost: " << std::get<6>(path[path.size()-1]);
 
     std::vector<double> init_goal_write = {init[0], init[1], init[2], goal[0], goal[1]};
     logToFile(path, "../output.txt",init_goal_write);
