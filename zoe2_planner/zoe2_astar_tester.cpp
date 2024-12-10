@@ -61,11 +61,12 @@ int main() {
     std::vector<std::vector<double>> cost_map(std::ceil(bounds[2])-std::floor(bounds[0]), std::vector<double>(std::ceil(bounds[3])-std::floor(bounds[1]), 0.0));
 
     // Populate the cost map using the given formula
-    for (int i = 0; i < std::ceil(bounds[2])-std::floor(bounds[0]); ++i) {
-        for (int j = 0; j < std::ceil(bounds[3])-std::floor(bounds[1]); ++j) {
-            cost_map[i][j] = std::max(10 - 2 * std::abs(i - j), 0);
-        }
-    }
+    // for (int i = 0; i < std::ceil(bounds[2])-std::floor(bounds[0]); ++i) {
+    //     for (int j = 0; j < std::ceil(bounds[3])-std::floor(bounds[1]); ++j) {
+    //         cost_map[i][j] = std::max(10 - 2 * std::abs(i - j), 0);
+    //     }
+    // }
+    cost_map[0-bounds[1]][-2-bounds[0]] = 10000;
 
     auto start = std::chrono::high_resolution_clock::now();
     double last_plan = 0;  // Time of the last plan completion
@@ -100,11 +101,20 @@ int main() {
         std::cout << std::endl;
         std::cout << "Epsilon: " << planner.getEps() << std::endl;
 
-        planner.setEps(std::max(planner.getEps() / 1.5, 1.0));
+        planner.setEps(std::max(planner.getEps() / 1.5, 1.5));
 
         if (path_tmp.size() > 0) {
             path = path_tmp;
         }
+
+        for (const auto& step : path) {
+            std::cout << std::get<0>(step) << " " << std::get<1>(step) << " "
+                      << std::get<2>(step) << " " << std::get<3>(step) << " "
+                      << std::get<4>(step) << " " << std::get<5>(step) << " "
+                      << std::get<6>(step) <<
+                          std::endl;
+        }
+
 
         auto plan_end = std::chrono::high_resolution_clock::now();
         auto plan_duration = std::chrono::duration<double>(plan_end - plan_start).count();

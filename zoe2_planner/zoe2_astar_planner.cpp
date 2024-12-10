@@ -75,9 +75,6 @@ std::vector<std::tuple<double, double, double, double, double, double, double>> 
         closed_list.insert(curr_state);
 
         for (double arc_rad : poss_R) {
-            if (arc_rad == 0) {
-                continue;
-            }
             for (double dt_comm : poss_dt) {
                 for (double fixed_v : poss_v) {
                     double curr_sa = steer_angle(arc_rad);
@@ -101,12 +98,44 @@ std::vector<std::tuple<double, double, double, double, double, double, double>> 
                     }
                     if (!(map_bounds[0] <= next_x && next_x <= map_bounds[2] && map_bounds[1] <= next_y && next_y <= map_bounds[3])) continue;
 
+                    bool in_bounds = true;
+                    double max_g = 0;
+                    for (double angv_step : createRange(0, ang_velo, ang_velo/10)) {
+                        double next_th_;
+                        next_th_ = curr.theta - angv_step * dt_comm;
+
+                        double n_x, n_y;
+                        if (arc_rad > 0) {
+                            n_x = curr.x + arc_rad * (cos(-next_th_) - cos(-curr.theta));
+                            n_y = curr.y + arc_rad * (sin(-next_th_) - sin(-curr.theta));
+                        } else {
+                            n_x = curr.x + (-arc_rad) * (cos(M_PI - next_th_) - cos(M_PI - curr.theta));
+                            n_y = curr.y + (-arc_rad) * (sin(M_PI - next_th_) - sin(M_PI - curr.theta));
+                        }
+
+                        if (!(map_bounds[0] <= n_x && n_x < map_bounds[2] && map_bounds[1] <= n_y && n_y < map_bounds[3])) {
+                            in_bounds = false;
+                            break;
+                        }
+
+                        // Check the cost map and update max_g if necessary
+                        int map_y = floor(n_y) - map_bounds[1];
+                        int map_x = floor(n_x) - map_bounds[0];
+                        if (cost_map[map_y][map_x] > max_g) {
+                            max_g = cost_map[map_y][map_x];
+                        }
+                    }
+
+                    if (!in_bounds) {
+                        continue; // Skip the rest of the logic if out of bounds
+                    }
+
                     auto next_state = std::make_tuple(next_x, next_y, next_th);
                     if (closed_list.count(next_state)) continue;
 
                     // std::cout << "Time to Complete: " << cost_map[(int)floor(next_x)][(int)floor(next_y)] << " seconds" << std::endl;
                     //double g_cost = curr.g + 5*(fabs(vl - curr.vl) + fabs(vr - curr.vr)) + cost_map[(int)floor(next_x)][(int)floor(next_y)];
-                    double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-curr.sa)) + cost_map[(int)floor(next_x)-floor(map_bounds[0])][(int)floor(next_y)-std::floor(map_bounds[1])];
+                    double g_cost = curr.g + steer_angle_smooth*(fabs(curr_sa-curr.sa)) + max_g;
 
                     double h_cost = wgt_heur * heuristic(next_x, next_y, goal_x, goal_y);
                     if (arc_rad == -5 && fixed_v == 1 && dt_comm == 4.5 && curr.x == 0 && curr.y == 0 && curr.theta == 3*M_PI/2) {
@@ -175,8 +204,15 @@ std::array<double, 2> AStarPlanner::velocity_control(double rad_comm, double vel
 
 std::vector<double> AStarPlanner::createRange(double start, double end, double step) {
     std::vector<double> range;
-    for (double value = start; value < end; value += step) {
-        range.push_back(value);
+    if (end > start) {
+        for (double value = start; value < end; value += step) {
+            range.push_back(value);
+            //std::cout << value << std::endl;
+        }
+    } else {
+        for (double value = start; value > end; value += step) {
+            range.push_back(value);
+        }
     }
     return range;
 }
