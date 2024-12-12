@@ -4,6 +4,12 @@ from launch_ros.actions import Node
 def generate_launch_description():
     return LaunchDescription([
         Node(
+            package='zoe2_planner',
+            executable='astar_server',
+            name='a_star_server',
+            output='screen',
+        ),
+        Node(
             package='zoe2_planner',  
             executable='a_star_planner_node', 
             name='a_star_planner_node',
