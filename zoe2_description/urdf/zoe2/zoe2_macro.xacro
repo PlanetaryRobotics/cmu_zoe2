@@ -78,13 +78,13 @@
     <joint name="${prefix}chassis_front_roll_joint" type="fixed">
         <parent link="${prefix}chassis" />
         <child link="${prefix}front_roll" />
-        <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
+        <origin xyz="0 ${(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 
     <joint name="${prefix}front_yaw_joint" type="revolute"> 
         <parent link="${prefix}front_roll" />
         <child link="${prefix}front_axle" />
-        <origin xyz="0 ${-robot_hinge_length} 0" />
+        <origin xyz="0 ${robot_hinge_length} 0" />
         <axis xyz="0 0 1"/>
         <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
     </joint>
@@ -93,21 +93,21 @@
         <parent link="${prefix}front_axle" />
         <child link="${prefix}front_right_wheel" />
         <origin xyz="${robot_width/2} 0 -${axle_drop}" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
     </joint>
 
     <joint name="${prefix}front_left_wheel_joint" type="continuous">
         <parent link="${prefix}front_axle" />
         <child link="${prefix}front_left_wheel" />
         <origin xyz="${-robot_width/2} 0 -${axle_drop}" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
     </joint>
 
     <!-- temp set to fixed -->
     <joint name="${prefix}back_yaw_joint" type="revolute">
         <parent link="${prefix}back_roll" />
         <child link="${prefix}back_axle" />
-        <origin xyz="0 ${robot_hinge_length} 0" />
+        <origin xyz="0 ${-robot_hinge_length} 0" />
         <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
         <axis xyz="0 0 1"/>
     </joint>
@@ -116,21 +116,21 @@
         <parent link="${prefix}back_axle" />
         <child link="${prefix}back_right_wheel" />
         <origin xyz="${robot_width/2} 0 -${axle_drop}" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
     </joint>
 
     <joint name="${prefix}back_left_wheel_joint" type="continuous">
         <parent link="${prefix}back_axle" />
         <child link="${prefix}back_left_wheel" />
         <origin xyz="${-robot_width/2} 0 -${axle_drop}" />
-        <axis xyz="1 0 0" />
+        <axis xyz="-1 0 0" />
     </joint>
 
     <!-- current roll joint limits set arbitrarily... -->
     <joint name="${prefix}chassis_back_roll_joint" type="revolute">
         <parent link="${prefix}chassis" />
         <child link="${prefix}back_roll" />
-        <origin xyz="0 ${+(robot_length/2 - robot_hinge_length)} 0" />
+        <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
         <limit lower="-0.5" upper="0.5" effort="10" velocity="10"/>
         <axis xyz="0 1 0" />
     </joint>

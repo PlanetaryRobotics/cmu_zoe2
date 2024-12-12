@@ -249,8 +249,6 @@ ZoeController::update(const rclcpp::Time &time,
         backRight->cmd_velocity.get().set_value(controller->getcVbr()/controller->getWheelRadius());
     }
 
-
-
     currDriveArcMutex.lock();
     currDriveArc->time -= period.seconds();
 

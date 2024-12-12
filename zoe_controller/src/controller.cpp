@@ -39,7 +39,7 @@ float DrivingController::cTheta() const {
 }
 
 void DrivingController::computeFront() {
-    float E1 = cTheta() - Thetaf;
+    float E1 = -(cTheta() - Thetaf);
     float E2 = -E1;
     cVfl += Kp * E1;
     cVfr += Kp * E2;
@@ -49,7 +49,7 @@ void DrivingController::computeFront() {
 }
 
 void DrivingController::computeBack() {
-    float E1 = -cTheta() - Thetab;
+    float E1 = cTheta() + Thetab;
     float E2 = -E1;
     cVbl += Kp * E1;
     cVbr += Kp * E2; 
