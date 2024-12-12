@@ -14,12 +14,13 @@ include_directories(include)
 
 
 # Add the executable
-add_executable(a_star_planner_node src/a_star_planner_node.cpp)
+add_executable(a_star_planner_node src/a_star_planner_node.cpp src/zoe2_astar_planner.cpp)
 ament_target_dependencies(a_star_planner_node
   rclcpp
   geometry_msgs
   nav_msgs
   zoe2_interfaces
+  tf2
 )
 
 # Add the executable

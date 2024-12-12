@@ -5,20 +5,18 @@
 #include <cmath>
 #include <chrono>
 #include <iostream>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+
 #include "zoe2_interfaces/srv/drive_command.hpp"
-#include "astar_planner.cpp" // Include the new planner definition
+#include "zoe2_planner/zoe2_astar_planner.h" // Include the new planner definition
+
 
 class AStarPlannerNode : public rclcpp::Node {
 public:
-    AStarPlannerNode()
-        : Node("a_star_planner_node"),
-          robot_x_(0.0), robot_y_(0.0), robot_theta_(0.0),
-          axle_radius_(0.325), axle_width_(1.64), axle_wheelbase_(1.91),
-          goal_x_(5.0), goal_y_(2.0),
-          map_bounds_{0, 0, 7, 7},
-          poss_R_{-10, -5, -2.5, 2.5, 5, 10, 1000000},
-          poss_dt_{0.5, 6, 0.25},
-          wgt_heur_(10), velocity_(1.0), goal_radius_(0.05), th_gain_(0.1) {
+    AStarPlannerNode() : Node("a_star_planner_node"), 
+        robot_x_(0.0), robot_y_(0.0), robot_theta_(0.0), goal_x_(4.0), goal_y_(-1.0) {
         
         drive_command_client_ = this->create_client<zoe2_interfaces::srv::DriveCommand>("/zoe_drive");
 
@@ -34,65 +32,34 @@ private:
     rclcpp::Client<zoe2_interfaces::srv::DriveCommand>::SharedPtr drive_command_client_;
 
     double robot_x_, robot_y_, robot_theta_;
-    double axle_radius_, axle_width_, axle_wheelbase_;
     double goal_x_, goal_y_;
-    std::vector<double> map_bounds_;
-    std::vector<double> poss_R_, poss_dt_;
-    double wgt_heur_, velocity_, goal_radius_, th_gain_;
 
     void odom_callback(const nav_msgs::msg::Odometry::SharedPtr msg) {
 
-
-        // Log raw message values
-    RCLCPP_INFO(this->get_logger(),
-                "Raw Odom Message: position.x=%.10f, position.y=%.10f, position.z=%.10f",
-                msg->pose.pose.position.x,
-                msg->pose.pose.position.y,
-                msg->pose.pose.position.z);
+        robot_x_ = msg->pose.pose.position.x;
+        robot_y_ = msg->pose.pose.position.y;
+        double heading = get_heading_from_pose_stamped(msg->pose.pose);
+        robot_theta_ = -heading; // future fix: the planner has the angle direction inverted
 
 
-    robot_x_ = msg->pose.pose.position.x;
-    robot_y_ = msg->pose.pose.position.y;
-
-    // Extract quaternion components
-    double x = msg->pose.pose.orientation.x;
-    double y = msg->pose.pose.orientation.y;
-    double z = msg->pose.pose.orientation.z;
-    double w = msg->pose.pose.orientation.w;
-
-    // Convert quaternion to yaw (theta)
-    robot_theta_ = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-
-    RCLCPP_INFO(this->get_logger(),
-                "Odom Received: x=%.2f, y=%.2f, theta=%.2f",
-                robot_x_, robot_y_, robot_theta_);
+        RCLCPP_INFO(this->get_logger(),
+                    "Odom Received: x=%.2f, y=%.2f, theta=%.2f",
+                    robot_x_, robot_y_, robot_theta_);
 
         // Trigger A* planning
+        // check distance to goal
+        double dx = goal_x_ - robot_x_;
+        double dy = goal_y_ - robot_y_;
+        double dist = std::sqrt(dx*dx + dy*dy);
+        if (dist < 0.5) {
+            RCLCPP_INFO(this->get_logger(), "Goal reached!");
+            stop_rover();
+            return;
+        }
         plan_path();
     }
 
-    void plan_path() {
-    double dt = 2.0; // Time step duration
-    auto start_time = std::chrono::high_resolution_clock::now();
-
-    // Initialize planner
-    AStarPlanner planner(robot_x_, robot_y_, robot_theta_, goal_x_, goal_y_,
-                         {velocity_, axle_radius_, axle_width_, axle_wheelbase_, wgt_heur_, goal_radius_, th_gain_},
-                         map_bounds_, poss_R_, poss_dt_);
-
-    // Compute the path
-    auto path = planner.a_star();
-    RCLCPP_INFO(this->get_logger(),
-                "NEXT STEP COMPUTED");
-
-    if (path.empty()) {
-        RCLCPP_ERROR(this->get_logger(), "No path found!");
-        return;
-    }
-
-    // Check if the goal has been reached
-    if (planner.heuristic(robot_x_, robot_y_) <= goal_radius_) {
-        RCLCPP_INFO(this->get_logger(), "Goal reached!");
+    void stop_rover() {
 
         // Send a stop command
         auto stop_request = std::make_shared<zoe2_interfaces::srv::DriveCommand::Request>();
@@ -124,46 +91,109 @@ private:
         return; // Exit the function since the goal is reached
     }
 
-    // Extract the first step of the path
-    auto first_step = path.front();
+    void plan_path() {
+        auto start_time = std::chrono::high_resolution_clock::now();
 
-    double radius = std::get<3>(first_step);
-    double speed = std::get<4>(first_step);
+        // initialize planner
+        double rad = 0.325;
+        double width = 1.64;
+        double wheelbase = 1.91;
+        double wgt_heur = 10;
+        double goal_radius = 0.0707;
+        double th_gain = 1;
+        double steer_angle_smooth = 20;
+        std::vector<double> bounds = {-10.0,-10.0,10.0,10.0};
 
-    auto request = std::make_shared<zoe2_interfaces::srv::DriveCommand::Request>();
-    request->drive_arc.radius = radius;
-    request->drive_arc.speed = speed/10;
-    request->drive_arc.time = dt * 1000; // Time in milliseconds for this step
-    request->drive_arc.sender = "planner";
+        std::vector<double> poss_R = {2.5, 15, .5};
+        std::vector<double> poss_dt = {.5, 6, 0.25};
+        std::vector<double> poss_velo = {-1, 1};
+        std::vector<std::vector<double>> cost_map(std::ceil(bounds[2])-std::floor(bounds[0]), std::vector<double>(std::ceil(bounds[3])-std::floor(bounds[1]), 0.0));
 
-    // Log the service call details
-    RCLCPP_INFO(this->get_logger(),
-                "Sending Service Request: radius=%.2f, speed=%.2f, time=%.2f, sender=%s",
-                request->drive_arc.radius, request->drive_arc.speed, request->drive_arc.time / 1000.0,
+        // Populate the cost map using the given formula
+        // for (int i = 0; i < std::ceil(bounds[2])-std::floor(bounds[0]); ++i) {
+        //     for (int j = 0; j < std::ceil(bounds[3])-std::floor(bounds[1]); ++j) {
+        //         cost_map[i][j] = std::max(10 - 2 * std::abs(i - j), 0);
+        //     }
+        // }
+        cost_map[0-bounds[1]][-2-bounds[0]] = 10000;
 
-                request->drive_arc.sender.c_str());
+        AStarPlanner planner(
+            {rad, width, wheelbase, wgt_heur, goal_radius, th_gain, steer_angle_smooth},
+            bounds,
+            poss_R,
+            poss_dt,
+            poss_velo,
+            cost_map
+        );
 
-    if (!drive_command_client_->wait_for_service(std::chrono::seconds(1))) {
-        RCLCPP_ERROR(this->get_logger(), "Service /zoe_drive not available.");
-        return;
+
+        std::vector<std::tuple<double, double, double, double, double, double, double>> path;
+
+        // Compute the paths
+        path = planner.a_star(robot_x_, robot_y_, robot_theta_, goal_x_, goal_y_);
+
+        // RCLCPP_INFO(this->get_logger(),
+        //             "NEXT STEP COMPUTED");
+
+        if (path.empty()) {
+            RCLCPP_ERROR(this->get_logger(), "No path found!");
+            return;
+        }
+
+        // Extract the second step of the path
+        auto second_step = path[1];
+
+        double radius = std::get<3>(second_step);
+        double dt = std::get<4>(second_step);
+        double speed = std::get<5>(second_step);
+
+        auto request = std::make_shared<zoe2_interfaces::srv::DriveCommand::Request>();
+        request->drive_arc.radius = radius;
+        request->drive_arc.speed = speed;
+        request->drive_arc.time = dt; // Time in milliseconds for this step
+        request->drive_arc.sender = "planner";
+
+        // Log the service call details
+        RCLCPP_INFO(this->get_logger(),
+                    "Sending Service Request: radius=%.2f, speed=%.2f, time=%.2f, sender=%s",
+                    request->drive_arc.radius, request->drive_arc.speed, request->drive_arc.time / 1000.0,
+
+                    request->drive_arc.sender.c_str());
+
+        if (!drive_command_client_->wait_for_service(std::chrono::seconds(1))) {
+            RCLCPP_ERROR(this->get_logger(), "Service /zoe_drive not available.");
+            return;
+        }
+
+        auto future = drive_command_client_->async_send_request(request);
+
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::duration<double>(end_time - start_time).count();
+        RCLCPP_INFO(this->get_logger(), "Planning completed in %.4f seconds.", elapsed);
     }
 
-    auto future = drive_command_client_->async_send_request(request);
-    // try {
-    //     auto response = future.get();
-    //     if (response->success) {
-    //         RCLCPP_INFO(this->get_logger(), "Command executed successfully.");
-    //     } else {
-    //         RCLCPP_WARN(this->get_logger(), "Command execution failed.");
-    //     }
-    // } catch (const std::exception& e) {
-    //     RCLCPP_ERROR(this->get_logger(), "Service call failed: %s", e.what());
-    // }
+    double get_heading_from_pose_stamped(const geometry_msgs::msg::Pose& pose)
+    {
+        // Extract the quaternion
+        tf2::Quaternion q(
+            pose.orientation.x,
+            pose.orientation.y,
+            pose.orientation.z,
+            pose.orientation.w);
 
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration<double>(end_time - start_time).count();
-    RCLCPP_INFO(this->get_logger(), "Planning completed in %.4f seconds.", elapsed);
-}
+        // Convert quaternion to rotation matrix
+        tf2::Matrix3x3 m(q);
+
+        // Extract Euler angles from rotation matrix
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+
+        // print the yaw to the command line
+        RCLCPP_INFO(this->get_logger(), "Yaw: %.2f", yaw);
+
+        // Return yaw (heading) in radians
+        return yaw;
+    }
 
 };
 
