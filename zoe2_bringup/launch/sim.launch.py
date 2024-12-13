@@ -48,12 +48,20 @@ def generate_launch_description():
             description='Z position of the robot',
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "yaw",
+            default_value="0.0",
+            description='yaw of the robot',
+        )
+    )
 
     # Unwrap Launch Arguments
     world_file = LaunchConfiguration("world")
     x_pos = LaunchConfiguration('x')
     y_pos = LaunchConfiguration('y')
     z_pos = LaunchConfiguration('z')
+    yaw_pos = LaunchConfiguration('yaw')
 
     world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
 
@@ -78,6 +86,7 @@ def generate_launch_description():
                                    '-x', x_pos,
                                    '-y', y_pos,
                                    '-z', z_pos,
+                                   '-Y', yaw_pos,
                                    ],
                         output='screen')
 
