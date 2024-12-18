@@ -45,9 +45,23 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "yaw",
+            "heading",
             default_value="0.0",
             description='yaw of the robot',
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "goal_x",
+            default_value="5.0",
+            description='X position of the goal',
+        )
+    )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "goal_y",
+            default_value="5.0",
+            description='Y position of the goal',
         )
     )
 
@@ -75,7 +89,7 @@ def generate_launch_description():
             'x': LaunchConfiguration('x'),
             'y': LaunchConfiguration('y'),
             'z': LaunchConfiguration('z'),
-            'yaw': LaunchConfiguration('yaw')
+            'heading': LaunchConfiguration('heading')
         }.items()
     )
 
@@ -83,7 +97,14 @@ def generate_launch_description():
     planner = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
             get_package_share_directory(planner_package_name), 'launch', 'planner_launch.py'
-        )])
+        )]),
+        launch_arguments={
+            'robot_x': LaunchConfiguration('x'),
+            'robot_y': LaunchConfiguration('y'),
+            'robot_theta': LaunchConfiguration('heading'),
+            'goal_x': LaunchConfiguration('goal_x'),
+            'goal_y': LaunchConfiguration('goal_y')
+        }.items()
     )
     return LaunchDescription(
         declared_arguments + 

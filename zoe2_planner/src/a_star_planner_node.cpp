@@ -15,9 +15,31 @@
 
 class AStarPlannerNode : public rclcpp::Node {
 public:
-    AStarPlannerNode() : Node("a_star_planner_node"), 
-        robot_x_(0.0), robot_y_(0.0), robot_theta_(0.0), goal_x_(4.0), goal_y_(-1.0) {
+    AStarPlannerNode() : Node("a_star_planner_node") {
         
+        // Declare parameters for initial position
+        this->declare_parameter("robot_x", -2.0);
+        this->declare_parameter("robot_y", -4.0);
+        this->declare_parameter("robot_theta", 1.57079632679);
+        this->declare_parameter("goal_x", 0.0);
+        this->declare_parameter("goal_y", 4.0);
+
+        // Get parameter values
+        robot_x_ = this->get_parameter("robot_x").as_double();
+        robot_y_ = this->get_parameter("robot_y").as_double();
+        robot_theta_ = this->get_parameter("robot_theta").as_double();
+        goal_x_ = this->get_parameter("goal_x").as_double();
+        goal_y_ = this->get_parameter("goal_y").as_double();
+
+        RCLCPP_INFO(this->get_logger(),
+                    "Initial Pose: x=%.2f, y=%.2f, theta=%.2f",
+                    robot_x_, robot_y_, robot_theta_);
+
+        // goal pose
+        RCLCPP_INFO(this->get_logger(),
+                    "Goal Pose: x=%.2f, y=%.2f",
+                    goal_x_, goal_y_);
+
         drive_command_client_ = this->create_client<zoe2_interfaces::srv::DriveCommand>("/zoe_drive");
 
         // Subscribe to the /odom topic
@@ -98,7 +120,7 @@ private:
         double rad = 0.325;
         double width = 1.64;
         double wheelbase = 1.91;
-        double wgt_heur = 10;
+        double wgt_heur = 2.5;
         double goal_radius = 0.0707;
         double th_gain = 1;
         double steer_angle_smooth = 20;
@@ -115,7 +137,18 @@ private:
         //         cost_map[i][j] = std::max(10 - 2 * std::abs(i - j), 0);
         //     }
         // }
-        cost_map[0-bounds[1]][-2-bounds[0]] = 10000;
+        // cost_map[0-bounds[1]][-2-bounds[0]] = 10000;
+
+        // cost_map[-1-bounds[1]][-5-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][-4-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][-3-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][-1-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][0-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][1-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][2-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][3-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][4-bounds[0]] = 10000;
+        // cost_map[-1-bounds[1]][5-bounds[0]] = 10000;
 
         AStarPlanner planner(
             {rad, width, wheelbase, wgt_heur, goal_radius, th_gain, steer_angle_smooth},

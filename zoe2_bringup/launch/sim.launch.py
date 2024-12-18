@@ -50,7 +50,7 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "yaw",
+            "heading",
             default_value="0.0",
             description='yaw of the robot',
         )
@@ -58,10 +58,6 @@ def generate_launch_description():
 
     # Unwrap Launch Arguments
     world_file = LaunchConfiguration("world")
-    x_pos = LaunchConfiguration('x')
-    y_pos = LaunchConfiguration('y')
-    z_pos = LaunchConfiguration('z')
-    yaw_pos = LaunchConfiguration('yaw')
 
     world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
 
@@ -83,10 +79,10 @@ def generate_launch_description():
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description',
                                    '-entity', 'zoe2',
-                                   '-x', x_pos,
-                                   '-y', y_pos,
-                                   '-z', z_pos,
-                                   '-Y', yaw_pos,
+                                   '-x', LaunchConfiguration('x'),
+                                   '-y', LaunchConfiguration('y'),
+                                   '-z', LaunchConfiguration('z'),
+                                   '-Y', LaunchConfiguration('heading'),
                                    ],
                         output='screen')
 
