@@ -98,7 +98,7 @@ class TestZoeController : public ::testing::Test {
      * message angular - the magnitude of the angular command in
      * geometry_msgs::twist message
      */
-    void publish(double linear, double angular) {
+    void publish(float linear, float angular) {
         int wait_count = 0;
         auto topic = velocity_publisher->get_topic_name();
         while (pub_node->count_subscribers(topic) == 0) {
@@ -162,8 +162,8 @@ class TestZoeController : public ::testing::Test {
 
     const std::vector<std::string> left_wheel_names = {"left_wheel_joint"};
     const std::vector<std::string> right_wheel_names = {"right_wheel_joint"};
-    std::vector<double> position_values_ = {0.1, 0.2};
-    std::vector<double> velocity_values_ = {0.01, 0.02};
+    std::vector<float> position_values_ = {0.1, 0.2};
+    std::vector<float> velocity_values_ = {0.01, 0.02};
 
     hardware_interface::StateInterface left_wheel_pos_state_{
         left_wheel_names[0], HW_IF_POSITION, &position_values_[0]};
@@ -576,8 +576,8 @@ TEST_F(TestZoeController, cleanup) {
     waitForSetup();
 
     // send msg
-    const double linear = 1.0;
-    const double angular = 1.0;
+    const float linear = 1.0;
+    const float angular = 1.0;
     publish(linear, angular);
     controller_->wait_for_twist(executor);
 
@@ -628,8 +628,8 @@ TEST_F(TestZoeController, correct_initialization_using_parameters) {
     ASSERT_EQ(State::PRIMARY_STATE_ACTIVE, state.id());
 
     // send msg
-    const double linear = 1.0;
-    const double angular = 0.0;
+    const float linear = 1.0;
+    const float angular = 0.0;
     publish(linear, angular);
     // wait for msg is be published to the system
     ASSERT_TRUE(controller_->wait_for_twist(executor));
