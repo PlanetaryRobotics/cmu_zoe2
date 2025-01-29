@@ -41,6 +41,13 @@ def generate_launch_description():
             description='Z position of the robot',
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "heading",
+            default_value="0.0",
+            description='yaw of the robot',
+        )
+    )
 
     # launch the odom_tf_broadcaster node
     odom = IncludeLaunchDescription(
@@ -65,7 +72,8 @@ def generate_launch_description():
             'world': LaunchConfiguration('world'),
             'x': LaunchConfiguration('x'),
             'y': LaunchConfiguration('y'),
-            'z': LaunchConfiguration('z')
+            'z': LaunchConfiguration('z'),
+            'heading': LaunchConfiguration('heading')
         }.items()
     )
 
