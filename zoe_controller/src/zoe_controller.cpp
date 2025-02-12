@@ -29,15 +29,6 @@
 #include "tf2/LinearMath/Quaternion.h"
 #include "zoe_controller/controller.hpp"
 #include "zoe_controller/zoe_controller.hpp"
-// #include "zoe_motor_hardware/commander.hpp"
-
-#define CAN_INTERFACE "can0"
-#define CANOPEN_ID_1 1
-#define CANOPEN_ID_2 2
-#define CANOPEN_ID_3 3
-#define CANOPEN_ID_4 4
-#define ENCODER_PPR 1024
-
 #define PI 3.14
 
 namespace zoe_controller {
@@ -60,40 +51,7 @@ ZoeController::ZoeController() : controller_interface::ControllerInterface() {}
 rclcpp::Logger ZoeController::log() { return get_node()->get_logger(); }
 
 controller_interface::CallbackReturn ZoeController::on_init() {
-
-    if(test_hardware) {
-        // connection = std::make_shared<Command>(CAN_INTERFACE, true);
-        // if(!connection->checkOpenResult()) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // } 
-        // if(connection->setOperational(CANOPEN_ID_1) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // } 
-        // if(connection->setOperational(CANOPEN_ID_2) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // }
-        // if(connection->setOperational(CANOPEN_ID_3) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // } 
-        // if(connection->setOperational(CANOPEN_ID_4) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // }
-
-        // if (connection->testCan(CANOPEN_ID_1) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // } 
-        // if (connection->testCan(CANOPEN_ID_2) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // } 
-        // if (connection->testCan(CANOPEN_ID_3) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // } 
-        // if (connection->testCan(CANOPEN_ID_4) < 0) {
-        //     return controller_interface::CallbackReturn::ERROR;
-        // }
-    }
     
-
     try {
         mParamListener = std::make_shared<ParamListener>(get_node());
         mParams = mParamListener->get_params();
@@ -172,84 +130,22 @@ ZoeController::update(const rclcpp::Time &time,
 
     controller->setTarget(radius, speed);
 
-    if(test_hardware) {
-        // double speed1 = 0; double speed2 = 0; double speed3 = 0; double  speed4 = 0;
-        // int count1 = 0; int count2 = 0; int count3 = 0; int  count4 = 0;
+    controller->setVfl(frontLeft->feedback_vel.get().get_value() * controller->getWheelRadius());
+    controller->setVfr(frontRight->feedback_vel.get().get_value() * controller->getWheelRadius());
+    controller->setVbl(backLeft->feedback_vel.get().get_value() * controller->getWheelRadius());
+    controller->setVbr(backRight->feedback_vel.get().get_value() * controller->getWheelRadius());
 
-        
-        // connection->getSpeed(&count1, CANOPEN_ID_1);
-        // connection->getSpeed(&count2, CANOPEN_ID_2);
-        // connection->getSpeed(&count3, CANOPEN_ID_3);
-        // connection->getSpeed(&count4, CANOPEN_ID_4);
-
-        // std::cout << "READ COUNTS ARE " << count1 << " " << count2 << " " << count3 << " " << count4 << std::endl;
-        // speed1 = connection->get_speed_counts(count1);
-        // speed2 = connection->get_speed_counts(count2);
-        // speed3 = connection->get_speed_counts(count3);
-        // speed4 = connection->get_speed_counts(count4);
-
-        // controller->setVfl(speed1 * controller->getWheelRadius());
-        // controller->setVfr(speed1 * controller->getWheelRadius());
-        // controller->setVbl(speed1 * controller->getWheelRadius());
-        // controller->setVbr(speed1 * controller->getWheelRadius());
-
-        // //TODO: Need to modify this for the hardware test from the digital encoder/potentiometer
-        // controller->setThetaf(frontYaw->yaw.get().get_value());
-        // controller->setThetab(backYaw->yaw.get().get_value());
-    } else {
-        controller->setVfl(frontLeft->feedback_vel.get().get_value() * controller->getWheelRadius());
-        controller->setVfr(frontRight->feedback_vel.get().get_value() * controller->getWheelRadius());
-        controller->setVbl(backLeft->feedback_vel.get().get_value() * controller->getWheelRadius());
-        controller->setVbr(backRight->feedback_vel.get().get_value() * controller->getWheelRadius());
-
-        controller->setThetaf(frontYaw->yaw.get().get_value());
-        controller->setThetab(backYaw->yaw.get().get_value());
-    }
+    controller->setThetaf(frontYaw->yaw.get().get_value());
+    controller->setThetab(backYaw->yaw.get().get_value());
     
     controller->computeWheelSpeed();
-    // RCLCPP_INFO(log(), "curr speed: %f radius: %f sender:%s time_left: %f",
-    //             speed, radius, sender.c_str(), time_left);
-    // RCLCPP_INFO(log(),
-    //             "curr speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
-    //             "back: \n\t\t left: %f \n\t\t right: %f",
-    //             controller->getVfl(), controller->getVfr(),
-    //             controller->getVbl(), controller->getVbr());
-    // RCLCPP_INFO(log(),  "frontRoll:  %f backRoll: %f", frontRoll->yaw.get().get_value(), backRoll->yaw.get().get_value());
-    // RCLCPP_INFO(log(),
-    //         "curr command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
-    //         "back: \n\t\t left: %f \n\t\t right: %f",
-    //         controller->getcVfl(), controller->getcVfr(),
-    //         controller->getcVbl(), controller->getcVbr());
-    // RCLCPP_INFO(log(),
-    //     "actual command speed: \n\t front: \n\t\t left:%f \n\t\t right: %f \n\t "
-    //     "back: \n\t\t left: %f \n\t\t right: %f",
-    //     controller->getVfl(), controller->getVfr(),
-    //     controller->getVbl(), controller->getVbr());
     currDriveArcMutex.unlock();
 
-    if(test_hardware) {
-        
-        // int speed1 = 0; int speed2 = 0; int speed3 = 0; int  speed4 = 0;
 
-        // speed1 = connection->get_counts(controller->getcVfl()/controller->getWheelRadius());
-        // speed2 = connection->get_counts(controller->getcVfr()/controller->getWheelRadius());
-        // speed3 = connection->get_counts(controller->getcVbl()/controller->getWheelRadius());
-        // speed4 = connection->get_counts(controller->getcVbr()/controller->getWheelRadius());
-
-        // std::cout << "WRITE SPEEDS ARE " << speed1 << " " << speed2 <<  " " << speed3 << " " << speed4 << std::endl;
-
-        // connection->setSpeed(speed1, CANOPEN_ID_1);
-        // connection->setSpeed(speed2, CANOPEN_ID_2);
-        // connection->setSpeed(speed3, CANOPEN_ID_3);
-        // connection->setSpeed(speed4, CANOPEN_ID_4);
-    } else {
-        frontLeft->cmd_velocity.get().set_value(controller->getcVfl()/controller->getWheelRadius());
-        frontRight->cmd_velocity.get().set_value(controller->getcVfr()/controller->getWheelRadius());
-        backLeft->cmd_velocity.get().set_value(controller->getcVbl()/controller->getWheelRadius());
-        backRight->cmd_velocity.get().set_value(controller->getcVbr()/controller->getWheelRadius());
-    }
-
-
+    frontLeft->cmd_velocity.get().set_value(controller->getcVfl()/controller->getWheelRadius());
+    frontRight->cmd_velocity.get().set_value(controller->getcVfr()/controller->getWheelRadius());
+    backLeft->cmd_velocity.get().set_value(controller->getcVbl()/controller->getWheelRadius());
+    backRight->cmd_velocity.get().set_value(controller->getcVbr()/controller->getWheelRadius());
 
     currDriveArcMutex.lock();
     currDriveArc->time -= period.seconds();
@@ -289,11 +185,6 @@ ZoeController::on_configure(const rclcpp_lifecycle::State &) {
 
     RCLCPP_INFO(log(), "started /zoe_drive and /drive_cmd_curr");
 
-    // mCommandVelSubscriber =
-    // get_node()->create_subscription<zoe2_interfaces::msg::DriveArc>(
-    //     "cmd_vel", rclcpp::QoS(1),
-    //     std::bind(&ZoeController::OnDriveArcMsg, this,
-    //     std::placeholders::_1));
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
