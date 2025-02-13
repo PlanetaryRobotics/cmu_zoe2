@@ -102,13 +102,26 @@ class ZoeController : public controller_interface::ControllerInterface {
             : yaw(fb) {}
     };
 
-    std::shared_ptr<YawHandle> frontYaw, backYaw;
-
-
-        
+    std::shared_ptr<YawHandle> frontYaw, backYaw;        
 
     std::shared_ptr<WheelHandle> getWheelHandleByName(const std::string &name);
     std::shared_ptr<YawHandle> getYawStateIface(const std::string &name);
+
+    // Timeout to consider cmd_vel commands old
+    std::chrono::milliseconds cmd_vel_timeout_{500};
+    bool subscriber_is_active_ = false;
+    rclcpp::Subscription<Twist>::SharedPtr velocity_command_subscriber_ = nullptr;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr
+        velocity_command_unstamped_subscriber_ = nullptr;
+
+    realtime_tools::RealtimeBox<std::shared_ptr<Twist>> received_velocity_msg_ptr_{nullptr};
+
+    std::queue<Twist> previous_commands_;  // last two commands
+
+    rclcpp::Time previous_update_timestamp_{0};
+
+    bool use_stamped_vel_ = false;
+    
 
     ZOE_CONTROLLER_PUBLIC
     ZoeController();
