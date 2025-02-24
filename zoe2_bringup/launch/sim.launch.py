@@ -105,6 +105,17 @@ def generate_launch_description():
         )
     )
 
+    bridge_params = os.path.join(get_package_share_directory(bringup_package_name),'config','gz_bridge.yaml')
+    ros_gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            '--ros-args',
+            '-p',
+            f'config_file:={bridge_params}',
+        ]
+    )
+
     # Launch them all!
     return LaunchDescription(
         declared_arguments +
@@ -114,4 +125,5 @@ def generate_launch_description():
         spawn_entity,
         joint_broad_spawner,
         delayed_zoe_controller_spawner,
+        ros_gz_bridge
     ])
