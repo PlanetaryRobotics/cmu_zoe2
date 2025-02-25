@@ -103,16 +103,19 @@
       <gazebo reference="world">
       </gazebo>
       <gazebo>
+        <!-- ROS2 Control plugin -->
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
           <parameters>${simulation_controllers}</parameters>
           <controller_manager_node_name>${prefix}controller_manager</controller_manager_node_name>
         </plugin>
+        <!-- Odometry plugin. Returns ground truth simulation position/orientation -->
         <plugin
           filename="libgz-sim-odometry-publisher-system.so"
           name="gz::sim::systems::OdometryPublisher">
           <odom_frame>world</odom_frame>
           <robot_base_frame>base_link</robot_base_frame>
           <odom_publish_frequency>50</odom_publish_frequency>
+          <!-- Dimensions can be set to 2 or 3. Controls how much pose information is sent -->
           <dimensions>2</dimensions>
           <xyz_offset>0 0 0</xyz_offset>
           <rpy_offset>0 0 0</rpy_offset>
