@@ -68,17 +68,17 @@ def generate_launch_description():
                 )]), launch_arguments={'use_sim_time': 'true'}.items()
     )
 
-    # Include the Gazebo launch file, provided by the gazebo_ros package
+    # Include the Gazebo launch file, provided by the ros_gz_sim package
     gazebo = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
-                    launch_arguments={'world': world_path}.items()
+                    get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')]),
+                    launch_arguments={'gz_args': ['-r -v4 ', world_path], 'on_exit_shutdown': 'true'}.items()
              )
 
-    # Run the spawner node from the gazebo_ros package. The entity name doesn't really matter if you only have a single robot.
-    spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
+    # Run the spawner node from the ros_gz_sim package. The entity name doesn't really matter if you only have a single robot.
+    spawn_entity = Node(package='ros_gz_sim', executable='create',
                         arguments=['-topic', 'robot_description',
-                                   '-entity', 'zoe2',
+                                   '-name', 'zoe2',
                                    '-x', LaunchConfiguration('x'),
                                    '-y', LaunchConfiguration('y'),
                                    '-z', LaunchConfiguration('z'),
@@ -105,6 +105,17 @@ def generate_launch_description():
         )
     )
 
+    bridge_params = os.path.join(get_package_share_directory(bringup_package_name),'config','gz_bridge.yaml')
+    ros_gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            '--ros-args',
+            '-p',
+            f'config_file:={bridge_params}',
+        ]
+    )
+
     # Launch them all!
     return LaunchDescription(
         declared_arguments +
@@ -114,4 +125,5 @@ def generate_launch_description():
         spawn_entity,
         joint_broad_spawner,
         delayed_zoe_controller_spawner,
+        ros_gz_bridge
     ])
