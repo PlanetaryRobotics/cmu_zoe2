@@ -6,8 +6,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "driving/msg/DriveArc.msg"
-  "driving/srv/DriveCommand.srv"
+  # Write new interfaces and include the relative path below, as a string. Example:
+  # "driving/msg/DriveArc.msg"
+  # "driving/srv/DriveCommand.srv"
 )
 
 ament_package()

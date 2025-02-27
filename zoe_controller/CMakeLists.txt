@@ -18,7 +18,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   realtime_tools
   tf2
   tf2_msgs
-  zoe2_interfaces
   # zoe_motor_hardware
 )
 
