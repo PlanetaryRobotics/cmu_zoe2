@@ -1,0 +1,9 @@
+<library path="zoe2_hardware">
+  <class name="zoe2_hardware/Zoe2Hardware"
+         type="zoe2_hardware::Zoe2Hardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Ros2 Control hardware interface. 
+    </description>
+  </class>
+</library>
