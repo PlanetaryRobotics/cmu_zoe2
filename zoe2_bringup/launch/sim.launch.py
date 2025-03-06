@@ -14,6 +14,7 @@ from launch_ros.actions import Node
 from launch.event_handlers import OnProcessExit
 
 bringup_package_name="zoe2_bringup"
+odom_package_name = 'zoe2_odom'
 
 def generate_launch_description():
 
@@ -65,7 +66,7 @@ def generate_launch_description():
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     get_package_share_directory(bringup_package_name),'launch','rsp.launch.py'
-                )]), launch_arguments={'use_sim_time': 'true'}.items()
+                )]), launch_arguments={'sim': 'true'}.items()
     )
 
     # Include the Gazebo launch file, provided by the ros_gz_sim package
@@ -116,6 +117,20 @@ def generate_launch_description():
         ]
     )
 
+    # launch the odom_tf_broadcaster node
+    odom = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory(odom_package_name),'launch','odom_tf_broadcaster.launch.py'
+        )])
+    )
+
+    # launch rviz
+    rviz = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
+            )])
+    )
+
     # Launch them all!
     return LaunchDescription(
         declared_arguments +
@@ -125,5 +140,7 @@ def generate_launch_description():
         spawn_entity,
         joint_broad_spawner,
         delayed_zoe_controller_spawner,
-        ros_gz_bridge
+        ros_gz_bridge,
+        odom,
+        rviz
     ])
