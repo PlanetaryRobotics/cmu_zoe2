@@ -10,10 +10,10 @@ controller_manager:
 
 zoe_controller:
   ros__parameters:
-    front_left_wheel: front_left_wheel_joint
-    front_right_wheel: front_right_wheel_joint
-    back_left_wheel: back_left_wheel_joint
-    back_right_wheel: back_right_wheel_joint
-    front_yaw: front_yaw_joint
-    back_yaw: back_yaw_joint
+    wheel_front_left: wheel_front_left_joint
+    wheel_front_right: wheel_front_right_joint
+    wheel_back_left: wheel_back_left_joint
+    wheel_back_right: wheel_back_right_joint
+    axle_yaw_front: axle_yaw_front_joint
+    axle_yaw_back: axle_yaw_back_joint
     publish_rate: 50.0

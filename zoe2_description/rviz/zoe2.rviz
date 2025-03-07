@@ -70,12 +70,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        back_left_wheel:
+        wheel_back_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        back_right_wheel:
+        wheel_back_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -99,12 +99,12 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        front_left_wheel:
+        wheel_front_left:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        front_right_wheel:
+        wheel_front_right:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -129,9 +129,9 @@ Visualization Manager:
         All Enabled: true
         back_axle:
           Value: true
-        back_left_wheel:
+        wheel_back_left:
           Value: true
-        back_right_wheel:
+        wheel_back_right:
           Value: true
         back_roll:
           Value: true
@@ -141,9 +141,9 @@ Visualization Manager:
           Value: true
         front_axle:
           Value: true
-        front_left_wheel:
+        wheel_front_left:
           Value: true
-        front_right_wheel:
+        wheel_front_right:
           Value: true
         front_roll:
           Value: true
@@ -157,15 +157,15 @@ Visualization Manager:
           chassis:
             back_roll:
               back_axle:
-                back_left_wheel:
+                wheel_back_left:
                   {}
-                back_right_wheel:
+                wheel_back_right:
                   {}
             front_roll:
               front_axle:
-                front_left_wheel:
+                wheel_front_left:
                   {}
-                front_right_wheel:
+                wheel_front_right:
                   {}
       Update Interval: 0
       Value: true

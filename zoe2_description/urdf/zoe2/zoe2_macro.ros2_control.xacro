@@ -30,18 +30,18 @@
 
       <!-- Pivot Joints -->
 
-      <joint name="${prefix}front_yaw_joint">
+      <joint name="${prefix}axle_yaw_front_joint">
         <state_interface name="position" />
       </joint>
-      <joint name="${prefix}back_yaw_joint">
+      <joint name="${prefix}axle_yaw_back_joint">
           <state_interface name="position" />
       </joint>
-      <joint name="${prefix}chassis_back_roll_joint">
+      <joint name="${prefix}axle_roll_back_joint">
           <state_interface name="position" />
       </joint>
 
       <!-- Wheel Joints -->
-      <joint name="${prefix}front_left_wheel_joint">
+      <joint name="${prefix}wheel_front_left_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" >
@@ -49,7 +49,7 @@
             <param name="max">10.0</param>
           </command_interface>
       </joint>
-      <joint name="${prefix}front_right_wheel_joint">
+      <joint name="${prefix}wheel_front_right_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" >
@@ -57,7 +57,7 @@
             <param name="max">10.0</param>
           </command_interface>
       </joint>
-      <joint name="${prefix}back_right_wheel_joint">
+      <joint name="${prefix}wheel_back_right_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" >
@@ -65,7 +65,7 @@
             <param name="max">10.0</param>
           </command_interface>
       </joint>
-      <joint name="${prefix}back_left_wheel_joint">
+      <joint name="${prefix}wheel_back_left_joint">
           <state_interface name="position" />
           <state_interface name="velocity" />
           <command_interface name="velocity" >

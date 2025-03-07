@@ -21,34 +21,34 @@
 
     <xacro:hinge name="${prefix}front_roll" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}front_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_front_right" rpy="0 0 ${pi/2}" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}front_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_front_left" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
 
     <xacro:axle name="${prefix}front_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}back_right_wheel" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_back_right" rpy="0 0 ${pi/2}" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}back_left_wheel" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_back_left" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
 
     <xacro:axle name="${prefix}back_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
     <xacro:hinge name="${prefix}back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
 
     <!-- Link gazebo params -->
-    <gazebo reference="back_left_wheel">
+    <gazebo reference="wheel_back_left">
         <material>Gazebo/Black</material>
     </gazebo>
 
-    <gazebo reference="back_right_wheel">
+    <gazebo reference="wheel_back_right">
         <material>Gazebo/Black</material>
     </gazebo>
 
-    <gazebo reference="front_right_wheel">
+    <gazebo reference="wheel_front_right">
         <material>Gazebo/Black</material>
     </gazebo>
 
-    <gazebo reference="front_left_wheel">
+    <gazebo reference="wheel_front_left">
         <material>Gazebo/Black</material>
     </gazebo>
 
@@ -81,7 +81,7 @@
         <origin xyz="0 ${(robot_length/2 - robot_hinge_length)} 0" />
     </joint>
 
-    <joint name="${prefix}front_yaw_joint" type="revolute"> 
+    <joint name="${prefix}axle_yaw_front_joint" type="revolute"> 
         <parent link="${prefix}front_roll" />
         <child link="${prefix}front_axle" />
         <origin xyz="0 ${robot_hinge_length} 0" />
@@ -89,22 +89,22 @@
         <limit lower="${-front_vertical_limit}" upper="${front_vertical_limit}" effort="10" velocity="10"/>
     </joint>
 
-    <joint name="${prefix}front_right_wheel_joint" type="continuous">
+    <joint name="${prefix}wheel_front_right_joint" type="continuous">
         <parent link="${prefix}front_axle" />
-        <child link="${prefix}front_right_wheel" />
+        <child link="${prefix}wheel_front_right" />
         <origin xyz="${robot_width/2} 0 -${axle_drop}" />
         <axis xyz="-1 0 0" />
     </joint>
 
-    <joint name="${prefix}front_left_wheel_joint" type="continuous">
+    <joint name="${prefix}wheel_front_left_joint" type="continuous">
         <parent link="${prefix}front_axle" />
-        <child link="${prefix}front_left_wheel" />
+        <child link="${prefix}wheel_front_left" />
         <origin xyz="${-robot_width/2} 0 -${axle_drop}" />
         <axis xyz="-1 0 0" />
     </joint>
 
     <!-- temp set to fixed -->
-    <joint name="${prefix}back_yaw_joint" type="revolute">
+    <joint name="${prefix}axle_yaw_back_joint" type="revolute">
         <parent link="${prefix}back_roll" />
         <child link="${prefix}back_axle" />
         <origin xyz="0 ${-robot_hinge_length} 0" />
@@ -112,22 +112,22 @@
         <axis xyz="0 0 1"/>
     </joint>
 
-    <joint name="${prefix}back_right_wheel_joint" type="continuous">
+    <joint name="${prefix}wheel_back_right_joint" type="continuous">
         <parent link="${prefix}back_axle" />
-        <child link="${prefix}back_right_wheel" />
+        <child link="${prefix}wheel_back_right" />
         <origin xyz="${robot_width/2} 0 -${axle_drop}" />
         <axis xyz="-1 0 0" />
     </joint>
 
-    <joint name="${prefix}back_left_wheel_joint" type="continuous">
+    <joint name="${prefix}wheel_back_left_joint" type="continuous">
         <parent link="${prefix}back_axle" />
-        <child link="${prefix}back_left_wheel" />
+        <child link="${prefix}wheel_back_left" />
         <origin xyz="${-robot_width/2} 0 -${axle_drop}" />
         <axis xyz="-1 0 0" />
     </joint>
 
     <!-- current roll joint limits set arbitrarily... -->
-    <joint name="${prefix}chassis_back_roll_joint" type="revolute">
+    <joint name="${prefix}axle_roll_back_joint" type="revolute">
         <parent link="${prefix}chassis" />
         <child link="${prefix}back_roll" />
         <origin xyz="0 ${-(robot_length/2 - robot_hinge_length)} 0" />
