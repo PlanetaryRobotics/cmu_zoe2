@@ -63,6 +63,25 @@ def generate_launch_description():
         )
     )
 
+    # launch rviz
+    rviz = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
+            )]),
+            launch_arguments={
+                "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "hw.rviz"]),
+            }.items()
+    )
+
+    # Delay rviz start after `joint_state_broadcaster`
+    delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_broad_spawner,
+            on_exit=[rviz],
+        )
+    )
+
+
 
     # Launch them all!
     return LaunchDescription(
@@ -72,4 +91,5 @@ def generate_launch_description():
         rsp,
         zoe_controller_spawner,
         delay_joint_state_broadcaster_after_robot_controller_spawner,
+        delay_rviz_after_joint_state_broadcaster_spawner,
     ])
