@@ -3,7 +3,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, Command
 from launch.actions import DeclareLaunchArgument
 from launch_ros.actions import Node
 
@@ -27,14 +27,12 @@ def generate_launch_description():
     pkg_path = os.path.join(get_package_share_directory('zoe2_description'))
     xacro_file = os.path.join(pkg_path,'urdf','zoe2.urdf.xacro')
 
-    xacro_params = {
-        'sim_gazebo': 'true'
-    }
-
-    robot_description_config = xacro.process_file(xacro_file, mappings=xacro_params)
+    # robot_description_config = Command(['xacro ', xacro_file, ' sim_gazebo:=', sim, ' use_mock_hardware:=true'])
+    robot_description_config = Command(['xacro ', xacro_file, ' sim_gazebo:=', sim])
     
+
     # Create a robot_state_publisher node
-    params = {'robot_description': robot_description_config.toxml(), 'use_sim_time': sim}
+    params = {'robot_description': robot_description_config, 'use_sim_time': sim}
     node_robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
