@@ -42,6 +42,19 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(
 {
   // TODO(anyone): prepare the robot to be ready for read calls and write calls of some interfaces
 
+  RCLCPP_INFO(get_logger(), "Configuring ...please wait...");
+
+  // reset values always when configuring hardware
+  for (const auto & [name, descr] : joint_state_interfaces_)
+  {
+    set_state(name, 0.0);
+  }
+  for (const auto & [name, descr] : joint_command_interfaces_)
+  {
+    set_command(name, 0.0);
+  }
+  RCLCPP_INFO(get_logger(), "Successfully configured!");
+
   return CallbackReturn::SUCCESS;
 }
 
