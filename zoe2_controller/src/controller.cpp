@@ -1,4 +1,4 @@
-#include "zoe_controller/controller.hpp"
+#include "zoe2_controller/controller.hpp"
 
 DrivingController::DrivingController(double baseWidth, double wheelRadius, double length, double Kpval)
     : B(baseWidth), Rw(wheelRadius), L(length), Kp(Kpval) {}

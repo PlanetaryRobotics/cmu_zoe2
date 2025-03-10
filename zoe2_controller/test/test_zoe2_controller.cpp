@@ -26,7 +26,7 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "lifecycle_msgs/msg/state.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "zoe_controller/zoe_controller.hpp"
+#include "zoe2_controller/zoe2_controller.hpp"
 
 using CallbackReturn = controller_interface::CallbackReturn;
 using hardware_interface::HW_IF_POSITION;
@@ -36,9 +36,9 @@ using hardware_interface::LoanedStateInterface;
 using lifecycle_msgs::msg::State;
 using testing::SizeIs;
 
-class TestableZoeController : public zoe_controller::ZoeController {
+class TestableZoe2Controller : public zoe2_controller::Zoe2Controller {
   public:
-    using ZoeController::ZoeController;
+    using Zoe2Controller::Zoe2Controller;
     std::shared_ptr<geometry_msgs::msg::TwistStamped> getLastReceivedTwist() {
         std::shared_ptr<geometry_msgs::msg::TwistStamped> ret;
         received_velocity_msg_ptr_.get(ret);
@@ -77,12 +77,12 @@ class TestableZoeController : public zoe_controller::ZoeController {
     }
 };
 
-class TestZoeController : public ::testing::Test {
+class TestZoe2Controller : public ::testing::Test {
   protected:
     static void SetUpTestCase() { rclcpp::init(0, nullptr); }
 
     void SetUp() override {
-        controller_ = std::make_unique<TestableZoeController>();
+        controller_ = std::make_unique<TestableZoe2Controller>();
 
         pub_node = std::make_shared<rclcpp::Node>("velocity_publisher");
         velocity_publisher =
@@ -157,8 +157,8 @@ class TestZoeController : public ::testing::Test {
                                        std::move(state_ifs));
     }
 
-    const std::string controller_name = "test_zoe_controller";
-    std::unique_ptr<TestableZoeController> controller_;
+    const std::string controller_name = "test_zoe2_controller";
+    std::unique_ptr<TestableZoe2Controller> controller_;
 
     const std::vector<std::string> left_wheel_names = {"left_wheel_joint"};
     const std::vector<std::string> right_wheel_names = {"right_wheel_joint"};
@@ -183,7 +183,7 @@ class TestZoeController : public ::testing::Test {
         velocity_publisher;
 };
 
-TEST_F(TestZoeController, configure_fails_without_parameters) {
+TEST_F(TestZoe2Controller, configure_fails_without_parameters) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -191,7 +191,7 @@ TEST_F(TestZoeController, configure_fails_without_parameters) {
               CallbackReturn::ERROR);
 }
 
-TEST_F(TestZoeController,
+TEST_F(TestZoe2Controller,
        configure_fails_with_only_left_or_only_right_side_defined) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
@@ -215,7 +215,7 @@ TEST_F(TestZoeController,
               CallbackReturn::ERROR);
 }
 
-TEST_F(TestZoeController, configure_fails_with_mismatching_wheel_side_size) {
+TEST_F(TestZoe2Controller, configure_fails_with_mismatching_wheel_side_size) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -232,7 +232,7 @@ TEST_F(TestZoeController, configure_fails_with_mismatching_wheel_side_size) {
               CallbackReturn::ERROR);
 }
 
-TEST_F(TestZoeController, configure_succeeds_when_wheels_are_specified) {
+TEST_F(TestZoe2Controller, configure_succeeds_when_wheels_are_specified) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -250,7 +250,7 @@ TEST_F(TestZoeController, configure_succeeds_when_wheels_are_specified) {
                 SizeIs(left_wheel_names.size() + right_wheel_names.size()));
 }
 
-TEST_F(TestZoeController,
+TEST_F(TestZoe2Controller,
        configure_succeeds_tf_test_prefix_false_no_namespace) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
@@ -284,7 +284,7 @@ TEST_F(TestZoeController,
     ASSERT_EQ(test_base_frame_id, base_link_id);
 }
 
-TEST_F(TestZoeController, configure_succeeds_tf_test_prefix_true_no_namespace) {
+TEST_F(TestZoe2Controller, configure_succeeds_tf_test_prefix_true_no_namespace) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -319,7 +319,7 @@ TEST_F(TestZoeController, configure_succeeds_tf_test_prefix_true_no_namespace) {
     ASSERT_EQ(test_base_frame_id, frame_prefix + "/" + base_link_id);
 }
 
-TEST_F(TestZoeController,
+TEST_F(TestZoe2Controller,
        configure_succeeds_tf_blank_prefix_true_no_namespace) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
@@ -354,7 +354,7 @@ TEST_F(TestZoeController,
     ASSERT_EQ(test_base_frame_id, base_link_id);
 }
 
-TEST_F(TestZoeController,
+TEST_F(TestZoe2Controller,
        configure_succeeds_tf_test_prefix_false_set_namespace) {
     std::string test_namespace = "/test_namespace";
 
@@ -390,7 +390,7 @@ TEST_F(TestZoeController,
     ASSERT_EQ(test_base_frame_id, base_link_id);
 }
 
-TEST_F(TestZoeController,
+TEST_F(TestZoe2Controller,
        configure_succeeds_tf_test_prefix_true_set_namespace) {
     std::string test_namespace = "/test_namespace";
 
@@ -428,7 +428,7 @@ TEST_F(TestZoeController,
     ASSERT_EQ(test_base_frame_id, frame_prefix + "/" + base_link_id);
 }
 
-TEST_F(TestZoeController,
+TEST_F(TestZoe2Controller,
        configure_succeeds_tf_blank_prefix_true_set_namespace) {
     std::string test_namespace = "/test_namespace";
 
@@ -465,7 +465,7 @@ TEST_F(TestZoeController,
     ASSERT_EQ(test_base_frame_id, test_namespace + "/" + base_link_id);
 }
 
-TEST_F(TestZoeController, activate_fails_without_resources_assigned) {
+TEST_F(TestZoe2Controller, activate_fails_without_resources_assigned) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -480,7 +480,7 @@ TEST_F(TestZoeController, activate_fails_without_resources_assigned) {
               CallbackReturn::ERROR);
 }
 
-TEST_F(TestZoeController, activate_succeeds_with_pos_resources_assigned) {
+TEST_F(TestZoe2Controller, activate_succeeds_with_pos_resources_assigned) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -497,7 +497,7 @@ TEST_F(TestZoeController, activate_succeeds_with_pos_resources_assigned) {
               CallbackReturn::SUCCESS);
 }
 
-TEST_F(TestZoeController, activate_succeeds_with_vel_resources_assigned) {
+TEST_F(TestZoe2Controller, activate_succeeds_with_vel_resources_assigned) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -515,7 +515,7 @@ TEST_F(TestZoeController, activate_succeeds_with_vel_resources_assigned) {
               CallbackReturn::SUCCESS);
 }
 
-TEST_F(TestZoeController, activate_fails_with_wrong_resources_assigned_1) {
+TEST_F(TestZoe2Controller, activate_fails_with_wrong_resources_assigned_1) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -533,7 +533,7 @@ TEST_F(TestZoeController, activate_fails_with_wrong_resources_assigned_1) {
               CallbackReturn::ERROR);
 }
 
-TEST_F(TestZoeController, activate_fails_with_wrong_resources_assigned_2) {
+TEST_F(TestZoe2Controller, activate_fails_with_wrong_resources_assigned_2) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -551,7 +551,7 @@ TEST_F(TestZoeController, activate_fails_with_wrong_resources_assigned_2) {
               CallbackReturn::ERROR);
 }
 
-TEST_F(TestZoeController, cleanup) {
+TEST_F(TestZoe2Controller, cleanup) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 
@@ -601,7 +601,7 @@ TEST_F(TestZoeController, cleanup) {
     executor.cancel();
 }
 
-TEST_F(TestZoeController, correct_initialization_using_parameters) {
+TEST_F(TestZoe2Controller, correct_initialization_using_parameters) {
     const auto ret = controller_->init(controller_name);
     ASSERT_EQ(ret, controller_interface::return_type::OK);
 

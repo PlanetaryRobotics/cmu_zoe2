@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>zoe_controller</name>
+  <name>zoe2_controller</name>
   <version>3.17.0</version>
   <description>Controller for a differential drive mobile base.</description>
   <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
