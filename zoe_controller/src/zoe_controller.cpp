@@ -95,14 +95,14 @@ InterfaceConfiguration ZoeController::state_interface_configuration() const {
     return {interface_configuration_type::INDIVIDUAL, conf_names};
 }
 
-rclcpp::Logger serv_logger() { return rclcpp::get_logger("drive-command"); }
-
 controller_interface::return_type
 ZoeController::update(const rclcpp::Time &time,
-                      const rclcpp::Duration &period) {
+                      const rclcpp::Duration & /*period*/) {
 
     std::shared_ptr<Twist> last_command_msg;
-    received_velocity_msg_ptr_.get(last_command_msg);
+    received_velocity_msg_ptr_.get([&](const auto &msg) {
+        last_command_msg = msg;
+    });
 
     if (last_command_msg == nullptr)
     {
@@ -147,11 +147,11 @@ ZoeController::update(const rclcpp::Time &time,
     
     controller->computeWheelSpeed();
 
-    frontLeft->cmd_velocity.get().set_value(controller->getcVfl()/controller->getWheelRadius());
-    frontRight->cmd_velocity.get().set_value(controller->getcVfr()/controller->getWheelRadius());
-    backLeft->cmd_velocity.get().set_value(controller->getcVbl()/controller->getWheelRadius());
-    backRight->cmd_velocity.get().set_value(controller->getcVbr()/controller->getWheelRadius());
-
+    setVelocityCommand(frontLeft->cmd_velocity.get(), controller->getcVfl() / controller->getWheelRadius(), "front left", log());
+    setVelocityCommand(frontRight->cmd_velocity.get(), controller->getcVfr() / controller->getWheelRadius(), "front right", log());
+    setVelocityCommand(backLeft->cmd_velocity.get(), controller->getcVbl() / controller->getWheelRadius(), "back left", log());
+    setVelocityCommand(backRight->cmd_velocity.get(), controller->getcVbr() / controller->getWheelRadius(), "back right", log());
+    
     return controller_interface::return_type::OK;
 }
 
@@ -159,7 +159,9 @@ controller_interface::CallbackReturn
 ZoeController::on_configure(const rclcpp_lifecycle::State &) {
 
     const Twist empty_twist;
-    received_velocity_msg_ptr_.set(std::make_shared<Twist>(empty_twist));
+    received_velocity_msg_ptr_.set([&](auto &msg) {
+        msg = std::make_shared<Twist>(empty_twist);
+    });
 
     // Fill last two commands with default constructed commands
     previous_commands_.emplace(empty_twist);
@@ -186,7 +188,7 @@ ZoeController::on_configure(const rclcpp_lifecycle::State &) {
                 "time, this message will only be shown once");
             msg->header.stamp = get_node()->get_clock()->now();
             }
-            received_velocity_msg_ptr_.set(std::move(msg));
+            received_velocity_msg_ptr_.set([&](auto& value) { value = std::move(msg); });
         });
     }
     else
@@ -205,7 +207,7 @@ ZoeController::on_configure(const rclcpp_lifecycle::State &) {
 
             // Write fake header in the stored stamped command
             std::shared_ptr<Twist> twist_stamped;
-            received_velocity_msg_ptr_.get(twist_stamped);
+            received_velocity_msg_ptr_.get([&](const auto& value) { twist_stamped = value; });
             twist_stamped->twist = *msg;
             twist_stamped->header.stamp = get_node()->get_clock()->now();
             });
@@ -261,8 +263,19 @@ ZoeController::getWheelHandleByName(const std::string &name) {
     return shared;
 }
 
+void setVelocityCommand(
+    hardware_interface::LoanedCommandInterface &cmd_interface, 
+    double value, 
+    const std::string &wheel_name, 
+    rclcpp::Logger logger)
+{
+    if (!cmd_interface.set_value(value)) {
+        RCLCPP_ERROR(logger, "Failed to set velocity for %s", wheel_name.c_str());
+    }
+}
+
 controller_interface::CallbackReturn
-ZoeController::on_activate(const rclcpp_lifecycle::State &state) {
+ZoeController::on_activate(const rclcpp_lifecycle::State & /*state*/) {
     frontLeft = getWheelHandleByName(mParams.wheel_front_left);
     frontRight = getWheelHandleByName(mParams.wheel_front_right);
     backLeft = getWheelHandleByName(mParams.wheel_back_left);

@@ -8,72 +8,72 @@
 #include "rclcpp/logging.hpp"
 
 // Constants
-constexpr float EPSILON = 1e-6f;
-constexpr float PI = 3.14159265358979323846f;
+constexpr double EPSILON = 1e-6;
+constexpr double PI = 3.14159265358979323846;
 
 // Inline functions to replace macros
-inline float absolute(float x) {
+inline double absolute(double x) {
     return std::fabs(x);
 }
 
-inline bool floatEqual(float a, float b) {
+inline bool doubleEqual(double a, double b) {
     return absolute(a - b) <= EPSILON;
 }
 
-inline bool floatEqualWithError(float a, float b, float e) {
+inline bool doubleEqualWithError(double a, double b, double e) {
     return absolute(a - b) <= e;
 }
 
 class DrivingController {
 private:
     // Command Variables
-    float cVfr{0}, cVfl{0}, cVbr{0}, cVbl{0};
+    double cVfr{0}, cVfl{0}, cVbr{0}, cVbl{0};
     
     // State
-    float Vfr{0}, Vfl{0}, Vbr{0}, Vbl{0};
+    double Vfr{0}, Vfl{0}, Vbr{0}, Vbl{0};
 
-    const float B;    // Base Width
-    const float Rw;   // Wheel Radius
-    const float L;    // Length
-    const float Kp; // Proportional gain
+    const double B;    // Base Width
+    const double Rw;   // Wheel Radius
+    const double L;    // Length
+    const double Kp; // Proportional gain
     
-    float cR{0}; // anti-clockwise is positive
-    float cV{0}; // Target velocity
+    double cR{0}; // anti-clockwise is positive
+    double cV{0}; // Target velocity
 
-    float Thetaf{0}; // Front theta
-    float Thetab{0}; // Back theta
+    double Thetaf{0}; // Front theta
+    double Thetab{0}; // Back theta
 
     // Private member functions
     void computeFront();
     void computeBack();
 
 public:
-    DrivingController(float baseWidth, float wheelRadius, float length, float Kpval);
+    DrivingController(double baseWidth, double wheelRadius, double length, double Kpval);
 
     // Getter and Setter methods
-    float getVfr() const;
-    float getVfl() const;
-    float getVbr() const;
-    float getVbl() const;
+    double getVfr() const;
+    double getVfl() const;
+    double getVbr() const;
+    double getVbl() const;
 
-    void setVfr(float val);
-    void setVfl(float val);
-    void setVbr(float val);
-    void setVbl(float val);
+    void setVfr(double val);
+    void setVfl(double val);
+    void setVbr(double val);
+    void setVbl(double val);
 
-    float getcVfr() const;
-    float getcVfl() const;
-    float getcVbr() const;
-    float getcVbl() const;
+    double getcVfr() const;
+    double getcVfl() const;
+    double getcVbr() const;
+    double getcVbl() const;
 
-    float getWheelRadius() const;
+    double getWheelRadius() const;
 
-    void setThetaf(float val);
-    void setThetab(float val);
+    void setThetaf(double val);
+    void setThetab(double val);
 
     void computeWheelSpeed();
 
-    float cTheta() const;
+    double cTheta() const;
 
-    void setTarget(float radius, float velocity);
+    void setTarget(double radius, double velocity);
 };
