@@ -23,7 +23,7 @@
                     rpy="${rpy}" />
                 <geometry>
                     <mesh
-                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_right_wheel.STL" />
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/wheel_back_right.STL" />
                 </geometry>
                 <material
                     name="">
@@ -37,7 +37,7 @@
                     rpy="0 ${-pi/2} 0" />
                 <geometry>
                     <!-- <mesh
-                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_right_wheel.STL" /> -->
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/wheel_back_right.STL" /> -->
                   <cylinder radius="${wheel_radius}" length="${wheel_thickness}"/>
                 </geometry>
             </collision>

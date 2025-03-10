@@ -7,7 +7,7 @@
   <xacro:arg name="use_mock_hardware" default="false" />
   <xacro:arg name="mock_sensor_commands" default="false" />
   <xacro:arg name="sim_gazebo_classic" default="false" />
-  <xacro:arg name="sim_gazebo" default="true" />
+  <xacro:arg name="sim_gazebo" default="false" />
   <xacro:arg name="simulation_controllers" default="$(find zoe2_bringup)/config/zoe2_controllers.yaml" />
 
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/zoe2_macro.xacro"/>

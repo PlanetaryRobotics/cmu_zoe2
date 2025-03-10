@@ -1,6 +1,6 @@
 test_zoe_controller:
   ros__parameters:
-    front_left_wheel: "front_left_wheel"
-    front_right_wheel: "front_right_wheel"
-    back_left_wheel: "back_left_wheel"
-    back_right_wheel: "back_right_wheel"
+    wheel_front_left: "wheel_front_left"
+    wheel_front_right: "wheel_front_right"
+    wheel_back_left: "wheel_back_left"
+    wheel_back_right: "wheel_back_right"

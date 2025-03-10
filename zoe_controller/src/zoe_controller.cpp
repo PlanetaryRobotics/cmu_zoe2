@@ -73,10 +73,10 @@ controller_interface::CallbackReturn ZoeController::on_init() {
 InterfaceConfiguration ZoeController::command_interface_configuration() const {
 
     std::vector<std::string> conf_names{
-        mParams.back_left_wheel + "/velocity",
-        mParams.front_left_wheel + "/velocity",
-        mParams.back_right_wheel + "/velocity",
-        mParams.front_right_wheel + "/velocity",
+        mParams.wheel_back_left + "/velocity",
+        mParams.wheel_front_left + "/velocity",
+        mParams.wheel_back_right + "/velocity",
+        mParams.wheel_front_right + "/velocity",
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -84,12 +84,12 @@ InterfaceConfiguration ZoeController::command_interface_configuration() const {
 
 InterfaceConfiguration ZoeController::state_interface_configuration() const {
     std::vector<std::string> conf_names{
-        mParams.back_left_wheel + "/velocity",
-        mParams.front_left_wheel + "/velocity",
-        mParams.back_right_wheel + "/velocity",
-        mParams.front_right_wheel + "/velocity",
-        mParams.front_yaw + "/position",
-        mParams.back_yaw + "/position"
+        mParams.wheel_back_left + "/velocity",
+        mParams.wheel_front_left + "/velocity",
+        mParams.wheel_back_right + "/velocity",
+        mParams.wheel_front_right + "/velocity",
+        mParams.axle_yaw_front + "/position",
+        mParams.axle_yaw_back + "/position"
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -263,12 +263,12 @@ ZoeController::getWheelHandleByName(const std::string &name) {
 
 controller_interface::CallbackReturn
 ZoeController::on_activate(const rclcpp_lifecycle::State &state) {
-    frontLeft = getWheelHandleByName(mParams.front_left_wheel);
-    frontRight = getWheelHandleByName(mParams.front_right_wheel);
-    backLeft = getWheelHandleByName(mParams.back_left_wheel);
-    backRight = getWheelHandleByName(mParams.back_right_wheel);
-    backYaw = getYawStateIface(mParams.back_yaw);
-    frontYaw = getYawStateIface(mParams.front_yaw);
+    frontLeft = getWheelHandleByName(mParams.wheel_front_left);
+    frontRight = getWheelHandleByName(mParams.wheel_front_right);
+    backLeft = getWheelHandleByName(mParams.wheel_back_left);
+    backRight = getWheelHandleByName(mParams.wheel_back_right);
+    backYaw = getYawStateIface(mParams.axle_yaw_back);
+    frontYaw = getYawStateIface(mParams.axle_yaw_front);
 
     subscriber_is_active_ = true;
     

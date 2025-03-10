@@ -1,29 +1,29 @@
 zoe_controller:
-  front_left_wheel: {
+  wheel_front_left: {
     type: string,
-    default_value: "front_left_wheel",
+    default_value: "wheel_front_left",
     description: "Link names of the left side wheels",
   }
-  front_right_wheel: {
+  wheel_front_right: {
     type: string,
-    default_value: "front_left_wheel",
+    default_value: "wheel_front_left",
     description: "Link names of the left side wheels",
   }
-  back_left_wheel: {
+  wheel_back_left: {
     type: string,
-    default_value: "front_left_wheel",
+    default_value: "wheel_front_left",
     description: "Link names of the left side wheels",
   }
-  back_right_wheel: {
+  wheel_back_right: {
     type: string,
-    default_value: "front_left_wheel",
+    default_value: "wheel_front_left",
     description: "Link names of the left side wheels",
   }
-  front_yaw: {
+  axle_yaw_front: {
     type: string,
     default_value: "front_roll_front_axle_joint"
   }
-  back_yaw: {
+  axle_yaw_back: {
     type: string,
     default_value: "back_roll_back_axle_joint"
   }
