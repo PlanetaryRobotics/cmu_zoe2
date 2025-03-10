@@ -15,16 +15,64 @@
 
 #include <limits>
 #include <vector>
+#include <memory>
 
 #include "zoe2_hardware/can_hw.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+// CAN definitions
+#define CAN_INTERFACE "can0"
+#define CANOPEN_ID_1 1
+#define CANOPEN_ID_2 2
+#define CANOPEN_ID_3 3
+#define CANOPEN_ID_4 4
+
+// Define CANOPEN IDs
+std::vector<int> canopenIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
+
+// set up speeds
+int measured_speed_1 = 0;
+int measured_speed_2 = 0;
+int measured_speed_3 = 0;
+int measured_speed_4 = 0;
+
+int start_can(std::shared_ptr<Command> can) {
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
+  
+  if (!can->checkOpenResult()) {
+      return EXIT_FAILURE;
+  } 
+  
+  for (int id : canopenIDs) {
+      if (can->setOperational(id) < 0) {
+          return EXIT_FAILURE;
+      }
+
+      if (can->testCan(id) < 0) {
+          return EXIT_FAILURE;
+      }
+  }
+
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
+  return EXIT_SUCCESS;
+}
+
+
+int end_can(std::shared_ptr<Command> can){
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
+  // run teardown here
+  for (int id : canopenIDs) {
+    can->stop(id);
+  }
+  //
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
+  return EXIT_SUCCESS;
+}
+
 namespace zoe2_hardware
 {
-hardware_interface::CallbackReturn Zoe2Hardware::on_init(
-  const hardware_interface::HardwareInfo & info)
-{
+hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interface::HardwareInfo & info){
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
   {
     return CallbackReturn::ERROR;
@@ -32,19 +80,20 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_init(
 
   RCLCPP_INFO(get_logger(), "Initializing ...please wait...");
 
-  // TODO(anyone): read parameters and initialize the hardware
   hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::CallbackReturn Zoe2Hardware::on_configure(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
+hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifecycle::State & /*previous_state*/){
   // TODO(anyone): prepare the robot to be ready for read calls and write calls of some interfaces
 
-  RCLCPP_INFO(get_logger(), "Configuring ...please wait...");
+  RCLCPP_INFO(get_logger(), "Configuring... please wait...");
+
+  // initialize CAN
+  can_ = std::make_shared<Command>(CAN_INTERFACE, true);
+  start_can(can_);
 
   // reset values always when configuring hardware
   for (const auto & [name, descr] : joint_state_interfaces_)
@@ -60,39 +109,40 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::CallbackReturn Zoe2Hardware::on_activate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
+hardware_interface::CallbackReturn Zoe2Hardware::on_activate(const rclcpp_lifecycle::State & /*previous_state*/){
   // TODO(anyone): prepare the robot to receive commands
 
-  RCLCPP_INFO(get_logger(), "Activating ...please wait...");
+  RCLCPP_INFO(get_logger(), "Activating... Please wait...");
 
 
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::CallbackReturn Zoe2Hardware::on_deactivate(
-  const rclcpp_lifecycle::State & /*previous_state*/)
-{
+hardware_interface::CallbackReturn Zoe2Hardware::on_deactivate(const rclcpp_lifecycle::State & /*previous_state*/){
   // TODO(anyone): prepare the robot to stop receiving commands
-  RCLCPP_INFO(get_logger(), "Deactivating ...please wait...");
+  RCLCPP_INFO(get_logger(), "Deactivating... Please wait...");
 
 
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type Zoe2Hardware::read(
-  const rclcpp::Time & /*time*/, const rclcpp::Duration & period)
-{
+hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecycle::State & /*previous_state*/){
+  // TODO(anyone): prepare the robot to stop receiving commands
+  RCLCPP_INFO(get_logger(), "Shutting down... Please wait...");
+
+  end_can(can_);
+
+  return CallbackReturn::SUCCESS;
+}
+
+hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & period){
   // TODO(anyone): read robot states
 
   std::stringstream ss;
   ss << "Reading states:";
   ss << std::fixed << std::setprecision(2);
-  for (const auto & [name, descr] : joint_state_interfaces_)
-  {
-    if (descr.get_interface_name() == hardware_interface::HW_IF_POSITION)
-    {
+  for (const auto & [name, descr] : joint_state_interfaces_){
+    if (descr.get_interface_name() == hardware_interface::HW_IF_POSITION){
       if (name.find("wheel") != std::string::npos){
         // Simulate vehicle's movement as a first-order system
         // Update the joint status: this is a revolute joint without any limit.
@@ -116,15 +166,12 @@ hardware_interface::return_type Zoe2Hardware::read(
   return hardware_interface::return_type::OK;
 }
 
-hardware_interface::return_type Zoe2Hardware::write(
-  const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
-{
+hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
   // TODO(anyone): write robot's commands'
 
   std::stringstream ss;
   ss << "Writing commands:";
-  for (const auto & [name, descr] : joint_command_interfaces_)
-  {
+  for (const auto & [name, descr] : joint_command_interfaces_){
     // Simulate sending commands to the hardware
     set_state(name, get_command(name));
 
