@@ -19,7 +19,7 @@
 #include "rclcpp/utilities.hpp"
 #include "ros2_control_test_assets/descriptions.hpp"
 
-TEST(TestLoadZoeController, load_controller) {
+TEST(TestLoadZoe2Controller, load_controller) {
     rclcpp::init(0, nullptr);
 
     std::shared_ptr<rclcpp::Executor> executor =
@@ -30,8 +30,8 @@ TEST(TestLoadZoeController, load_controller) {
             ros2_control_test_assets::diffbot_urdf),
         executor, "test_controller_manager");
 
-    ASSERT_NE(cm.load_controller("test_zoe_controller",
-                                 "zoe_controller/ZoeController"),
+    ASSERT_NE(cm.load_controller("test_zoe2_controller",
+                                 "zoe2_controller/Zoe2Controller"),
               nullptr);
 
     rclcpp::shutdown();

@@ -27,8 +27,8 @@
 #include "rclcpp/logging.hpp"
 #include "tf2/LinearMath/Quaternion.h"
 
-#include "zoe_controller/controller.hpp"
-#include "zoe_controller/zoe_controller.hpp"
+#include "zoe2_controller/controller.hpp"
+#include "zoe2_controller/zoe2_controller.hpp"
 
 namespace 
 {
@@ -39,7 +39,7 @@ constexpr auto DEFAULT_ODOMETRY_TOPIC = "~/odom";
 constexpr auto DEFAULT_TRANSFORM_TOPIC = "/tf";
 }
 
-namespace zoe_controller {
+namespace zoe2_controller {
 
 using namespace std::chrono_literals;
 using controller_interface::interface_configuration_type;
@@ -48,11 +48,11 @@ using hardware_interface::HW_IF_POSITION;
 using hardware_interface::HW_IF_VELOCITY;
 using lifecycle_msgs::msg::State;
 
-ZoeController::ZoeController() : controller_interface::ControllerInterface() {}
+Zoe2Controller::Zoe2Controller() : controller_interface::ControllerInterface() {}
 
-rclcpp::Logger ZoeController::log() { return get_node()->get_logger(); }
+rclcpp::Logger Zoe2Controller::log() { return get_node()->get_logger(); }
 
-controller_interface::CallbackReturn ZoeController::on_init() {
+controller_interface::CallbackReturn Zoe2Controller::on_init() {
     
     try {
         mParamListener = std::make_shared<ParamListener>(get_node());
@@ -70,7 +70,7 @@ controller_interface::CallbackReturn ZoeController::on_init() {
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
-InterfaceConfiguration ZoeController::command_interface_configuration() const {
+InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
     std::vector<std::string> conf_names{
         mParams.wheel_back_left + "/velocity",
@@ -82,7 +82,7 @@ InterfaceConfiguration ZoeController::command_interface_configuration() const {
     return {interface_configuration_type::INDIVIDUAL, conf_names};
 }
 
-InterfaceConfiguration ZoeController::state_interface_configuration() const {
+InterfaceConfiguration Zoe2Controller::state_interface_configuration() const {
     std::vector<std::string> conf_names{
         mParams.wheel_back_left + "/velocity",
         mParams.wheel_front_left + "/velocity",
@@ -95,14 +95,14 @@ InterfaceConfiguration ZoeController::state_interface_configuration() const {
     return {interface_configuration_type::INDIVIDUAL, conf_names};
 }
 
-rclcpp::Logger serv_logger() { return rclcpp::get_logger("drive-command"); }
-
 controller_interface::return_type
-ZoeController::update(const rclcpp::Time &time,
-                      const rclcpp::Duration &period) {
+Zoe2Controller::update(const rclcpp::Time &time,
+                      const rclcpp::Duration & /*period*/) {
 
     std::shared_ptr<Twist> last_command_msg;
-    received_velocity_msg_ptr_.get(last_command_msg);
+    received_velocity_msg_ptr_.get([&](const auto &msg) {
+        last_command_msg = msg;
+    });
 
     if (last_command_msg == nullptr)
     {
@@ -147,19 +147,21 @@ ZoeController::update(const rclcpp::Time &time,
     
     controller->computeWheelSpeed();
 
-    frontLeft->cmd_velocity.get().set_value(controller->getcVfl()/controller->getWheelRadius());
-    frontRight->cmd_velocity.get().set_value(controller->getcVfr()/controller->getWheelRadius());
-    backLeft->cmd_velocity.get().set_value(controller->getcVbl()/controller->getWheelRadius());
-    backRight->cmd_velocity.get().set_value(controller->getcVbr()/controller->getWheelRadius());
-
+    setVelocityCommand(frontLeft->cmd_velocity.get(), controller->getcVfl() / controller->getWheelRadius(), "front left", log());
+    setVelocityCommand(frontRight->cmd_velocity.get(), controller->getcVfr() / controller->getWheelRadius(), "front right", log());
+    setVelocityCommand(backLeft->cmd_velocity.get(), controller->getcVbl() / controller->getWheelRadius(), "back left", log());
+    setVelocityCommand(backRight->cmd_velocity.get(), controller->getcVbr() / controller->getWheelRadius(), "back right", log());
+    
     return controller_interface::return_type::OK;
 }
 
 controller_interface::CallbackReturn
-ZoeController::on_configure(const rclcpp_lifecycle::State &) {
+Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
 
     const Twist empty_twist;
-    received_velocity_msg_ptr_.set(std::make_shared<Twist>(empty_twist));
+    received_velocity_msg_ptr_.set([&](auto &msg) {
+        msg = std::make_shared<Twist>(empty_twist);
+    });
 
     // Fill last two commands with default constructed commands
     previous_commands_.emplace(empty_twist);
@@ -186,7 +188,7 @@ ZoeController::on_configure(const rclcpp_lifecycle::State &) {
                 "time, this message will only be shown once");
             msg->header.stamp = get_node()->get_clock()->now();
             }
-            received_velocity_msg_ptr_.set(std::move(msg));
+            received_velocity_msg_ptr_.set([&](auto& value) { value = std::move(msg); });
         });
     }
     else
@@ -205,7 +207,7 @@ ZoeController::on_configure(const rclcpp_lifecycle::State &) {
 
             // Write fake header in the stored stamped command
             std::shared_ptr<Twist> twist_stamped;
-            received_velocity_msg_ptr_.get(twist_stamped);
+            received_velocity_msg_ptr_.get([&](const auto& value) { twist_stamped = value; });
             twist_stamped->twist = *msg;
             twist_stamped->header.stamp = get_node()->get_clock()->now();
             });
@@ -216,7 +218,7 @@ ZoeController::on_configure(const rclcpp_lifecycle::State &) {
 }
 
 
-std::shared_ptr<ZoeController::YawHandle> ZoeController::getYawStateIface(const std::string &name) {
+std::shared_ptr<Zoe2Controller::YawHandle> Zoe2Controller::getYawStateIface(const std::string &name) {
     auto state_iface = std::find_if(
         state_interfaces_.begin(), state_interfaces_.end(),
         [&name](const hardware_interface::LoanedStateInterface &interface) {
@@ -231,8 +233,8 @@ std::shared_ptr<ZoeController::YawHandle> ZoeController::getYawStateIface(const 
     return std::make_shared<YawHandle>(std::ref(*state_iface));
 }
 
-std::shared_ptr<ZoeController::WheelHandle>
-ZoeController::getWheelHandleByName(const std::string &name) {
+std::shared_ptr<Zoe2Controller::WheelHandle>
+Zoe2Controller::getWheelHandleByName(const std::string &name) {
     auto state_iface = std::find_if(
         state_interfaces_.begin(), state_interfaces_.end(),
         [&name](const hardware_interface::LoanedStateInterface &interface) {
@@ -261,8 +263,19 @@ ZoeController::getWheelHandleByName(const std::string &name) {
     return shared;
 }
 
+void Zoe2Controller::setVelocityCommand(
+    hardware_interface::LoanedCommandInterface &cmd_interface, 
+    double value, 
+    const std::string &wheel_name, 
+    rclcpp::Logger logger) 
+{
+    if (!cmd_interface.set_value(value)) {
+        RCLCPP_ERROR(logger, "Failed to set velocity for %s", wheel_name.c_str());
+    }
+}
+
 controller_interface::CallbackReturn
-ZoeController::on_activate(const rclcpp_lifecycle::State &state) {
+Zoe2Controller::on_activate(const rclcpp_lifecycle::State & /*state*/) {
     frontLeft = getWheelHandleByName(mParams.wheel_front_left);
     frontRight = getWheelHandleByName(mParams.wheel_front_right);
     backLeft = getWheelHandleByName(mParams.wheel_back_left);
@@ -278,30 +291,30 @@ ZoeController::on_activate(const rclcpp_lifecycle::State &state) {
 }
 
 controller_interface::CallbackReturn
-ZoeController::on_deactivate(const rclcpp_lifecycle::State &) {
+Zoe2Controller::on_deactivate(const rclcpp_lifecycle::State &) {
     subscriber_is_active_ = false;
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
 controller_interface::CallbackReturn
-ZoeController::on_cleanup(const rclcpp_lifecycle::State &) {
+Zoe2Controller::on_cleanup(const rclcpp_lifecycle::State &) {
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
 controller_interface::CallbackReturn
-ZoeController::on_error(const rclcpp_lifecycle::State &) {
+Zoe2Controller::on_error(const rclcpp_lifecycle::State &) {
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
 controller_interface::CallbackReturn
-ZoeController::on_shutdown(const rclcpp_lifecycle::State &) {
+Zoe2Controller::on_shutdown(const rclcpp_lifecycle::State &) {
     return controller_interface::CallbackReturn::SUCCESS;
 }
 
-} // namespace zoe_controller
+} // namespace zoe2_controller
 
 #include "class_loader/register_macro.hpp"
 
-CLASS_LOADER_REGISTER_CLASS(zoe_controller::ZoeController,
+CLASS_LOADER_REGISTER_CLASS(zoe2_controller::Zoe2Controller,
                             controller_interface::ControllerInterface)

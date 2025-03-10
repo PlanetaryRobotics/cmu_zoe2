@@ -1,4 +1,4 @@
-zoe_controller:
+zoe2_controller:
   wheel_front_left: {
     type: string,
     default_value: "wheel_front_left",

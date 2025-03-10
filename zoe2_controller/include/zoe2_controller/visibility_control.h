@@ -19,38 +19,38 @@
  * library cannot have, but the consuming code must have inorder to link.
  */
 
-#ifndef ZOE_CONTROLLER__VISIBILITY_CONTROL_H_
-#define ZOE_CONTROLLER__VISIBILITY_CONTROL_H_
+#ifndef ZOE2_CONTROLLER__VISIBILITY_CONTROL_H_
+#define ZOE2_CONTROLLER__VISIBILITY_CONTROL_H_
 
 // This logic was borrowed (then namespaced) from the examples on the gcc wiki:
 //     https://gcc.gnu.org/wiki/Visibility
 
 #if defined _WIN32 || defined __CYGWIN__
 #ifdef __GNUC__
-#define ZOE_CONTROLLER_EXPORT __attribute__((dllexport))
-#define ZOE_CONTROLLER_IMPORT __attribute__((dllimport))
+#define ZOE2_CONTROLLER_EXPORT __attribute__((dllexport))
+#define ZOE2_CONTROLLER_IMPORT __attribute__((dllimport))
 #else
-#define ZOE_CONTROLLER_EXPORT __declspec(dllexport)
-#define ZOE_CONTROLLER_IMPORT __declspec(dllimport)
+#define ZOE2_CONTROLLER_EXPORT __declspec(dllexport)
+#define ZOE2_CONTROLLER_IMPORT __declspec(dllimport)
 #endif
-#ifdef ZOE_CONTROLLER_BUILDING_DLL
-#define ZOE_CONTROLLER_PUBLIC ZOE_CONTROLLER_EXPORT
+#ifdef ZOE2_CONTROLLER_BUILDING_DLL
+#define ZOE2_CONTROLLER_PUBLIC ZOE2_CONTROLLER_EXPORT
 #else
-#define ZOE_CONTROLLER_PUBLIC ZOE_CONTROLLER_IMPORT
+#define ZOE2_CONTROLLER_PUBLIC ZOE2_CONTROLLER_IMPORT
 #endif
-#define ZOE_CONTROLLER_PUBLIC_TYPE ZOE_CONTROLLER_PUBLIC
-#define ZOE_CONTROLLER_LOCAL
+#define ZOE2_CONTROLLER_PUBLIC_TYPE ZOE2_CONTROLLER_PUBLIC
+#define ZOE2_CONTROLLER_LOCAL
 #else
-#define ZOE_CONTROLLER_EXPORT __attribute__((visibility("default")))
-#define ZOE_CONTROLLER_IMPORT
+#define ZOE2_CONTROLLER_EXPORT __attribute__((visibility("default")))
+#define ZOE2_CONTROLLER_IMPORT
 #if __GNUC__ >= 4
-#define ZOE_CONTROLLER_PUBLIC __attribute__((visibility("default")))
-#define ZOE_CONTROLLER_LOCAL __attribute__((visibility("hidden")))
+#define ZOE2_CONTROLLER_PUBLIC __attribute__((visibility("default")))
+#define ZOE2_CONTROLLER_LOCAL __attribute__((visibility("hidden")))
 #else
-#define ZOE_CONTROLLER_PUBLIC
-#define ZOE_CONTROLLER_LOCAL
+#define ZOE2_CONTROLLER_PUBLIC
+#define ZOE2_CONTROLLER_LOCAL
 #endif
-#define ZOE_CONTROLLER_PUBLIC_TYPE
+#define ZOE2_CONTROLLER_PUBLIC_TYPE
 #endif
 
-#endif  // ZOE_CONTROLLER__VISIBILITY_CONTROL_H_
+#endif  // ZOE2_CONTROLLER__VISIBILITY_CONTROL_H_

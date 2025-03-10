@@ -93,16 +93,16 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster"],
     )
 
-    zoe_controller_spawner = Node(
+    zoe2_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["zoe_controller"],
+        arguments=["zoe2_controller"],
     )
 
-    delayed_zoe_controller_spawner = RegisterEventHandler(
+    delayed_zoe2_controller_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=spawn_entity,
-            on_exit=[zoe_controller_spawner],
+            on_exit=[zoe2_controller_spawner],
         )
     )
 
@@ -139,7 +139,7 @@ def generate_launch_description():
         gazebo,
         spawn_entity,
         joint_broad_spawner,
-        delayed_zoe_controller_spawner,
+        delayed_zoe2_controller_spawner,
         ros_gz_bridge,
         odom,
         rviz

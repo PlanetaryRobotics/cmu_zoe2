@@ -50,15 +50,15 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster"],
     )
 
-    zoe_controller_spawner = Node(
+    zoe2_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["zoe_controller"],
+        arguments=["zoe2_controller"],
     )
 
     delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
-            target_action=zoe_controller_spawner,
+            target_action=zoe2_controller_spawner,
             on_exit=[joint_broad_spawner],
         )
     )
@@ -89,7 +89,7 @@ def generate_launch_description():
         [
         control_node,
         rsp,
-        zoe_controller_spawner,
+        zoe2_controller_spawner,
         delay_joint_state_broadcaster_after_robot_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
     ])
