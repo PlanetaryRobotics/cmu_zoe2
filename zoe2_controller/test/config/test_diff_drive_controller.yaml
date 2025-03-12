@@ -1,4 +1,4 @@
-test_zoe_controller:
+test_zoe2_controller:
   ros__parameters:
     wheel_front_left: "wheel_front_left"
     wheel_front_right: "wheel_front_right"
