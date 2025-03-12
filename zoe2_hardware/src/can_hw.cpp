@@ -31,25 +31,22 @@
 // Define CANOPEN IDs
 std::vector<int> canopenIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
 
-// set up speeds
-int measured_speed_1 = 0;
-int measured_speed_2 = 0;
-int measured_speed_3 = 0;
-int measured_speed_4 = 0;
-
 int start_can(std::shared_ptr<Command> can) {
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
   
   if (!can->checkOpenResult()) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Not open");
       return EXIT_FAILURE;
   } 
   
   for (int id : canopenIDs) {
       if (can->setOperational(id) < 0) {
+          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
           return EXIT_FAILURE;
       }
 
       if (can->testCan(id) < 0) {
+          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i failed test...", id);
           return EXIT_FAILURE;
       }
   }
@@ -171,14 +168,21 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
 
   std::stringstream ss;
   ss << "Writing commands:";
+
+  int iterator = 0;
+
   for (const auto & [name, descr] : joint_command_interfaces_){
     // Simulate sending commands to the hardware
     set_state(name, get_command(name));
 
     ss << std::fixed << std::setprecision(2) << std::endl
        << "\t" << "command " << get_command(name) << " for '" << name << "'!";
+
+    int speed = int (get_command(name)*10000);
+    can_->setSpeed(speed, canopenIDs[iterator++]);
+
   }
-  // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
+  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
 
 
   return hardware_interface::return_type::OK;
