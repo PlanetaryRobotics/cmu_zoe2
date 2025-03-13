@@ -16,13 +16,12 @@ public:
 private:
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
         double radius;
-        if (msg->angular.z == 0.0) {
-            RCLCPP_WARN(this->get_logger(), "Zero angular velocity, no arc to visualize.");
+        if (msg->angular.z < 0.01) {
             // set a large radius to avoid division by zero
             radius = 9999999.0;
         }
         else {
-            radius = msg->linear.x / msg->angular.z;
+            radius = - msg->linear.x / msg->angular.z;
         }
 
         {
