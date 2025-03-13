@@ -15,50 +15,79 @@ public:
 
 private:
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
+        double radius;
         if (msg->angular.z == 0.0) {
             RCLCPP_WARN(this->get_logger(), "Zero angular velocity, no arc to visualize.");
-            return;
+            // set a large radius to avoid division by zero
+            radius = 9999999.0;
+        }
+        else {
+            radius = msg->linear.x / msg->angular.z;
         }
 
-        double radius = msg->linear.x / msg->angular.z;
-        double arc_length = 5.0;  // Set a desired arc length in meters
-        double theta_max = arc_length / std::abs(radius); // Compute max angle for given arc length
-        int num_points = 50;
+        {
+        // marker for body velocity
+            visualization_msgs::msg::Marker vel_arrow;
+            vel_arrow.header.frame_id = "base_link";
+            vel_arrow.header.stamp = this->now();
+            vel_arrow.ns = "velocity_arrow";
+            vel_arrow.id = 0;
+            vel_arrow.type = visualization_msgs::msg::Marker::ARROW;
+            vel_arrow.action = visualization_msgs::msg::Marker::ADD;
+            vel_arrow.scale.x = 0.05;   // Shaft width
+            vel_arrow.scale.y = 0.1;    // arrowhead width
+            vel_arrow.color.a = 1.0;
+            vel_arrow.color.r = 0.0;
+            vel_arrow.color.g = 1.0;
+            vel_arrow.color.b = 1.0;
 
-        // Marker initialization
-        visualization_msgs::msg::Marker marker;
-        marker.header.frame_id = "base_link";
-        marker.header.stamp = this->now();
-        marker.ns = "drive_arc";
-        marker.id = 0;
-        marker.type = visualization_msgs::msg::Marker::LINE_STRIP;
-        marker.action = visualization_msgs::msg::Marker::ADD;
-        marker.scale.x = 0.05;
-        marker.color.a = 1.0;
-        marker.color.r = 1.0;
-        marker.color.g = 0.0;
-        marker.color.b = 0.0;
+            // start point of arrow
+            geometry_msgs::msg::Point start;
+            start.x = 0.0;
+            start.y = 0.0;
+            start.z = 1.0;
+            vel_arrow.points.push_back(start);
 
-        // Angle offset to align arc with the robot's front
-        double angle_offset = M_PI / 2;  
+            // end point of arrow
+            geometry_msgs::msg::Point end;
+            end.x = 0.0;
+            end.y = msg->linear.x;
+            end.z = 1.0;
+            vel_arrow.points.push_back(end);
 
-        for (int i = 0; i <= num_points; i++) {
-            double theta = (i / static_cast<double>(num_points)) * theta_max;
-
-            // Compute the point on the arc
-            double x = radius * sin(theta);
-            double y = radius * (1 - cos(theta));
-
-            // Rotate the arc points to align with the robot’s heading
-            geometry_msgs::msg::Point p;
-            p.x = x * cos(angle_offset) - y * sin(angle_offset);
-            p.y = x * sin(angle_offset) + y * cos(angle_offset);
-            p.z = 0.0;
-
-            marker.points.push_back(p);
+            // Publish the ICR marker
+            marker_pub_->publish(vel_arrow);
         }
 
-        marker_pub_->publish(marker);
+        {
+            // Marker initialization for the Instantaneous Center of Rotation (ICR) dotted line
+            visualization_msgs::msg::Marker icr_line;
+            icr_line.header.frame_id = "base_link";
+            icr_line.header.stamp = this->now();
+            icr_line.ns = "drive_arc_icr_line";
+            icr_line.id = 1;
+            icr_line.type = visualization_msgs::msg::Marker::POINTS;
+            icr_line.action = visualization_msgs::msg::Marker::ADD;
+            icr_line.scale.x = 0.1;  // Point width
+            icr_line.scale.y = 0.1;  // Point height
+            icr_line.color.a = 1.0;
+            icr_line.color.r = 0.0;
+            icr_line.color.g = 1.0;
+            icr_line.color.b = 1.0;
+
+            // Add points to create a dotted line
+            int num_points = 10;
+            for (int i = 0; i <= num_points; ++i) {
+                geometry_msgs::msg::Point p;
+                p.x = radius * (i / static_cast<double>(num_points));
+                p.y = 0.0;
+                p.z = 1.0;
+                icr_line.points.push_back(p);
+            }
+
+            // Publish the ICR dotted line marker
+            marker_pub_->publish(icr_line);
+        }
     }
 
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
