@@ -16,7 +16,7 @@ public:
 private:
     void cmdVelCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
         double radius;
-        if (msg->angular.z < 0.01) {
+        if (std::abs(msg->angular.z) < 0.01) {
             // set a large radius to avoid division by zero
             radius = 9999999.0;
         }
