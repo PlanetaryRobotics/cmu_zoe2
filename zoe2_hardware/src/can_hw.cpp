@@ -21,6 +21,10 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+// Motor Constants
+#define ENCODER_PPR 1024
+#define PI 3.14
+
 // CAN definitions
 #define CAN_INTERFACE "can0"
 #define CANOPEN_ID_1 1
@@ -31,6 +35,7 @@
 // Define CANOPEN IDs
 std::vector<int> canopenIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
 
+// Helper Functions
 int start_can(std::shared_ptr<Command> can) {
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
   
@@ -55,7 +60,6 @@ int start_can(std::shared_ptr<Command> can) {
   return EXIT_SUCCESS;
 }
 
-
 int end_can(std::shared_ptr<Command> can){
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
   // run teardown here
@@ -65,6 +69,14 @@ int end_can(std::shared_ptr<Command> can){
   //
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
   return EXIT_SUCCESS;
+}
+
+int get_counts(double speed){
+  return int(speed * ENCODER_PPR / (2 * PI));
+}
+
+double get_speed_counts(int counts){
+  return ((double)counts * 2 * PI / ENCODER_PPR);
 }
 
 namespace zoe2_hardware
@@ -95,6 +107,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   // reset values always when configuring hardware
   for (const auto & [name, descr] : joint_state_interfaces_)
   {
+    // TODO: Read states
     set_state(name, 0.0);
   }
   for (const auto & [name, descr] : joint_command_interfaces_)
@@ -178,8 +191,10 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
     ss << std::fixed << std::setprecision(2) << std::endl
        << "\t" << "command " << get_command(name) << " for '" << name << "'!";
 
-    int speed = int (get_command(name)*10000);
-    can_->setSpeed(speed, canopenIDs[iterator++]);
+    int speed_ticks = int(get_counts(get_command(name))*50);
+    ss << std::fixed << std::setprecision(2) << std::endl
+      << "\t" << "speed ticks " << speed_ticks << " for '" << name << "'!";
+    // can_->setSpeed(speed_ticks, canopenIDs[iterator++]);
 
   }
   RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
