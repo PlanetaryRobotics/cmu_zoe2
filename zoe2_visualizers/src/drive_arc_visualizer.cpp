@@ -21,6 +21,8 @@ private:
         }
 
         double radius = msg->linear.x / msg->angular.z;
+        double arc_length = 5.0;  // Set a desired arc length in meters
+        double theta_max = arc_length / std::abs(radius); // Compute max angle for given arc length
         int num_points = 50;
 
         // Marker initialization
@@ -38,27 +40,26 @@ private:
         marker.color.b = 0.0;
 
         // Angle offset to align arc with the robot's front
-        double angle_offset = M_PI / 2;  // If robot’s front is along the positive x-axis
+        double angle_offset = M_PI / 2;  
 
         for (int i = 0; i <= num_points; i++) {
-            double theta = (i / static_cast<double>(num_points)) * M_PI;
+            double theta = (i / static_cast<double>(num_points)) * theta_max;
 
             // Compute the point on the arc
             double x = radius * sin(theta);
             double y = radius * (1 - cos(theta));
 
-            // Rotate the arc points based on the robot's current heading
+            // Rotate the arc points to align with the robot’s heading
             geometry_msgs::msg::Point p;
-            p.x = x * cos(angle_offset) - y * sin(angle_offset); // Rotate based on robot's heading
-            p.y = x * sin(angle_offset) + y * cos(angle_offset); // Rotate based on robot's heading
-            p.z = 0.0; // Keep the arc in the 2D plane (no height change)
+            p.x = x * cos(angle_offset) - y * sin(angle_offset);
+            p.y = x * sin(angle_offset) + y * cos(angle_offset);
+            p.z = 0.0;
 
             marker.points.push_back(p);
         }
 
         marker_pub_->publish(marker);
     }
-
 
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
