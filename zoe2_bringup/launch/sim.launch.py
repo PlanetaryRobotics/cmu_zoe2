@@ -128,8 +128,20 @@ def generate_launch_description():
     rviz = IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
                 get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
-            )])
+            )]),
+            launch_arguments={
+                "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "sim.rviz"]),
+            }.items()
     )
+
+    # launch the drive_arc_visualizer node
+    drive_arc_visualizer_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory("zoe2_visualizers"),'launch','drive_arc_visualizer.launch.py'
+        )]),
+        launch_arguments={'use_sim_time': 'true'}.items()
+    )
+
 
     # Launch them all!
     return LaunchDescription(
@@ -142,5 +154,6 @@ def generate_launch_description():
         delayed_zoe2_controller_spawner,
         ros_gz_bridge,
         odom,
-        rviz
+        rviz,
+        drive_arc_visualizer_node
     ])
