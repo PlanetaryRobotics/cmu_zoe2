@@ -116,6 +116,12 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   {
     set_command(name, 0.0);
   }
+
+  can_setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_1);
+  can_setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_2);
+  can_setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_3);
+  can_setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_4);
+  
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
   return CallbackReturn::SUCCESS;
