@@ -68,7 +68,7 @@ def generate_launch_description():
                 get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
             )]),
             launch_arguments={
-                "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "hw.rviz"]),
+                "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "wheel_speeds.rviz"]),
             }.items()
     )
 
