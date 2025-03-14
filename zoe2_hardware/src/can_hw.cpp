@@ -32,6 +32,8 @@
 #define CANOPEN_ID_3 3
 #define CANOPEN_ID_4 4
 
+#define MAX_SPEED 20000
+
 // Define CANOPEN IDs
 std::vector<int> canopenIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
 
@@ -194,7 +196,11 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
     int speed_ticks = int(get_counts(get_command(name))*50);
     ss << std::fixed << std::setprecision(2) << std::endl
       << "\t" << "speed ticks " << speed_ticks << " for '" << name << "'!";
-    // can_->setSpeed(speed_ticks, canopenIDs[iterator++]);
+
+    // cap the magnitude, but respect the sign
+    speed_ticks = std::min(std::max(speed_ticks, -MAX_SPEED), MAX_SPEED);
+
+    can_->setSpeed(speed_ticks, canopenIDs[iterator++]);
 
   }
   RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
