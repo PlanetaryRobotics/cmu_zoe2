@@ -97,7 +97,7 @@ class Command {
         
         int setSpeed(int speed, unsigned int can_id = -1); 
         int configureSpeedMode(unsigned int can_id = -1);
-        int getSpeed(int *speed, unsigned int id = -1);
+        int getSpeed(int *speed, unsigned int can_id = -1);
 
         int setAbsolutePosition(int pos, unsigned int can_id = -1);
         int setRelativePosition(int pos, unsigned int can_id = -1);
