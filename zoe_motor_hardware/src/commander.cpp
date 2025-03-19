@@ -227,14 +227,18 @@ int Command::setPosition(int pos, unsigned int can_id) {
 
 int Command::setSpeed(int speed, unsigned int can_id) {
   int rval;
-  rval = stopMotor(can_id);
-  rval |= setUnitMode(MODE_SPEED, can_id);
   rval |= setVelocity(speed, can_id);
-  rval |= startMotor(can_id);
   rval |= beginMotion(can_id);
-
   return rval;
 
+}
+
+int Command::configureSpeedMode(unsigned int can_id) {
+  int rval;
+  rval = stopMotor(can_id);
+  rval |= setUnitMode(MODE_SPEED, can_id);
+  rval |= startMotor(can_id);
+  return rval;
 }
 
 int Command::getPosition(int* pos, unsigned int can_id) {

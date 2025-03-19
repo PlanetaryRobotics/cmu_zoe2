@@ -117,10 +117,10 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
     set_command(name, 0.0);
   }
 
-  can_->setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_1);
-  can_->setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_2);
-  can_->setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_3);
-  can_->setLimits(-320000, 320000, -320000, 320000, CANOPEN_ID_4);
+  // set each can to velocity mode
+  for (int id:canopenIDs){
+    can_->configureSpeedMode(id);
+  }
   
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
