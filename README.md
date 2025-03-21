@@ -23,7 +23,9 @@ rosdep install --from-paths src -y --ignore-src
 3. Alternatively, launch the robot in a custom world using `ros2 launch zoe2_bringup zoe2.launch.py world:=moon/model.sdf z:=8`, or any other world stored in `zoe2_bringup/worlds`.
 ### Hardware Mode
 1. Open a new terminal and source your package using `source install/setup.bash` at the root of your workspace. This needs to be done in any new terminal when running the program.
-2. Launch the hardware using `ros2 launch zoe2_bringup hw.launch.py`.
+2. Plug the Kvaser Leaf Light v2 USB into your computer. Run `lsusb` to see if it is recognized.
+3. In your terminal, run `sudo ip link set can0 type can bitrate 1000000 && sudo ip link set up can0` to establish communication
+4. Launch the hardware using `ros2 launch zoe2_bringup hw.launch.py`.
 
 ## Operation
 1. Open a new terminal and `source install/setup.bash` at the root of your workspace.

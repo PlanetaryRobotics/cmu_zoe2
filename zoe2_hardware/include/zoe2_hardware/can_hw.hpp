@@ -26,6 +26,7 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "zoe_motor_hardware/commander.hpp"
 
 namespace zoe2_hardware
 {
@@ -46,6 +47,9 @@ public:
   hardware_interface::CallbackReturn on_deactivate(
     const rclcpp_lifecycle::State & previous_state) override;
 
+  hardware_interface::CallbackReturn on_shutdown(
+      const rclcpp_lifecycle::State & previous_state) override;
+
   hardware_interface::return_type read(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
@@ -55,6 +59,9 @@ public:
 private:
   std::vector<double> hw_commands_;
   std::vector<double> hw_states_;
+
+  // CAN pointer
+  std::shared_ptr<Command> can_;
 };
 
 }  // namespace zoe2_hardware
