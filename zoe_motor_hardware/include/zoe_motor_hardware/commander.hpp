@@ -69,6 +69,7 @@ class Command {
 
         bool checkOpenResult();
         int setOperational(unsigned int can_id = -1); 
+        int nmtStart(unsigned int can_id = -1);
         
         // Commands implemented
 

@@ -63,6 +63,16 @@ int TCan::setPreOperational(unsigned int can_id) {
   return sendFrame(frame);
 }
 
+int TCan::nmtStart(unsigned int can_id) {
+  can_frame frame;
+  unsigned char data[8] = {0x01, can_id, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  createFrame(frame, 0, 2, data);
+
+  return sendFrame(frame);
+
+}
+
 
 int TCan::sendFrame(can_frame& frame) {
   int bytes = write(socket_, &frame, sizeof(frame));

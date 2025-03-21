@@ -36,7 +36,8 @@
 #define MAX_SPEED 20000
 
 // Define CANOPEN IDs
-std::vector<int> canopenIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
+std::vector<int> motorIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
+std::vector<int> encoderIDs = {50, 51, 52};
 
 // Helper Functions
 int start_can(std::shared_ptr<Command> can) {
@@ -47,7 +48,7 @@ int start_can(std::shared_ptr<Command> can) {
       return EXIT_FAILURE;
   } 
   
-  for (int id : canopenIDs) {
+  for (int id : motorIDs) {
       if (can->setOperational(id) < 0) {
           RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
           return EXIT_FAILURE;
@@ -59,6 +60,13 @@ int start_can(std::shared_ptr<Command> can) {
       }
   }
 
+  for (int id : encoderIDs) {
+    if (can->nmtStart(id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
+      return EXIT_FAILURE;
+    }
+  }
+
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
   return EXIT_SUCCESS;
 }
@@ -66,7 +74,7 @@ int start_can(std::shared_ptr<Command> can) {
 int end_can(std::shared_ptr<Command> can){
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
   // run teardown here
-  for (int id : canopenIDs) {
+  for (int id : motorIDs) {
     can->stop(id);
   }
   //
@@ -119,7 +127,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   }
 
   // set each can to velocity mode
-  for (int id:canopenIDs){
+  for (int id:motorIDs){
     can_->configureSpeedMode(id);
   }
   
@@ -154,8 +162,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
   return CallbackReturn::SUCCESS;
 }
 
-hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & period){
-  // TODO(anyone): read robot states
+hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
   int iterator = 0;
   int measuredPosition = 0;
   int measuredSpeed = 0;
@@ -165,14 +172,14 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto & [name, descr] : joint_state_interfaces_){
     if (descr.get_interface_name() == hardware_interface::HW_IF_POSITION){
       if (name.find("wheel") != std::string::npos){
-        can_->getPosition(&measuredPosition, canopenIDs[iterator++]);
+        can_->getPosition(&measuredPosition, motorIDs[iterator++]);
         set_state(name, tick_to_rad(measuredPosition));
         // ss << std::endl
         //   << "\t position " << get_state(name) << " and velocity " << velo << " for '" << name
         //   << "'!";
       }
       else if (descr.get_interface_name() == hardware_interface::HW_IF_VELOCITY){
-        can_->getSpeed(&measuredSpeed, canopenIDs[iterator++]);
+        can_->getSpeed(&measuredSpeed, motorIDs[iterator++]);
         set_state(name, tick_to_rad(measuredSpeed));
       }
     }
@@ -182,7 +189,6 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 }
 
 hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
-  // TODO(anyone): write robot's commands'
 
   std::stringstream ss;
   ss << "Writing commands:";
@@ -203,11 +209,11 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
     // cap the magnitude, but respect the sign
     speed_ticks = std::min(std::max(speed_ticks, -MAX_SPEED), MAX_SPEED);
 
-    can_->setSpeed(speed_ticks, canopenIDs[iterator++]);
+    can_->setSpeed(speed_ticks, motorIDs[iterator++]);
 
   }
-  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
 
+  // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
 
   return hardware_interface::return_type::OK;
 }
