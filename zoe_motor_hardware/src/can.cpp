@@ -41,10 +41,6 @@ TCan::~TCan() {
   close(socket_);
 }
 
-// unsigned int TCan::get_can_id() {
-//   return can_id;
-// }
-
 int TCan::setOperational(unsigned int can_id) {
   can_frame frame;
   unsigned char data[8] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};

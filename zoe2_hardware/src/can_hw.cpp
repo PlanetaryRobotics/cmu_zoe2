@@ -33,7 +33,10 @@
 #define CANOPEN_ID_3 3
 #define CANOPEN_ID_4 4
 
-#define MAX_SPEED 20000
+#define MAX_SPEED 100000
+
+#define GEARING 50
+// #define GEARING 1
 
 // Define CANOPEN IDs
 std::vector<int> motorIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
@@ -202,7 +205,7 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
     ss << std::fixed << std::setprecision(2) << std::endl
        << "\t" << "command " << get_command(name) << " for '" << name << "'!";
 
-    int speed_ticks = int(rad_to_tick(get_command(name)));
+    int speed_ticks = int(rad_to_tick(get_command(name))*GEARING);
     ss << std::fixed << std::setprecision(2) << std::endl
       << "\t" << "speed ticks " << speed_ticks << " for '" << name << "'!";
 
