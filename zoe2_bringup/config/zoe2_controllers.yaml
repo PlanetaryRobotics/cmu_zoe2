@@ -8,6 +8,9 @@ controller_manager:
     zoe2_controller:
       type: zoe2_controller/Zoe2Controller
 
+    velocity_controller:
+      type: velocity_controllers/JointGroupVelocityController
+
 zoe2_controller:
   ros__parameters:
     wheel_front_left: wheel_front_left_joint
@@ -17,3 +20,11 @@ zoe2_controller:
     axle_yaw_front: axle_yaw_front_joint
     axle_yaw_back: axle_yaw_back_joint
     publish_rate: 50.0
+
+velocity_controller:
+  ros__parameters:
+    joints:
+      - wheel_front_left_joint
+      - wheel_front_right_joint
+      - wheel_back_left_joint
+      - wheel_back_right_joint

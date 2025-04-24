@@ -96,7 +96,7 @@ def generate_launch_description():
     zoe2_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["zoe2_controller"],
+        arguments=["velocity_controller"],
     )
 
     delayed_zoe2_controller_spawner = RegisterEventHandler(

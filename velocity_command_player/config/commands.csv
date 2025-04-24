@@ -1,0 +1,4 @@
+timestamp,wheel_front_left,wheel_front_right,wheel_back_left,wheel_back_right
+0.0,0.5,0.5,0.5,0.5
+1.0,1.0,1.0,1.0,1.0
+2.0,0.0,0.0,0.0,0.0
