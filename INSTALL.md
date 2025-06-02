@@ -68,3 +68,8 @@ sudo apt install ros-jazzy-ros2-control ros-jazzy-ros2-controllers
 sudo apt-get install ros-${ROS_DISTRO}-ros-gz
 sudo apt-get install ros-${ROS_DISTRO}-gz-ros2-control
 ```
+
+## Install Can-Utils
+```bash
+sudo apt-get can-utils
+```
