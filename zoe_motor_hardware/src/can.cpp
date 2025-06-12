@@ -268,6 +268,10 @@ int TCan::intFromData(unsigned char* data) {
   return i;
 }
 
+int TCan::getSocket() const{
+  return socket_;
+}
+
 
 
 

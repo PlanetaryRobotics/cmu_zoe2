@@ -49,6 +49,8 @@ public:
   float floatFromData(unsigned char* data);
   int intFromData(unsigned char* data);
 
+  int getSocket() const;
+
   // unsigned int get_can_id();
 
 private:
