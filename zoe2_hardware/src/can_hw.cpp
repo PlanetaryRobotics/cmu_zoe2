@@ -123,6 +123,12 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
     can_->configureSpeedMode(id);
   }
   
+
+  dispatcher_ = std::make_shared<zoe2_hardware::Dispatcher>(0);
+  RCLCPP_INFO(get_logger(), "Dispatcher Created!");
+  dispatcher_->start();
+
+
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
   return CallbackReturn::SUCCESS;

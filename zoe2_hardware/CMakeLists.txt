@@ -17,6 +17,7 @@ add_library(
   zoe2_hardware
   SHARED
   src/can_hw.cpp
+  src/dispatcher.cpp
 )
 target_include_directories(
   zoe2_hardware
