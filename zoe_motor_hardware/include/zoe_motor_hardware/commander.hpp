@@ -2,6 +2,16 @@
 #include "zoe_motor_hardware/can.hpp"
 #include <memory>
 
+
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstring>
+#include <iostream>
+#include <rclcpp/rclcpp.hpp>
+
+
 #ifndef ZOE_COMMAND
 #define ZOE_COMMAND
 
@@ -115,6 +125,12 @@ class Command {
 
         int get_counts(double speed);
         double get_speed_counts(int count);
+
+
+
+        int getSocketFD() const{
+            return tcan_->getSocket();
+        }
 
 
         private:

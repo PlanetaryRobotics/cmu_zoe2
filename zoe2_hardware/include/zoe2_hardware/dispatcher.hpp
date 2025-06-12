@@ -7,6 +7,7 @@
 #include <array>
 #include <atomic>
 #include <linux/can.h>
+#include <fcntl.h>
 
 namespace zoe2_hardware {
 
