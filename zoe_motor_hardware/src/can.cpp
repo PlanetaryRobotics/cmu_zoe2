@@ -89,6 +89,10 @@ int TCan::sendMsg(int size, const std::string& cmd, unsigned int can_id) {
 }
 
 int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
+
+
+
+  /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER
   int bytes;
   can_frame frame;
 
@@ -108,6 +112,9 @@ int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
 }
 
 int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
+
+    /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER
+    
   int bytes;
 
   while(true) {

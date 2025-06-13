@@ -6,8 +6,9 @@
 
 namespace zoe2_hardware {
 
-Dispatcher::Dispatcher(int socket_fd){
-    socket_fd_ = socket_fd;
+Dispatcher::Dispatcher(int socket_fd, std::shared_ptr<rclcpp::Node> node): socket_fd_(socket_fd), node_(node){
+    
+    publisher_ = node->create_publisher<can_msg::msg::Frame>("can_rx",5);
 }
 
 Dispatcher::~Dispatcher() {

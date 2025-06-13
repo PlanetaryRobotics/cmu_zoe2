@@ -9,11 +9,20 @@
 #include <linux/can.h>
 #include <fcntl.h>
 
+#include "can_msgs/msg/frame.hpp"
+
+namespace rclcpp{
+    class Node;
+}
+
+
+
+
 namespace zoe2_hardware {
 
 class Dispatcher {
 public:
-    explicit Dispatcher(int socket_fd);
+    Dispatcher(int socket_fd);
     ~Dispatcher();
 
     void start();  // Starts the background thread
@@ -28,8 +37,11 @@ private:
     std::thread thread_;
     std::atomic<bool> running_;
 
-    std::unordered_map<uint32_t, std::vector<std::array<uint8_t, 8>>> buffer_;
-    std::mutex buffer_mutex_;
+    std::unordered_map<uint32_t, std::vector<std::array<uint8_t, 8>>> buffer_; // UNUSED
+    std::mutex buffer_mutex_;                                                  // UNUSED
+
+    std::shared_ptr<rclcpp::Node> node_;
+    rclcpp::Publisher<can_msgs::msg:Frame>::SharedPtr publisher_;
 };
 
 } // namespace zoe_motor_hardware
