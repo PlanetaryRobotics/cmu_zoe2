@@ -114,8 +114,20 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
 
   RCLCPP_INFO(get_logger(), "Configuring... please wait...");
 
-  // initialize CAN
+// creating Can instance 
   can_ = std::make_shared<Command>(CAN_INTERFACE, true);
+
+
+  // creating Dispatcher Before CAN init
+  int socket = can_->getSocketFD();
+  dispatcher_ = std::make_shared<zoe2_hardware::Dispatcher>(socket); // have dispatcher accessable to can.cpp
+  RCLCPP_INFO(get_logger(), "Dispatcher Created!");
+
+  can_->setDispatcher(dispatcher_);
+  RCLCPP_INFO(get_logger(), "type of can_ is: %s", typeid(can_).name());
+  dispatcher_->start();
+
+  // initialize CAN
   start_can(can_);
 
   // reset values always when configuring hardware
@@ -134,13 +146,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
     can_->configureSpeedMode(id);
   }
   
-  int socket = can_->getSocketFD();
-  dispatcher_ = std::make_shared<zoe2_hardware::Dispatcher>(socket); // have dispatcher accessable to can.cpp
-  RCLCPP_INFO(get_logger(), "Dispatcher Created!");
 
-  can_->setDispatcher(dispatcher_);
-  RCLCPP_INFO(get_logger(), "type of can_ is: %s", typeid(can_).name());
-  dispatcher_->start();
 
 
   RCLCPP_INFO(get_logger(), "Successfully configured!");

@@ -37,4 +37,4 @@ private:
     const size_t max_buffer_size = 3;
 };
 
-} // namespace zoe_motor_hardware
+} // namespace zoe2_hardware

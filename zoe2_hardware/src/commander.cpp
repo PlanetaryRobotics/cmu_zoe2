@@ -1,4 +1,4 @@
-#include "zoe_motor_hardware/commander.hpp"
+#include "zoe2_hardware/commander.hpp"
 #include <memory>
 
 #define ENCODER_PPR 1024

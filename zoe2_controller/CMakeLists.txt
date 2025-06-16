@@ -18,7 +18,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   realtime_tools
   tf2
   tf2_msgs
-  # zoe_motor_hardware
+
 )
 
 find_package(ament_cmake REQUIRED)

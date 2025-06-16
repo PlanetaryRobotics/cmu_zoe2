@@ -98,12 +98,13 @@ void Dispatcher::run() {
                 if (queue.size() > max_buffer_size){
                     queue.pop_back();
                 }
-                RCLCPP_INFO(
-                rclcpp::get_logger("TCan"),
-                "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
-                frame.can_id,
-                frame.data[0], frame.data[1], frame.data[2], frame.data[3],
-                frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
+                
+                // RCLCPP_INFO(
+                // rclcpp::get_logger("TCan"),
+                // "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
+                // frame.can_id,
+                // frame.data[0], frame.data[1], frame.data[2], frame.data[3],
+                // frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
 
 
 

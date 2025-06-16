@@ -1,4 +1,4 @@
-#include "zoe_motor_hardware/can.hpp"
+#include "zoe2_hardware/can.hpp"
 #include <cstring>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -62,7 +62,7 @@ int TCan::setPreOperational(unsigned int can_id) {
 
 int TCan::nmtStart(unsigned int can_id) {
   can_frame frame;
-  unsigned char data[8] = {0x01, can_id, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  unsigned char data[8] = {0x01, static_cast<unsigned char>(can_id), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
   createFrame(frame, 0, 2, data);
 
@@ -72,7 +72,7 @@ int TCan::nmtStart(unsigned int can_id) {
 
 
 int TCan::sendFrame(can_frame& frame) {
-  int bytes = write(socket_, &frame, sizeof(frame));
+  long int bytes = write(socket_, &frame, sizeof(frame));
   if(bytes != sizeof(frame)) {
     return -1;
   }
@@ -81,7 +81,7 @@ int TCan::sendFrame(can_frame& frame) {
 
 void TCan::createFrame(can_frame& frame, int id, int len, unsigned char* data) {
   frame.can_id = id;
-  frame.can_dlc = len;
+  frame.can_dlc = static_cast<__u8>(len);
   memcpy(frame.data, data, 8);
 }
 
@@ -96,45 +96,21 @@ int TCan::sendMsg(int size, const std::string& cmd, unsigned int can_id) {
 }
 
 int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
-
-
-
-  /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER - returns only CAN data
+  // Returns only CAN data
 
   if (!dispatcher_) return -1;
   auto messages = dispatcher_->getMessagesForId(can_id | (5<<7));
   if (messages.empty()) return -1;
   memcpy(output,messages.front().data,8);
-  /*
-  RCLCPP_INFO(
-    rclcpp::get_logger("CAN"),
-    "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
-    can_id,
-    output[0], output[1], output[2], output[3],
-    output[4], output[5], output[6], output[7]
-);*/
-
-
   return 0;
 }
 
 int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
-
-    /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER - returns whole frame 
-
-
+  // Returns whole frame
   if (!dispatcher_) return -1;
   auto messages = dispatcher_->getMessagesForId(can_id | (5<<7));
   if (messages.empty()) return -1;
   frame = messages.front();
-  /*
-  RCLCPP_INFO(
-    rclcpp::get_logger("TCan"),
-    "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
-    frame.can_id,
-    frame.data[0], frame.data[1], frame.data[2], frame.data[3],
-    frame.data[4], frame.data[5], frame.data[6], frame.data[7] 
-);*/
 
   return 0;
 
@@ -176,8 +152,8 @@ void TCan::createCmd(const std::string& input, unsigned char* output, const int 
 }
 
 void TCan::setIndex(unsigned char* data, int index) {
-  data[2] = index & 0xFF;
-  data[3] = (index >> 8) & 0x3F;
+  data[2] = static_cast<unsigned char>(index & 0xFF);
+  data[3] = static_cast<unsigned char>((index >> 8) & 0x3F);
   
 }
 
@@ -237,10 +213,10 @@ int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can
 
 void TCan::setData(unsigned char* data, int i) {
 
-  data[7] = (i >> 24);
-  data[6] = ((i << 8) >> 24); 
-  data[5] = ((i << 16) >> 24);
-  data[4] = ((i << 24) >> 24);
+  data[7] = static_cast<unsigned char>((i >> 24));
+  data[6] = static_cast<unsigned char>(((i << 8) >> 24));
+  data[5] = static_cast<unsigned char>(((i << 16) >> 24));
+  data[4] = static_cast<unsigned char>(((i << 24) >> 24));
 
 }
 
@@ -248,10 +224,10 @@ void TCan::setData(unsigned char* data, float f) {
 
   int i = *(int*)&f;
   
-  data[7] = (i >> 24);
-  data[6] = ((i << 8) >> 24);
-  data[5] = ((i << 16) >> 24); 
-  data[4] = ((i << 24) >> 24);
+  data[7] = static_cast<unsigned char>((i >> 24));
+  data[6] = static_cast<unsigned char>(((i << 8) >> 24));
+  data[5] = static_cast<unsigned char>(((i << 16) >> 24));
+  data[4] = static_cast<unsigned char>(((i << 24) >> 24));
 
   data[3] |= 1 << 7; 
 

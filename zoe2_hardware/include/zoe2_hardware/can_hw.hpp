@@ -26,7 +26,7 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "zoe_motor_hardware/commander.hpp"
+#include "zoe2_hardware/commander.hpp"
 #include "zoe2_hardware/dispatcher.hpp"
 
 namespace zoe2_hardware
