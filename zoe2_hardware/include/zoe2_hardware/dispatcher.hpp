@@ -8,12 +8,7 @@
 #include <atomic>
 #include <linux/can.h>
 #include <fcntl.h>
-
-#include "can_msgs/msg/frame.hpp"
-
-namespace rclcpp{
-    class Node;
-}
+#include <deque>
 
 
 
@@ -28,7 +23,7 @@ public:
     void start();  // Starts the background thread
     void stop();   // Signals thread to exit and joins it
 
-    //std::vector<std::array<uint8_t, 8>> getMessagesForId(uint32_t can_id);
+    std::vector<can_frame> getMessagesForId(uint32_t can_id);
 
 private:
     void run();
@@ -37,11 +32,9 @@ private:
     std::thread thread_;
     std::atomic<bool> running_;
 
-    std::unordered_map<uint32_t, std::vector<std::array<uint8_t, 8>>> buffer_; // UNUSED
-    std::mutex buffer_mutex_;                                                  // UNUSED
-
-    std::shared_ptr<rclcpp::Node> node_;
-    rclcpp::Publisher<can_msgs::msg:Frame>::SharedPtr publisher_;
+    std::unordered_map<uint32_t, std::deque<can_frame>> buffer_; 
+    std::mutex buffer_mutex_;                                                  
+    const size_t max_buffer_size = 3;
 };
 
 } // namespace zoe_motor_hardware

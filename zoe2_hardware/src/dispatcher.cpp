@@ -6,10 +6,7 @@
 
 namespace zoe2_hardware {
 
-Dispatcher::Dispatcher(int socket_fd, std::shared_ptr<rclcpp::Node> node): socket_fd_(socket_fd), node_(node){
-    
-    publisher_ = node->create_publisher<can_msg::msg::Frame>("can_rx",5);
-}
+Dispatcher::Dispatcher(int socket_fd): socket_fd_(socket_fd){}
 
 Dispatcher::~Dispatcher() {
     stop();
@@ -68,7 +65,16 @@ void Dispatcher::run() {
     
 }*/
 
-
+std::vector<can_frame> Dispatcher::getMessagesForId(uint32_t can_id){
+    std::lock_guard<std::mutex> lock(buffer_mutex_);
+    auto it = buffer_.find(can_id);
+    if (it !=buffer_.end()){
+        return std::vector<can_frame>(it->second.begin(), it->second.end());
+    }
+    
+    return{};
+    
+}
 
 void Dispatcher::run() {
     struct can_frame frame;
@@ -83,6 +89,9 @@ void Dispatcher::run() {
         if (ret > 0 && (fds.revents & POLLIN)) {
             ssize_t nbytes = read(socket_fd_, &frame, sizeof(struct can_frame));
             if (nbytes > 0) {
+
+
+/*
                 char data_str[24] = {};
                 snprintf(data_str, sizeof(data_str),
                          "%02X %02X %02X %02X %02X %02X %02X %02X",
@@ -92,6 +101,18 @@ void Dispatcher::run() {
                 RCLCPP_INFO(rclcpp::get_logger("Dispatcher"),
                             "Received CAN ID: 0x%03X Data: %s",
                             frame.can_id, data_str);
+*/
+                
+                std::lock_guard<std::mutex> lock(buffer_mutex_);
+                auto& queue = buffer_[frame.can_id];
+                queue.push_back(frame);
+                if (queue.size() > max_buffer_size){
+                    queue.pop_front();
+                }
+
+
+
+
             } else if (nbytes == -1) {
                 RCLCPP_ERROR(rclcpp::get_logger("Dispatcher"),
                              "Error reading from CAN socket: %s", strerror(errno));
@@ -114,11 +135,3 @@ void Dispatcher::run() {
 
 
 }
-
-/*
-std::vector<std::array<uint8_t, 8>> Dispatcher::getMessagesForId(uint32_t can_id) {
-    std::lock_guard<std::mutex> lock(buffer_mutex_);
-    return buffer_[can_id];  // returns a copy
-}*/
-
- // namespace zoe_motor_hardware
