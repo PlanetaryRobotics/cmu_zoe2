@@ -2,6 +2,8 @@
 #include <sys/socket.h>
 #include <linux/can.h>
 #include <net/if.h>
+#include <memory>
+#include "zoe2_hardware/dispatcher.hpp"
 
 #ifndef ZOE_CAN
 #define ZOE_CAN
@@ -51,7 +53,9 @@ public:
 
   int getSocket() const;
 
-  // unsigned int get_can_id();
+  std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher_;
+
+  void setDispatcher(std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher);
 
 private:
 
@@ -63,6 +67,8 @@ private:
   int sendFrame(struct can_frame& frame);
   void createCmd(const std::string& input, unsigned char* output, const int size);
   bool parseCommand(const std::string& cmd, std::string& command, int& index, ParseValue& value);
+
+  
 
 };
 

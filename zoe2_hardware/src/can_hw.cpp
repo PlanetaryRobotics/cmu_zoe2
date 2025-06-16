@@ -124,8 +124,10 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   }
   
   int socket = can_->getSocketFD();
-  dispatcher_ = std::make_shared<zoe2_hardware::Dispatcher>(socket);
+  dispatcher_ = std::make_shared<zoe2_hardware::Dispatcher>(socket); // have dispatcher accessable to can.cpp
   RCLCPP_INFO(get_logger(), "Dispatcher Created!");
+
+  can_->setDispatcher(dispatcher_);
   RCLCPP_INFO(get_logger(), "type of can_ is: %s", typeid(can_).name());
   dispatcher_->start();
 

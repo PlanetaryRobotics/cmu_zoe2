@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <stdbool.h>
+#include <rclcpp/rclcpp.hpp>
 
 TCan::TCan(const std::string& iface) : iface_(iface) {}
 
@@ -92,46 +93,45 @@ int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
 
 
 
-  /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER
-  int bytes;
-  can_frame frame;
+  /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER - returns only CAN data
 
-  while(true) {
-    bytes = read(socket_, &frame, sizeof(frame));
+  if (!dispatcher_) return -1;
+  auto messages = dispatcher_->getMessagesForId(can_id | (5<<7));
+  if (messages.empty()) return -1;
+  memcpy(output,messages.front().data,8);
+  /*
+  RCLCPP_INFO(
+    rclcpp::get_logger("CAN"),
+    "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
+    can_id,
+    output[0], output[1], output[2], output[3],
+    output[4], output[5], output[6], output[7]
+);*/
 
-    if(bytes < 0) {
-      perror("Read error");
-      return -1;
-    }
 
-    if (frame.can_id == (can_id | 5 << 7)) {
-      memcpy(output, frame.data, 8);
-      return 0;
-    }
-  }
+  return 0;
 }
 
 int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
 
-    /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER
-    
-  int bytes;
-
-  while(true) {
-    bytes = read(socket_, &frame, sizeof(frame));
-
-    if(bytes < 0) {
-      perror("Read error");
-      return -1;
-    }
+    /// CHANGHE TO PULL MESSGAGE FROM MUTEX BUFFER - returns whole frame 
 
 
-    if (frame.can_id == (can_id | 5 << 7)) {
-    // printf("DONE READING!!\n");
+  if (!dispatcher_) return -1;
+  auto messages = dispatcher_->getMessagesForId(can_id | (5<<7));
+  if (messages.empty()) return -1;
+  frame = messages.front();
+  /*
+  RCLCPP_INFO(
+    rclcpp::get_logger("TCan"),
+    "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
+    frame.can_id,
+    frame.data[0], frame.data[1], frame.data[2], frame.data[3],
+    frame.data[4], frame.data[5], frame.data[6], frame.data[7] 
+);*/
 
-      return 0;
-    }
-  }
+  return 0;
+
 }
 
 
@@ -279,6 +279,9 @@ int TCan::getSocket() const{
   return socket_;
 }
 
+void TCan::setDispatcher(std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher){
+  dispatcher_= dispatcher;
+}
 
 
 

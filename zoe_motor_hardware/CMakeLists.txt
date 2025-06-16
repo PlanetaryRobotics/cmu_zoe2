@@ -16,6 +16,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(zoe2_hardware REQUIRED)
 
 
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -39,6 +40,7 @@ $<INSTALL_INTERFACE:include/zoe_motor_hardware>
 )
 ament_target_dependencies(
   zoe_motor_hardware PUBLIC
+  zoe2_hardware
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 

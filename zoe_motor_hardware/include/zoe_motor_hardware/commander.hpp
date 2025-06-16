@@ -132,6 +132,12 @@ class Command {
             return tcan_->getSocket();
         }
 
+        void setDispatcher(std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher){
+            if(tcan_){
+                tcan_ -> setDispatcher(dispatcher);
+            }
+        }
+
 
         private:
             std::unique_ptr<TRs232> rs232_;

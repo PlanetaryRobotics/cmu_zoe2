@@ -91,24 +91,19 @@ void Dispatcher::run() {
             if (nbytes > 0) {
 
 
-/*
-                char data_str[24] = {};
-                snprintf(data_str, sizeof(data_str),
-                         "%02X %02X %02X %02X %02X %02X %02X %02X",
-                         frame.data[0], frame.data[1], frame.data[2], frame.data[3],
-                         frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
-
-                RCLCPP_INFO(rclcpp::get_logger("Dispatcher"),
-                            "Received CAN ID: 0x%03X Data: %s",
-                            frame.can_id, data_str);
-*/
                 
                 std::lock_guard<std::mutex> lock(buffer_mutex_);
                 auto& queue = buffer_[frame.can_id];
-                queue.push_back(frame);
+                queue.push_front(frame);
                 if (queue.size() > max_buffer_size){
-                    queue.pop_front();
+                    queue.pop_back();
                 }
+                RCLCPP_INFO(
+                rclcpp::get_logger("TCan"),
+                "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
+                frame.can_id,
+                frame.data[0], frame.data[1], frame.data[2], frame.data[3],
+                frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
 
 
 
