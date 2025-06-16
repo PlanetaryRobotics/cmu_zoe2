@@ -24,6 +24,16 @@ int Command::setOperational(unsigned int can_id) {
   }
 }
 
+int Command::nmtStart(unsigned int can_id) {
+  if(rs232_ != nullptr) {
+    return -1;
+  } else if(tcan_ != nullptr) {
+    return tcan_->nmtStart(can_id);
+  } else {
+    return -1000;
+  }
+}
+
 
 int Command::send(const int size, const std::string& cmd, unsigned int can_id) {
   if(rs232_ != nullptr) {

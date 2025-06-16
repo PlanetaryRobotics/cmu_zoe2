@@ -36,6 +36,7 @@ public:
 
   int setOperational(unsigned int can_id);
   int setPreOperational(unsigned int can_id);
+  int nmtStart(unsigned int can_id);
 
   int sendMsg(int size, const std::string& cmd, unsigned int can_id);
   int receiveMsg(unsigned char *output, unsigned int can_id);
