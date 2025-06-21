@@ -38,10 +38,10 @@ class OptimalController : public rclcpp::Node
   public:
     OptimalController() : Node("optimal_controller") {
       robot_odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
-        "/odom", 10, std::bind(&OptimalController::robotOdomCallback, this, std::placeholders::_1)); // Need to change function for callback
+        "/odom", 10, std::bind(&OptimalController::robotOdomCallback, this, std::placeholders::_1));
       
       robot_joint_sub_ = this->create_subscription<control_msgs/msg/DynamicJointState>(
-        "/dynamic_joint_states", 10, std::bind(&OptimalController::robotJointCallback, this, std::placeholders::_1)); // Need to change function for callback
+        "/dynamic_joint_states", 10, std::bind(&OptimalController::robotJointCallback, this, std::placeholders::_1));
       
       control_input_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
         "/cmd_vel_unstamped", 10);
@@ -49,12 +49,37 @@ class OptimalController : public rclcpp::Node
     }
   
   private:
+    // Callback for robot odometry
+    void robotOdomCallback(const nav_msgs::msg::Odometry::SharedPtr msg) {
+      // Need to populate
+    }
 
+    // Callback for robot dynmic joint states
+    void robotJointCallback(const control_msgs::msg::DynamicJointState::SharedPtr msg) {
+      // Need to populate
+    }
 
     // Subscriptions and publishers
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr robot_odom_sub_;
     rclcpp::Subscription<control_msgs::msg::DynamicJointState>::SharedPtr robot_joint_sub_;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr control_input_pub_;
+
+    // Timer for control loop
+    rclcpp::TimerBase::SharedPtr control_loop_timer_;
+
+    // LQR Matrices
+
+    // Other parameters
+    double dt_;
+    double tolerance_;
+    bool end_control_loop_;
+    double max_linear_velocity_;
+    double max_angular_velocity_;
+
+    // Robot state and desired state
+    State current_state_;
+    State desired_state_;
+
 };
 
 int main(int argc, char ** argv)
