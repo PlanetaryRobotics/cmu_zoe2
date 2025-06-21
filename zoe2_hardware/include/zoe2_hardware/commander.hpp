@@ -60,7 +60,6 @@ class Command {
                 tcan_ = nullptr;
                 int res = rs232_->serial_open();
                 int res_setup = rs232_->setup();
-                open_result_t open_res;
                 if (res < 0 || res_setup < 0) {
                     open_res_ = OPEN_FAILED;
                 } else {

@@ -236,7 +236,7 @@ int Command::setPosition(int pos, unsigned int can_id) {
 }
 
 int Command::setSpeed(int speed, unsigned int can_id) {
-  int rval;
+  int rval=0;
   rval |= setVelocity(speed, can_id);
   rval |= beginMotion(can_id);
   return rval;

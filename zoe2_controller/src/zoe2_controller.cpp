@@ -137,13 +137,13 @@ Zoe2Controller::update(const rclcpp::Time &time,
 
     controller->setTarget(radius, speed);
 
-    controller->setVfl(frontLeft->feedback_vel.get().get_value() * controller->getWheelRadius());
-    controller->setVfr(frontRight->feedback_vel.get().get_value() * controller->getWheelRadius());
-    controller->setVbl(backLeft->feedback_vel.get().get_value() * controller->getWheelRadius());
-    controller->setVbr(backRight->feedback_vel.get().get_value() * controller->getWheelRadius());
+    controller->setVfl(frontLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
+    controller->setVfr(frontRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
+    controller->setVbl(backLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
+    controller->setVbr(backRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
 
-    controller->setThetaf(frontYaw->yaw.get().get_value());
-    controller->setThetab(backYaw->yaw.get().get_value());
+    controller->setThetaf(frontYaw->yaw.get().get_optional().value());
+    controller->setThetab(backYaw->yaw.get().get_optional().value());
     
     controller->computeWheelSpeed();
 
