@@ -46,6 +46,34 @@ class OptimalController : public rclcpp::Node
       control_input_pub_ = this->create_publisher<geometry_msgs::msg::Twist>(
         "/cmd_vel_unstamped", 10);
       
+
+      A << 1, 0, 0, 0, 0,
+           0, 1, 0, 0, 0,
+           0, 0, 1, 0, 0,
+           0, 0, 0, 1, 0,
+           0, 0, 0, 0, 1;
+      
+      Q << 1, 0, 0, 0, 0,
+           0, 1, 0, 0, 0,
+           0, 0, 1, 0, 0,
+           0, 0, 0, 1, 0,
+           0, 0, 0, 0, 1;
+
+      R << 1, 0, 0, 0,
+           0, 1, 0, 0,
+           0, 0, 1, 0,
+           0, 0, 0, 1;
+
+      desired_state_ = {0.0, 1.0, 0.0, 0.0, 0.0}; // Example desired state
+      dt_ = 0.1; // Control loop period
+      tolerance_ = 0.05; // Tolerance for convergence
+      end_control_loop_ = false;
+      max_linear_velocity_ = 1.0; // Maximum linear velocity
+      max_angular_velocity_ = 1.0; // Maximum angular velocity
+
+      // Initialize control loop timer
+      control_loop_timer_ = this->create_wall_timer(
+        std::chrono::duration<double>(dt_), std::bind(&MobileRobotController::controlLoopCallback, this));
     }
   
   private:
@@ -68,6 +96,7 @@ class OptimalController : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr control_loop_timer_;
 
     // LQR Matrices
+
 
     // Other parameters
     double dt_;
