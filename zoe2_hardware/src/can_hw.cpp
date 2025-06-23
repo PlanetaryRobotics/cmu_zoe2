@@ -16,6 +16,8 @@
 #include <limits>
 #include <vector>
 #include <memory>
+#include <chrono>
+#include <thread>
 
 #include "zoe2_hardware/can_hw.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -39,7 +41,7 @@
 // #define GEARING 1
 
 // Define CANOPEN IDs
-std::vector<int> motorIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3, CANOPEN_ID_4};
+std::vector<int> motorIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3};
 std::vector<int> encoderIDs = {50, 51, 52};
 
 // Helper Functions
@@ -56,8 +58,9 @@ int start_can(std::shared_ptr<Command> can) {
           RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
           return EXIT_FAILURE;
       }
-
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Testing CAN ID: %i", id);
       if (can->testCan(id) < 0) {
+          
           RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i failed test...", id);
           return EXIT_FAILURE;
       }
@@ -114,7 +117,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
 
   RCLCPP_INFO(get_logger(), "Configuring... please wait...");
 
-// creating Can instance 
+  // creating Can instance 
   can_ = std::make_shared<Command>(CAN_INTERFACE, true);
 
 
@@ -126,6 +129,8 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   can_->setDispatcher(dispatcher_);
   RCLCPP_INFO(get_logger(), "type of can_ is: %s", typeid(can_).name());
   dispatcher_->start();
+
+  
 
   // initialize CAN
   start_can(can_);

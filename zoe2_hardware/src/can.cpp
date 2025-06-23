@@ -99,7 +99,7 @@ int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
   // Returns only CAN data
 
   if (!dispatcher_) return -1;
-  auto messages = dispatcher_->getMessagesForId(can_id | (5<<7));
+  auto messages = dispatcher_->getMessagesForId(can_id);
   if (messages.empty()) return -1;
   memcpy(output,messages.front().data,8);
   return 0;
@@ -107,10 +107,16 @@ int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
 
 int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
   // Returns whole frame
-  if (!dispatcher_) return -1;
-  auto messages = dispatcher_->getMessagesForId(can_id | (5<<7));
-  if (messages.empty()) return -1;
+  if (!dispatcher_){
+    RCLCPP_INFO(rclcpp::get_logger("TCAN"), "exited with error -1");
+    return -1;}
+  auto messages = dispatcher_->getMessagesForId(can_id);
+  if (messages.empty()){
+    RCLCPP_INFO(rclcpp::get_logger("TCAN"), "exited with error -2");
+    return -1;
+  }
   frame = messages.front();
+  RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Setting Frame Correctly");
 
   return 0;
 
@@ -207,6 +213,7 @@ bool TCan::parseCommand(const std::string& cmd, std::string& command, int& index
 int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id) {
   int result = sendMsg(size, cmd, can_id);
   unsigned char data[8];
+  RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN sendMsgDiscardReply");
   receiveMsg(data, can_id);
   return result;
 }
