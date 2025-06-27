@@ -18,6 +18,7 @@
 #include <memory>
 #include <chrono>
 #include <thread>
+#include <cmath>
 
 #include "zoe2_hardware/can_hw.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -213,7 +214,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (int id : encoderIDs) {
     temp_frame = (dispatcher_->getMessagesForId(id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = dispatcher_->get_speed_counts(position);
+    double data = std::fmod((dispatcher_->get_speed_counts(position)),6.283);
 
     RCLCPP_INFO(rclcpp::get_logger("TCan"),
     "CAN ID: 0x%d Angle: %f Radians",
