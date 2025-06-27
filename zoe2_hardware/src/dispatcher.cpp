@@ -59,14 +59,6 @@ void Dispatcher::run() {
 
     while (running_) {
         int ret = poll(&fds, 1, 100);  // wait 100ms for data
-        struct can_frame temp_frame;
-        temp_frame = buffer_[50].front();
-        RCLCPP_INFO(
-        rclcpp::get_logger("TCan"),
-        "CAN ID: 0x%03X Data: %02X %02X %02X %02X %02X %02X %02X %02X",
-        temp_frame.can_id,
-        temp_frame.data[0], temp_frame.data[1], temp_frame.data[2], temp_frame.data[3],
-        temp_frame.data[4], temp_frame.data[5], temp_frame.data[6], temp_frame.data[7]);
         
 
         if (ret > 0 && (fds.revents & POLLIN)) {

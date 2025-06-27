@@ -50,7 +50,7 @@ int Command::receive(unsigned char *output, unsigned int can_id) {
   if(rs232_ != nullptr) {
     return rs232_->receiveMsg(output);
   } else if(tcan_ != nullptr) {
-    RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(data)");
+    //RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(data)");
     return tcan_->receiveMsg(output, can_id);
   } else {
     return -1000;
@@ -59,7 +59,7 @@ int Command::receive(unsigned char *output, unsigned int can_id) {
 
 
 int Command::receive(struct can_frame& frame, unsigned int can_id) {
-    RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(frame)");
+    //RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(frame)");
     return tcan_->receiveMsg(frame, can_id);
 }
 

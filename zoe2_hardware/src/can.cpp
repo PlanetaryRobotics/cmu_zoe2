@@ -112,11 +112,11 @@ int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
     return -1;}
   auto messages = dispatcher_->getMessagesForId(can_id);
   if (messages.empty()){
-    RCLCPP_INFO(rclcpp::get_logger("TCAN"), "exited with error -2");
-    return -1;
+    //RCLCPP_INFO(rclcpp::get_logger("TCAN"), "attempting to read from %d exited with error -2",can_id);
+    return -2;
   }
   frame = messages.front();
-  RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Setting Frame Correctly");
+  //RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Setting Frame Correctly");
 
   return 0;
 
@@ -213,7 +213,7 @@ bool TCan::parseCommand(const std::string& cmd, std::string& command, int& index
 int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id) {
   int result = sendMsg(size, cmd, can_id);
   unsigned char data[8];
-  RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN sendMsgDiscardReply");
+  // RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN sendMsgDiscardReply. CAN ID: %d", can_id); ASK ETHAN ABOUT THIS: WHY IS 0 CALLED - mabye mistake since 1,2,3 and no 4.
   receiveMsg(data, can_id);
   return result;
 }

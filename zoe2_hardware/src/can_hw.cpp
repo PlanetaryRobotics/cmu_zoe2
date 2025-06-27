@@ -207,6 +207,26 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
       }
     }
   }
+
+  // READING ENCOEDER VALUES 
+  struct can_frame temp_frame;
+  for (int id : encoderIDs) {
+    temp_frame = (dispatcher_->getMessagesForId(id)).front();
+    uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
+    double data = dispatcher_->get_speed_counts(position);
+
+    RCLCPP_INFO(rclcpp::get_logger("TCan"),
+    "CAN ID: 0x%d Angle: %f Radians",
+    temp_frame.can_id&0x7F, data);
+
+
+  }
+
+  
+  
+
+
+
   // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
   return hardware_interface::return_type::OK;
 }
