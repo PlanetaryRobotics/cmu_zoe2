@@ -70,6 +70,16 @@ int TCan::nmtStart(unsigned int can_id) {
 
 }
 
+int TCan::nmtStop(unsigned int can_id) {
+  can_frame frame;
+  unsigned char data[8] = {0x02, static_cast<unsigned char>(can_id), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  createFrame(frame, 0, 2, data);
+
+  return sendFrame(frame);
+
+}
+
 
 int TCan::sendFrame(can_frame& frame) {
   long int bytes = write(socket_, &frame, sizeof(frame));

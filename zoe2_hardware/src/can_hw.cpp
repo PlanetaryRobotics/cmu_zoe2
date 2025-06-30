@@ -42,7 +42,7 @@
 // #define GEARING 1
 
 // Define CANOPEN IDs
-std::vector<int> motorIDs = {CANOPEN_ID_1, CANOPEN_ID_2, CANOPEN_ID_3};
+std::vector<int> motorIDs = { CANOPEN_ID_2, CANOPEN_ID_3};
 std::vector<int> encoderIDs = {50, 51, 52};
 
 // Helper Functions
@@ -54,26 +54,6 @@ int start_can(std::shared_ptr<Command> can) {
       return EXIT_FAILURE;
   } 
   
-  for (int id : motorIDs) {
-      if (can->setOperational(id) < 0) {
-          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
-          return EXIT_FAILURE;
-      }
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Testing CAN ID: %i", id);
-      if (can->testCan(id) < 0) {
-          
-          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i failed test...", id);
-          return EXIT_FAILURE;
-      }
-  }
-
-  for (int id : encoderIDs) {
-    if (can->nmtStart(id) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
-      return EXIT_FAILURE;
-    }
-  }
-
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
   return EXIT_SUCCESS;
 }
@@ -165,6 +145,26 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_activate(const rclcpp_lifecy
 
   RCLCPP_INFO(get_logger(), "Activating... Please wait...");
 
+  for (int id : motorIDs) {
+      if (can_->setOperational(id) < 0) {
+          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
+          return CallbackReturn::ERROR;
+      }
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Testing CAN ID: %i", id);
+      if (can_->testCan(id) < 0) {
+          
+          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i failed test...", id);
+          return CallbackReturn::ERROR;
+      }
+  }
+
+  for (int id : encoderIDs) {
+    if (can_->nmtStart(id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
+      return CallbackReturn::ERROR;
+    }
+  }
+
 
   return CallbackReturn::SUCCESS;
 }
@@ -173,6 +173,12 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_deactivate(const rclcpp_life
   // TODO(anyone): prepare the robot to stop receiving commands
   RCLCPP_INFO(get_logger(), "Deactivating... Please wait...");
 
+  for (int id : encoderIDs) {
+    if (can_->nmtStop(id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", id);
+      return CallbackReturn::ERROR;
+    }
+  }
 
   return CallbackReturn::SUCCESS;
 }
