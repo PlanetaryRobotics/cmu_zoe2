@@ -43,7 +43,14 @@
 
 // Define CANOPEN IDs
 std::vector<int> motorIDs = { CANOPEN_ID_2, CANOPEN_ID_3};
-std::vector<int> encoderIDs = {50, 51, 52};
+
+// {CAN_ID, URDF_Joint_Name}
+std::vector<std::pair<int, std::string>> encoders = 
+  {
+    {50, "axle_roll_back_joint"},
+    {51, "axle_yaw_back_joint"},
+    {52, "axle_yaw_front_joint"}
+  };
 
 // Helper Functions
 int start_can(std::shared_ptr<Command> can) {
@@ -158,9 +165,9 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_activate(const rclcpp_lifecy
       }
   }
 
-  for (int id : encoderIDs) {
-    if (can_->nmtStart(id) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
+  for (const auto& encoder : encoders) {
+    if (can_->nmtStart(encoder.first) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", encoder.first);
       return CallbackReturn::ERROR;
     }
   }
@@ -173,9 +180,9 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_deactivate(const rclcpp_life
   // TODO(anyone): prepare the robot to stop receiving commands
   RCLCPP_INFO(get_logger(), "Deactivating... Please wait...");
 
-  for (int id : encoderIDs) {
-    if (can_->nmtStop(id) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", id);
+  for (const auto& encoder : encoders) {
+    if (can_->nmtStop(encoder.first) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", encoder.first);
       return CallbackReturn::ERROR;
     }
   }
@@ -217,18 +224,12 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
   // READING ENCOEDER VALUES TO ROS2
   struct can_frame temp_frame;
-  std::map<int,std::string> encoderLabelMap;
-  encoderLabelMap[encoderIDs[0]] ="axle_roll_back_joint/position";
-  encoderLabelMap[encoderIDs[1]] ="axle_yaw_back_joint/position";
-  encoderLabelMap[encoderIDs[2]] ="axle_yaw_front_joint/position";
 
-
-
-  for (int id : encoderIDs) {
-    temp_frame = (dispatcher_->getMessagesForId(id)).front();
+  for (const auto& encoder : encoders) {
+    temp_frame = (dispatcher_->getMessagesForId(encoder.first)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
     double data = std::fmod((dispatcher_->get_speed_counts(position)),6.283);
-    set_state(encoderLabelMap[id],data);
+    set_state(encoder.second + "/position",data);
   }
 
   
