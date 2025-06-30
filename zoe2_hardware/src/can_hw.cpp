@@ -215,18 +215,20 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     }
   }
 
-  // READING ENCOEDER VALUES 
+  // READING ENCOEDER VALUES TO ROS2
   struct can_frame temp_frame;
+  std::map<int,std::string> encoderLabelMap;
+  encoderLabelMap[encoderIDs[0]] ="axle_roll_back_joint/position";
+  encoderLabelMap[encoderIDs[1]] ="axle_yaw_back_joint/position";
+  encoderLabelMap[encoderIDs[2]] ="axle_yaw_front_joint/position";
+
+
+
   for (int id : encoderIDs) {
     temp_frame = (dispatcher_->getMessagesForId(id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
     double data = std::fmod((dispatcher_->get_speed_counts(position)),6.283);
-
-    RCLCPP_INFO(rclcpp::get_logger("TCan"),
-    "CAN ID: 0x%d Angle: %f Radians",
-    temp_frame.can_id&0x7F, data);
-
-
+    set_state(encoderLabelMap[id],data);
   }
 
   
