@@ -31,25 +31,28 @@
 
 // CAN definitions
 #define CAN_INTERFACE "can0"
-#define CANOPEN_ID_1 1
-#define CANOPEN_ID_2 2
-#define CANOPEN_ID_3 3
-#define CANOPEN_ID_4 4
 
 #define MAX_SPEED 100000
 
 #define GEARING 50
 // #define GEARING 1
 
-// Define CANOPEN IDs
-std::vector<int> motorIDs = { CANOPEN_ID_2, CANOPEN_ID_3};
-
+// Define CANOPEN IDs and Joint Mapping
 // {CAN_ID, URDF_Joint_Name}
+// comment out devices not currently plugged in
+std::vector<std::pair<int, std::string>> motors = 
+  {
+    // {1, "wheel_back_left_joint"},
+    {2, "wheel_back_right_joint"},
+    {3, "wheel_front_left_joint"},
+    // {4, "wheel_front_right_joint"},
+  };
+
 std::vector<std::pair<int, std::string>> encoders = 
   {
     {50, "axle_roll_back_joint"},
     {51, "axle_yaw_back_joint"},
-    {52, "axle_yaw_front_joint"}
+    {52, "axle_yaw_front_joint"},
   };
 
 // Helper Functions
@@ -68,7 +71,7 @@ int start_can(std::shared_ptr<Command> can) {
 int end_can(std::shared_ptr<Command> can){
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
   // run teardown here
-  for (int id : motorIDs) {
+  for (const auto& [id, name] : motors) {
     can->stop(id);
   }
   //
@@ -135,7 +138,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   }
 
   // set each can to velocity mode
-  for (int id:motorIDs){
+  for (const auto& [id, name] : motors){
     can_->configureSpeedMode(id);
   }
   
@@ -152,7 +155,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_activate(const rclcpp_lifecy
 
   RCLCPP_INFO(get_logger(), "Activating... Please wait...");
 
-  for (int id : motorIDs) {
+  for (const auto& [id, name] : motors) {
       if (can_->setOperational(id) < 0) {
           RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
           return CallbackReturn::ERROR;
@@ -200,29 +203,21 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
 }
 
 hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
-  int iterator = 0;
-  int measuredPosition = 0;
-  int measuredSpeed = 0;
-  std::stringstream ss;
-  ss << "Reading states:";
-  ss << std::fixed << std::setprecision(2);
-  for (const auto & [name, descr] : joint_state_interfaces_){
-    if (descr.get_interface_name() == hardware_interface::HW_IF_POSITION){
-      if (name.find("wheel") != std::string::npos){
-        can_->getPosition(&measuredPosition, motorIDs[iterator++]);
-        set_state(name, tick_to_rad(measuredPosition));
-        // ss << std::endl
-        //   << "\t position " << get_state(name) << " and velocity " << velo << " for '" << name
-        //   << "'!";
-      }
-      else if (descr.get_interface_name() == hardware_interface::HW_IF_VELOCITY){
-        can_->getSpeed(&measuredSpeed, motorIDs[iterator++]);
-        set_state(name, tick_to_rad(measuredSpeed));
-      }
-    }
+  
+  // READ MOTOR VALUES FROM DISPATCHER
+  for (const auto& [id, name] : motors) {
+    int measuredPosition = 0;
+    int measuredSpeed = 0;
+
+    // Get Position
+    can_->getPosition(&measuredPosition, id);
+    set_state(name + "/position", tick_to_rad(measuredPosition));
+    // Get Speed
+    can_->getSpeed(&measuredSpeed, id);
+    set_state(name + "/velocity", tick_to_rad(measuredSpeed));
   }
 
-  // READING ENCOEDER VALUES TO ROS2
+  // READ ENCODER VALUES FROM DISPATCHER
   struct can_frame temp_frame;
 
   for (const auto& [id, name] : encoders) {
@@ -242,23 +237,23 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
   std::stringstream ss;
   ss << "Writing commands:";
 
-  int iterator = 0;
+  for (const auto & [id, name] : motors){
+    std::string joint = name + "/velocity";
 
-  for (const auto & [name, descr] : joint_command_interfaces_){
     // Simulate sending commands to the hardware
-    set_state(name, get_command(name));
+    set_state(joint, get_command(joint));
 
     ss << std::fixed << std::setprecision(2) << std::endl
-       << "\t" << "command " << get_command(name) << " for '" << name << "'!";
+       << "\t" << "command " << get_command(joint) << " for '" << joint << "'!";
 
-    int speed_ticks = int(rad_to_tick(get_command(name))*GEARING);
+    int speed_ticks = int(rad_to_tick(get_command(joint))*GEARING);
     ss << std::fixed << std::setprecision(2) << std::endl
-      << "\t" << "speed ticks " << speed_ticks << " for '" << name << "'!";
+      << "\t" << "speed ticks " << speed_ticks << " for '" << joint << "'!";
 
     // cap the magnitude, but respect the sign
     speed_ticks = std::min(std::max(speed_ticks, -MAX_SPEED), MAX_SPEED);
 
-    can_->setSpeed(speed_ticks, motorIDs[iterator++]);
+    can_->setSpeed(speed_ticks, id);
 
   }
 
