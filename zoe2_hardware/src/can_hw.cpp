@@ -165,9 +165,9 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_activate(const rclcpp_lifecy
       }
   }
 
-  for (const auto& encoder : encoders) {
-    if (can_->nmtStart(encoder.first) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", encoder.first);
+  for (const auto& [id, name] : encoders) {
+    if (can_->nmtStart(id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
       return CallbackReturn::ERROR;
     }
   }
@@ -180,9 +180,9 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_deactivate(const rclcpp_life
   // TODO(anyone): prepare the robot to stop receiving commands
   RCLCPP_INFO(get_logger(), "Deactivating... Please wait...");
 
-  for (const auto& encoder : encoders) {
-    if (can_->nmtStop(encoder.first) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", encoder.first);
+  for (const auto& [id, name] : encoders) {
+    if (can_->nmtStop(id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", id);
       return CallbackReturn::ERROR;
     }
   }
@@ -225,16 +225,12 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   // READING ENCOEDER VALUES TO ROS2
   struct can_frame temp_frame;
 
-  for (const auto& encoder : encoders) {
-    temp_frame = (dispatcher_->getMessagesForId(encoder.first)).front();
+  for (const auto& [id, name] : encoders) {
+    temp_frame = (dispatcher_->getMessagesForId(id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
     double data = std::fmod((dispatcher_->get_speed_counts(position)),6.283);
-    set_state(encoder.second + "/position",data);
+    set_state(name + "/position", data);
   }
-
-  
-  
-
 
 
   // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());
