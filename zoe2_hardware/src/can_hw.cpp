@@ -26,7 +26,7 @@
 
 // Motor Constants
 #define ENCODER_PPR 1024
-#define PI 3.14
+#define PI 3.14159265359
 #define RADTOTICK 650.8194699
 
 // CAN definitions
@@ -43,9 +43,9 @@
 std::vector<std::pair<int, std::string>> motors = 
   {
     // {1, "wheel_back_left_joint"},
-    {2, "wheel_back_right_joint"},
+    {2, "wheel_front_right_joint"},
     {3, "wheel_front_left_joint"},
-    // {4, "wheel_front_right_joint"},
+    // {4, "wheel_back_right_joint"},
   };
 
 std::vector<std::pair<int, std::string>> encoders = 
@@ -223,7 +223,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto& [id, name] : encoders) {
     temp_frame = (dispatcher_->getMessagesForId(id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((dispatcher_->get_speed_counts(position)),6.283);
+    double data = std::fmod((dispatcher_->get_speed_counts(position)),2*PI) - PI;
     set_state(name + "/position", data);
   }
 
