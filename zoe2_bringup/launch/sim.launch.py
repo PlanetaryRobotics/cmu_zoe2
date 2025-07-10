@@ -14,7 +14,7 @@ from launch_ros.actions import Node
 from launch.event_handlers import OnProcessExit
 
 bringup_package_name="zoe2_bringup"
-odom_package_name = 'zoe2_odom'
+odom_package_name = 'sim_tf'
 
 def generate_launch_description():
 

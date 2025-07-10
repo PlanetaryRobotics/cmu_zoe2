@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(zoe2_odom)
+project(sim_tf)
 
 # Default to C++14
 set(CMAKE_CXX_STANDARD 14)
