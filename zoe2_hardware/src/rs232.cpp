@@ -1,4 +1,4 @@
-#include "zoe_motor_hardware/rs232.hpp"
+#include "zoe2_hardware/rs232.hpp"
 #include <fcntl.h>
 #include <cerrno>
 #include <cstdio>
