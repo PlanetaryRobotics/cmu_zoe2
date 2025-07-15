@@ -42,7 +42,7 @@
 // comment out devices not currently plugged in
 std::vector<std::pair<int, std::string>> motors = 
   {
-    // {1, "wheel_back_left_joint"},
+    {1, "wheel_back_left_joint"},
     {2, "wheel_front_right_joint"},
     {3, "wheel_front_left_joint"},
     // {4, "wheel_back_right_joint"},
