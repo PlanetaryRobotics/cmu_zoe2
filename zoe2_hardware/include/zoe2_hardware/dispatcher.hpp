@@ -25,11 +25,6 @@ public:
 
     std::vector<can_frame> getMessagesForId(uint32_t can_id);
 
-    double get_speed_counts(int counts) {
-        return ((double)counts * 2 * 3.14 / 4095);
-    }
-
-
 private:
     void run();
 

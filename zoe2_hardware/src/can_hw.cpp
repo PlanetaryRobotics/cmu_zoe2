@@ -27,15 +27,13 @@
 // Motor Constants
 #define ENCODER_PPR 1024
 #define PI 3.14159265359
-#define RADTOTICK 4096 / (2 * PI)
 
 // CAN definitions
 #define CAN_INTERFACE "can0"
 
 #define MAX_SPEED 100000
 
-#define GEARING 50
-// #define GEARING 1
+#define GEARING 50  // gear ratio of harmonic drive
 
 // Define CANOPEN IDs and Joint Mapping
 // {CAN_ID, URDF_Joint_Name}
@@ -43,16 +41,16 @@
 std::vector<std::pair<int, std::string>> motors = 
   {
     {1, "wheel_back_left_joint"},
-    {2, "wheel_front_right_joint"},
-    {3, "wheel_front_left_joint"},
-    // {4, "wheel_back_right_joint"},
+    {2, "wheel_back_right_joint"},
+    // {3, "wheel_front_left_joint"},
+    // {4, "wheel_front_right_joint"},
   };
 
 std::vector<std::pair<int, std::string>> encoders = 
   {
     {50, "axle_roll_back_joint"},
-    {51, "axle_yaw_back_joint"},
     {52, "axle_yaw_front_joint"},
+    {53, "axle_yaw_back_joint"},
   };
 
 // Helper Functions
@@ -79,12 +77,14 @@ int end_can(std::shared_ptr<Command> can){
   return EXIT_SUCCESS;
 }
 
-int rad_to_tick(double rad){
-  return int(rad*RADTOTICK);
+constexpr double TICK_PER_RAD = 4096.0 / (2.0 * PI);
+
+int rad_to_tick(double rad) {
+    return static_cast<int>(rad * TICK_PER_RAD);
 }
 
-double tick_to_rad(int tick){
-  return double(tick)/RADTOTICK;
+double tick_to_rad(int tick) {
+    return tick / TICK_PER_RAD;
 }
 
 namespace zoe2_hardware
@@ -223,7 +223,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto& [id, name] : encoders) {
     temp_frame = (dispatcher_->getMessagesForId(id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((dispatcher_->get_speed_counts(position)),2*PI) - PI;
+    double data = std::fmod((tick_to_rad(position)),2*PI) - PI;
     set_state(name + "/position", data);
   }
 
