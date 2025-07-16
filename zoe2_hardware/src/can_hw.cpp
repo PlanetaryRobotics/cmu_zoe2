@@ -27,7 +27,7 @@
 // Motor Constants
 #define ENCODER_PPR 1024
 #define PI 3.14159265359
-#define RADTOTICK 650.8194699
+#define RADTOTICK 4096 / (2 * PI)
 
 // CAN definitions
 #define CAN_INTERFACE "can0"
