@@ -73,6 +73,9 @@ int end_can(std::shared_ptr<Command> can){
   // run teardown here
   for (const auto& [id, name] : motors) {
     can->stop(id);
+    if (can->nmtStop(id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Motor Node %i could not be stopped...", id);
+    }
   }
   //
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
@@ -214,13 +217,13 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     // Get Position
     can_->getPosition(&measuredPosition, id);
     RCLCPP_INFO(rclcpp::get_logger("COB"), "Motor Position from SDO: %d", (measuredPosition));
-    set_state(name + "/position", tick_to_rad(measuredPosition));
+    set_state(name + "/position", tick_to_rad(measuredPosition) / GEARING);
 
 
     // Get Speed
     can_->getSpeed(&measuredSpeed, id);
     RCLCPP_INFO(rclcpp::get_logger("COB"), "Motor Speed from SDO: %d", (measuredSpeed)); 
-    set_state(name + "/velocity", tick_to_rad(measuredSpeed));
+    set_state(name + "/velocity", tick_to_rad(measuredSpeed)/ GEARING);
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
