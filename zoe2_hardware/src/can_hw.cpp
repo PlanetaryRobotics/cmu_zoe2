@@ -213,9 +213,13 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
     // Get Position
     can_->getPosition(&measuredPosition, id);
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Motor Position from SDO: %d", (measuredPosition));
     set_state(name + "/position", tick_to_rad(measuredPosition));
+
+
     // Get Speed
     can_->getSpeed(&measuredSpeed, id);
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Motor Speed from SDO: %d", (measuredSpeed)); 
     set_state(name + "/velocity", tick_to_rad(measuredSpeed));
   }
 

@@ -63,6 +63,7 @@ int Command::receive(unsigned char *output, unsigned int can_id, FuncCode FCode)
     //RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(data)");
     return tcan_->receiveMsg(output, can_id, FCode);
   } else {
+    RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(data) error -1000");
     return -1000;
   }
 }
@@ -268,17 +269,22 @@ int Command::configureSpeedMode(unsigned int can_id) {
 int Command::getPosition(int* pos, unsigned int can_id) {
   
   can_frame frame;
-  std::string data = "PX";
-  
-  if(send(4, data, can_id) < 0) {
-    return -1;
-  }
 
-  if(receive(frame, can_id, FuncCode::TSDO) < 0) { //TODO: again, check if TSDO is right
+  if(receive(frame, can_id, FuncCode::TPDO3) < 0) { 
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Position: -2");
+
     return -2;
   }
 
-  *pos = intFromData(frame.data);
+  *pos = static_cast<int>(
+    frame.data[0] |
+    frame.data[1] << 8 |
+    frame.data[2] << 16 |
+    frame.data[3] << 24 
+  );
+
+  RCLCPP_INFO(rclcpp::get_logger("COB"), "position: %i", *pos);
+
   return 0;
 
 }
@@ -287,17 +293,20 @@ int Command::getPosition(int* pos, unsigned int can_id) {
 int Command::getSpeed(int* speed, unsigned int can_id) {
   
   can_frame frame;
-  std::string data = "VX";
-  
-  if(send(4, data, can_id) < 0) {
-    return -1;
-  }
 
-  if(receive(frame, can_id, FuncCode::TSDO) < 0) { //TODO: again, check TSDO
+  if(receive(frame, can_id, FuncCode::TPDO3) < 0) { 
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Speed: -2");
     return -2;
   }
 
-  *speed = intFromData(frame.data);
+  *speed = static_cast<int>(
+    frame.data[4] |
+    frame.data[5] << 8 |
+    frame.data[6] << 16 |
+    frame.data[7] << 24 
+  );
+
+  RCLCPP_INFO(rclcpp::get_logger("COB"), "speed: %i", *speed);
   return 0;
 
 }
