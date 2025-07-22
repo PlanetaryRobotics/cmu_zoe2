@@ -35,13 +35,15 @@
 
 #define GEARING 50  // gear ratio of harmonic drive
 
+using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
+
 // Define CANOPEN IDs and Joint Mapping
 // {CAN_ID, URDF_Joint_Name}
 // comment out devices not currently plugged in
 std::vector<std::pair<int, std::string>> motors = 
   {
     {1, "wheel_back_left_joint"},
-    {2, "wheel_back_right_joint"},
+    // {2, "wheel_back_right_joint"},
     // {3, "wheel_front_left_joint"},
     // {4, "wheel_front_right_joint"},
   };
@@ -221,7 +223,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   struct can_frame temp_frame;
 
   for (const auto& [id, name] : encoders) {
-    temp_frame = (dispatcher_->getMessagesForId(id)).front();
+    temp_frame = (dispatcher_->getMessagesWithCOB(id, FuncCode::TPDO1)).front(); // Check if TPDO1 is correct
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
     double data = std::fmod((tick_to_rad(position)),2*PI) - PI;
     set_state(name + "/position", data);

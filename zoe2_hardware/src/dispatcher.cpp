@@ -4,6 +4,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <poll.h> 
 
+
+
 namespace zoe2_hardware {
 
 Dispatcher::Dispatcher(int socket_fd): socket_fd_(socket_fd){}
@@ -39,15 +41,20 @@ void Dispatcher::stop() {
 }
 
 
-std::vector<can_frame> Dispatcher::getMessagesForId(uint32_t can_id){
+
+std::vector<can_frame> Dispatcher::getMessagesWithCOB(uint32_t can_id, CANFunctionCode functionCode){ // Depreciated
     std::lock_guard<std::mutex> lock(buffer_mutex_);
-    auto it = buffer_.find(can_id);
+
+    uint32_t bufferIdx = can_id | ((static_cast<uint32_t>(functionCode)) << 7); // TODO: make a COBID conversion function;
+
+    auto it = buffer_.find(bufferIdx);
     if (it !=buffer_.end()){
         return std::vector<can_frame>(it->second.begin(), it->second.end());
+    } else if (it == buffer_.end()){
+        RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Requested data from can_id: %03X and Fcode: %03X but no data found in buffer", can_id, (static_cast<uint32_t>(functionCode)));
     }
     
     return{};
-    
 }
 
 void Dispatcher::run() {
@@ -68,8 +75,9 @@ void Dispatcher::run() {
 
                 
                 std::lock_guard<std::mutex> lock(buffer_mutex_);
-                //RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Saving this ID to hash: %03X", frame.can_id&0x7F);
-                auto& queue = buffer_[(frame.can_id&0x7F)];
+                RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Saving this ID to buffer: %03X", frame.can_id);
+                // auto& queue = buffer_[(frame.can_id&0x7F)];
+                auto& queue = buffer_[(frame.can_id)];
                 queue.push_front(frame);
                 if (queue.size() > max_buffer_size){
                     queue.pop_back();

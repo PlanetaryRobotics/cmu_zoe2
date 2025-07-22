@@ -1,5 +1,6 @@
 #include "zoe2_hardware/rs232.hpp"
 #include "zoe2_hardware/can.hpp"
+#include "zoe2_hardware/dispatcher.hpp"
 #include <memory>
 
 
@@ -11,6 +12,7 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 
+using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
 
 #ifndef ZOE_COMMAND
 #define ZOE_COMMAND
@@ -73,8 +75,8 @@ class Command {
 
         int send(const int size, const std::string& cmd, unsigned int can_id);
         int sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id);
-        int receive(unsigned char *output, unsigned int can_id);
-        int receive(struct can_frame& frame, unsigned int can_id);
+        int receive(unsigned char *output, unsigned int can_id, FuncCode FCode);
+        int receive(struct can_frame& frame, unsigned int can_id, FuncCode FCode);
 
         bool checkOpenResult();
         int setOperational(unsigned int can_id = -1); 

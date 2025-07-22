@@ -105,22 +105,22 @@ int TCan::sendMsg(int size, const std::string& cmd, unsigned int can_id) {
 
 }
 
-int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
+int TCan::receiveMsg(unsigned char *output, unsigned int can_id, FuncCode FCode) {
   // Returns only CAN data
 
   if (!dispatcher_) return -1;
-  auto messages = dispatcher_->getMessagesForId(can_id);
+  auto messages = dispatcher_->getMessagesWithCOB(can_id, FCode);
   if (messages.empty()) return -1;
-  memcpy(output,messages.front().data,8);
+  memcpy(output, messages.front().data, 8);
   return 0;
 }
 
-int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
+int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id, FuncCode FCode) {
   // Returns whole frame
   if (!dispatcher_){
     RCLCPP_INFO(rclcpp::get_logger("TCAN"), "exited with error -1");
     return -1;}
-  auto messages = dispatcher_->getMessagesForId(can_id);
+  auto messages = dispatcher_->getMessagesWithCOB(can_id, FCode);
   if (messages.empty()){
     //RCLCPP_INFO(rclcpp::get_logger("TCAN"), "attempting to read from %d exited with error -2",can_id);
     return -2;
@@ -220,11 +220,11 @@ bool TCan::parseCommand(const std::string& cmd, std::string& command, int& index
   return true;
 }
 
-int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id) {
+int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id, FuncCode FCode) { // Depricate Func
   int result = sendMsg(size, cmd, can_id);
   unsigned char data[8];
-  // RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN sendMsgDiscardReply. CAN ID: %d", can_id); ASK ETHAN ABOUT THIS: WHY IS 0 CALLED - mabye mistake since 1,2,3 and no 4.
-  receiveMsg(data, can_id);
+  // RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN sendMsgDiscardReply. CAN ID: %d", can_id);
+  receiveMsg(data, can_id, FCode);
   return result;
 }
 

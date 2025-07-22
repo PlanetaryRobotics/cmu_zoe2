@@ -1,6 +1,7 @@
 
 #include <termio.h>
 #include <string>
+#include "zoe2_hardware/dispatcher.hpp"
 
 #ifndef ZOE_RS232
 #define ZOE_RS232

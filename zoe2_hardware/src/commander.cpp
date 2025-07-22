@@ -56,28 +56,28 @@ int Command::send(const int size, const std::string& cmd, unsigned int can_id) {
 
 }
 
-int Command::receive(unsigned char *output, unsigned int can_id) {
+int Command::receive(unsigned char *output, unsigned int can_id, FuncCode FCode) {
   if(rs232_ != nullptr) {
     return rs232_->receiveMsg(output);
   } else if(tcan_ != nullptr) {
     //RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(data)");
-    return tcan_->receiveMsg(output, can_id);
+    return tcan_->receiveMsg(output, can_id, FCode);
   } else {
     return -1000;
   }
 }
 
 
-int Command::receive(struct can_frame& frame, unsigned int can_id) {
-    //RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(frame)");
-    return tcan_->receiveMsg(frame, can_id);
+int Command::receive(struct can_frame& frame, unsigned int can_id , FuncCode FCode) {
+    RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(frame)");
+    return tcan_->receiveMsg(frame, can_id, FCode);
 }
 
 int Command::sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id) {
   if(rs232_ != nullptr) {
     return rs232_->sendMsgDiscardReply(cmd);
   } else if(tcan_ != nullptr) {
-    return tcan_->sendMsgDiscardReply(size, cmd, can_id);
+    return tcan_->sendMsgDiscardReply(size, cmd, can_id, FuncCode::TSDO);
   } else {
     return -1000;
   }
@@ -106,7 +106,7 @@ int Command::testCan(unsigned int can_id) {
     printf("SENT MESSAGE!!\n");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    if(receive(frame, can_id) < 0) {
+    if(receive(frame, can_id, FuncCode::TPDO2) < 0) {
       RCLCPP_INFO(rclcpp::get_logger("TCan"),"RECIEVE HAS FAILED");
       return -2;
     }
@@ -212,7 +212,7 @@ int Command::getMaxCurrent(float* current, unsigned int can_id) {
 		return rval;
 	}
 
-	rval = receive(frame, can_id);
+	rval = receive(frame, can_id, FuncCode::TSDO); // TODO: Check what the FuncCode actually is
 	if (rval < 0) {
 		return rval;
 	}
@@ -274,7 +274,7 @@ int Command::getPosition(int* pos, unsigned int can_id) {
     return -1;
   }
 
-  if(receive(frame, can_id) < 0) {
+  if(receive(frame, can_id, FuncCode::TSDO) < 0) { //TODO: again, check if TSDO is right
     return -2;
   }
 
@@ -293,7 +293,7 @@ int Command::getSpeed(int* speed, unsigned int can_id) {
     return -1;
   }
 
-  if(receive(frame, can_id) < 0) {
+  if(receive(frame, can_id, FuncCode::TSDO) < 0) { //TODO: again, check TSDO
     return -2;
   }
 
@@ -324,7 +324,7 @@ int Command::getForce(float* force, unsigned int can_id) {
     return -1;
   }
 
-  if(receive(frame, can_id) < 0) {
+  if(receive(frame, can_id, FuncCode::TSDO) < 0) {// TODO: again, check TSDO
     return -2;
   }
 
