@@ -15,12 +15,12 @@ def generate_launch_description():
             executable='joy_node',
             name='joystick',
             parameters=[{'deadzone': LaunchConfiguration('deadzone'),
-                         'joy_config': 'xbox'}],  # Change 'xbox' to your joystick type if needed
-                         'joy_dev': '/dev/input/js0'  # Change this if your joystick is on a different device
+                         'joy_config': 'xbox',  # Change 'xbox' to your joystick type if needed
+                         'joy_dev': '/dev/input/js0'}]  # Change this if your joystick is on a different device
         ),
         DeclareLaunchArgument(
             'publish_stamped_twist',
-            default_value='true'),
+            default_value='false'),
         DeclareLaunchArgument(
             'require_enable_button', # this is the deadman switch
             default_value='true'),
@@ -29,15 +29,17 @@ def generate_launch_description():
             namespace='zoe2',
             executable='teleop_node',
             name='joy2twist',
+            remappings=[('/zoe2/cmd_vel', '/cmd_vel_unstamped')],
+
             parameters=[{
                 'publish_stamped_twist': LaunchConfiguration('publish_stamped_twist'),
                 'require_enable_button': LaunchConfiguration('require_enable_button'),
-                # 'enable_button': 0,  # Button 0 is the deadman switch
-                # 'axis_linear_x': 1,  # Left joystick Y-axis
-                # 'axis_linear_y': 0,  # Left joystick X-axis
-                # 'axis_angular_z': 3,  # Right joystick X-axis
-                # 'axis_angular_y': 4,  # Right joystick Y-axis
-                'inverted_reverse': True,  # whether to invert turning lef-right while reversing 
+
+                #these parameters work for TX16 joystick 
+                'enable_button': 3,  # Button SH is the deadman switch
+                'axis_linear.x': 1,  # Left joystick Y-axis
+                'axis_angular.yaw': 3,  # Right joystick X-axis
+                'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
             }]
         ),
         
