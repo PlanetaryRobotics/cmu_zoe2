@@ -35,10 +35,17 @@ def generate_launch_description():
                 'publish_stamped_twist': LaunchConfiguration('publish_stamped_twist'),
                 'require_enable_button': LaunchConfiguration('require_enable_button'),
 
-                #these parameters work for TX16 joystick 
-                'enable_button': 3,  # Button SH is the deadman switch
+                # #these parameters work for TX16 joystick 
+                # 'enable_button': 3,  # Button SH is the deadman switch
+                # 'axis_linear.x': 1,  # Left joystick Y-axis
+                # 'axis_angular.yaw': 3,  # Right joystick X-axis
+                # 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
+
+                #these parameters work for logitech F710 joystick 
+                'enable_button': 5,  # Button RB (right bottom) is the deadman switch
+                'enable_turbo_button': 4, # Button LB (left bottom) is the turbo button
                 'axis_linear.x': 1,  # Left joystick Y-axis
-                'axis_angular.yaw': 3,  # Right joystick X-axis
+                'axis_angular.yaw': 2,  # Right joystick X-axis
                 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
             }]
         ),
