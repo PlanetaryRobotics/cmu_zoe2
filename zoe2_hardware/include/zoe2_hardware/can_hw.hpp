@@ -67,6 +67,24 @@ private:
   // Dispatcher
 
   std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher_;
+
+  // Motors
+  struct Motor {
+    int can_id;
+    std::string joint_name;
+    int polarity;
+  };
+
+  std::vector<Motor> motors_;
+
+  // Encoders
+  struct Encoder {
+    int can_id;
+    std::string joint_name;
+    double offset;
+  };
+
+  std::vector<Encoder> encoders_;
 };
 
 }  // namespace zoe2_hardware
