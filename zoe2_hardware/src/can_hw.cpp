@@ -38,54 +38,13 @@
 namespace zoe2_hardware
 {
 
-// {CANOPEN ID, Joint mapping, polarity}
-std::vector<Motor> motors_ = 
-  {
-    {1, "wheel_front_right_joint", -1},
-    {2, "wheel_front_left_joint", 1},
-    {3, "wheel_back_left_joint", 1},
-    {4, "wheel_back_right_joint", -1},
-  };
-
-// {CANOPEN ID, Joint mapping, angle offset}
-std::vector<Encoder> encoders_ = 
-  {
-    {50, "axle_roll_back_joint", 0.0},
-    {52, "axle_yaw_front_joint", 0.0},
-    {53, "axle_yaw_back_joint", 0.0},
-  };
-
-// Helper Functions
-int start_can(std::shared_ptr<Command> can) {
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
-  
-  if (!can->checkOpenResult()) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Not open");
-      return EXIT_FAILURE;
-  } 
-  
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
-  return EXIT_SUCCESS;
-}
-
-int end_can(std::shared_ptr<Command> can){
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
-  // run teardown here
-  for (const auto& [id, name] : motors) {
-    can->stop(id);
-  }
-  //
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
-  return EXIT_SUCCESS;
-}
-
 constexpr double TICK_PER_RAD = 4096.0 / (2.0 * PI);
 
-int rad_to_tick(double rad) {
+inline int rad_to_tick(double rad) {
     return static_cast<int>(rad * TICK_PER_RAD);
 }
 
-double tick_to_rad(int tick) {
+inline double tick_to_rad(int tick) {
     return tick / TICK_PER_RAD;
 }
 
@@ -121,7 +80,14 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   dispatcher_->start();
 
   // initialize CAN
-  start_can(can_);
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
+
+  if (!can_->checkOpenResult()) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Not open");
+      return CallbackReturn::ERROR;
+  } 
+  
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
 
   // reset values always when configuring hardware
   for (const auto & [name, descr] : joint_state_interfaces_)
@@ -139,9 +105,6 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
     can_->configureSpeedMode(motor.id);
   }
   
-
-
-
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
   return CallbackReturn::SUCCESS;
@@ -194,7 +157,13 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
   // TODO(anyone): prepare the robot to stop receiving commands
   RCLCPP_INFO(get_logger(), "Shutting down... Please wait...");
 
-  end_can(can_);
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
+  // run teardown here
+  for (const Motor& motor : motors_) {
+    can_->stop(motor.id);
+  }
+  //
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
 
   return CallbackReturn::SUCCESS;
 }

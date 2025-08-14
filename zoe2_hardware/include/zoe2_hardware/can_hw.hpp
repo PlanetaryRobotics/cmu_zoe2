@@ -70,21 +70,32 @@ private:
 
   // Motors
   struct Motor {
-    int can_id;
+    int id;
     std::string joint_name;
     int polarity;
   };
 
-  std::vector<Motor> motors_;
+  std::vector<Motor> motors_= 
+  {
+    {1, "wheel_front_right_joint", -1},
+    {2, "wheel_front_left_joint", 1},
+    {3, "wheel_back_left_joint", 1},
+    {4, "wheel_back_right_joint", -1},
+  };
 
   // Encoders
   struct Encoder {
-    int can_id;
+    int id;
     std::string joint_name;
     double offset;
   };
 
-  std::vector<Encoder> encoders_;
+  std::vector<Encoder> encoders_ = 
+  {
+    {50, "axle_roll_back_joint", 0.0},
+    {52, "axle_yaw_front_joint", 0.0},
+    {53, "axle_yaw_back_joint", 0.0},
+  };
 };
 
 }  // namespace zoe2_hardware
