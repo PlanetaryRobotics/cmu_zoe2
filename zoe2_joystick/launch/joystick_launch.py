@@ -43,8 +43,8 @@ def generate_launch_description():
 
                 #these parameters work for logitech F710 joystick 
                 'enable_button': 5,  # Button RB (right bottom) is the deadman switch
-                'enable_turbo_button': 4, # Button LB (left bottom) is the turbo button
-                'axis_linear.x': 1,  # Left joystick Y-axis
+                'enable_turbo_button': 7, # Button LB (left bottom) is the turbo button
+                'axis_linear.x': 3,  # Left joystick Y-axis
                 'axis_angular.yaw': 2,  # Right joystick X-axis
                 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
             }]
