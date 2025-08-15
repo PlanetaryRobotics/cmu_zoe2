@@ -75,7 +75,7 @@ private:
     int polarity;
   };
 
-  std::vector<Motor> motors_= 
+  const std::vector<Motor> motors_= 
   {
     {1, "wheel_front_right_joint", -1},
     {2, "wheel_front_left_joint", 1},
@@ -90,9 +90,9 @@ private:
     double offset;
   };
 
-  std::vector<Encoder> encoders_ = 
+  const std::vector<Encoder> encoders_ = 
   {
-    {52, "axle_roll_back_joint", -1.52},
+    // {52, "axle_roll_back_joint", -1.52},
     {51, "axle_yaw_front_joint", 0.12},
     {53, "axle_yaw_back_joint", 0.233},
   };
