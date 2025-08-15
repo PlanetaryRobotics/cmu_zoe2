@@ -33,7 +33,7 @@
 #include "nav_msgs/msg/odometry.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "realtime_tools/realtime_box.hpp"
+#include "realtime_tools/realtime_thread_safe_box.hpp"
 #include "realtime_tools/realtime_buffer.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
@@ -106,7 +106,7 @@ class Zoe2Controller : public controller_interface::ControllerInterface {
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr
         velocity_command_unstamped_subscriber_ = nullptr;
 
-    realtime_tools::RealtimeBox<std::shared_ptr<Twist>> received_velocity_msg_ptr_{nullptr};
+    realtime_tools::RealtimeThreadSafeBox<std::shared_ptr<Twist>> received_velocity_msg_ptr_{nullptr};
 
     std::queue<Twist> previous_commands_;  // last two commands
 

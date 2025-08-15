@@ -35,60 +35,19 @@
 
 #define GEARING 50  // gear ratio of harmonic drive
 
-// Define CANOPEN IDs and Joint Mapping
-// {CAN_ID, URDF_Joint_Name}
-// comment out devices not currently plugged in
-std::vector<std::pair<int, std::string>> motors = 
-  {
-    {1, "wheel_back_left_joint"},
-    {2, "wheel_back_right_joint"},
-    // {3, "wheel_front_left_joint"},
-    // {4, "wheel_front_right_joint"},
-  };
-
-std::vector<std::pair<int, std::string>> encoders = 
-  {
-    {50, "axle_roll_back_joint"},
-    {52, "axle_yaw_front_joint"},
-    {53, "axle_yaw_back_joint"},
-  };
-
-// Helper Functions
-int start_can(std::shared_ptr<Command> can) {
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
-  
-  if (!can->checkOpenResult()) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Not open");
-      return EXIT_FAILURE;
-  } 
-  
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
-  return EXIT_SUCCESS;
-}
-
-int end_can(std::shared_ptr<Command> can){
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
-  // run teardown here
-  for (const auto& [id, name] : motors) {
-    can->stop(id);
-  }
-  //
-  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
-  return EXIT_SUCCESS;
-}
+namespace zoe2_hardware
+{
 
 constexpr double TICK_PER_RAD = 4096.0 / (2.0 * PI);
 
-int rad_to_tick(double rad) {
+inline int rad_to_tick(double rad) {
     return static_cast<int>(rad * TICK_PER_RAD);
 }
 
-double tick_to_rad(int tick) {
+inline double tick_to_rad(int tick) {
     return tick / TICK_PER_RAD;
 }
 
-namespace zoe2_hardware
-{
 hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interface::HardwareInfo & info){
   if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
   {
@@ -118,13 +77,17 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   RCLCPP_INFO(get_logger(), "Dispatcher Created!");
 
   can_->setDispatcher(dispatcher_);
-  RCLCPP_INFO(get_logger(), "type of can_ is: %s", typeid(can_).name());
   dispatcher_->start();
 
-  
-
   // initialize CAN
-  start_can(can_);
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Starting CAN Network...");
+
+  if (!can_->checkOpenResult()) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Not open");
+      return CallbackReturn::ERROR;
+  } 
+  
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
 
   // reset values always when configuring hardware
   for (const auto & [name, descr] : joint_state_interfaces_)
@@ -138,13 +101,10 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   }
 
   // set each can to velocity mode
-  for (const auto& [id, name] : motors){
-    can_->configureSpeedMode(id);
+  for (const Motor& motor : motors_){
+    can_->configureSpeedMode(motor.id);
   }
   
-
-
-
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
   return CallbackReturn::SUCCESS;
@@ -155,22 +115,22 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_activate(const rclcpp_lifecy
 
   RCLCPP_INFO(get_logger(), "Activating... Please wait...");
 
-  for (const auto& [id, name] : motors) {
-      if (can_->setOperational(id) < 0) {
-          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
+  for (const Motor& motor : motors_) {
+      if (can_->setOperational(motor.id) < 0) {
+          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", motor.id);
           return CallbackReturn::ERROR;
       }
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Testing CAN ID: %i", id);
-      if (can_->testCan(id) < 0) {
-          
-          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i failed test...", id);
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Testing CAN ID: %i", motor.id);
+      if (can_->testCan(motor.id) < 0) {
+
+          RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i failed test...", motor.id);
           return CallbackReturn::ERROR;
       }
   }
 
-  for (const auto& [id, name] : encoders) {
-    if (can_->nmtStart(id) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", id);
+  for (const Encoder & encoder : encoders_) {
+    if (can_->nmtStart(encoder.id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be set operational...", encoder.id);
       return CallbackReturn::ERROR;
     }
   }
@@ -183,9 +143,9 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_deactivate(const rclcpp_life
   // TODO(anyone): prepare the robot to stop receiving commands
   RCLCPP_INFO(get_logger(), "Deactivating... Please wait...");
 
-  for (const auto& [id, name] : encoders) {
-    if (can_->nmtStop(id) < 0) {
-      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", id);
+  for (const auto& encoder : encoders_) {
+    if (can_->nmtStop(encoder.id) < 0) {
+      RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node %i could not be stopped...", encoder.id);
       return CallbackReturn::ERROR;
     }
   }
@@ -197,7 +157,13 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
   // TODO(anyone): prepare the robot to stop receiving commands
   RCLCPP_INFO(get_logger(), "Shutting down... Please wait...");
 
-  end_can(can_);
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Ending CAN Network...");
+  // run teardown here
+  for (const Motor& motor : motors_) {
+    can_->stop(motor.id);
+  }
+  //
+  RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Teardown Successful.");
 
   return CallbackReturn::SUCCESS;
 }
@@ -205,26 +171,26 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
 hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
   
   // READ MOTOR VALUES FROM DISPATCHER
-  for (const auto& [id, name] : motors) {
+  for (const auto& motor : motors_) {
     int measuredPosition = 0;
     int measuredSpeed = 0;
 
     // Get Position
-    can_->getPosition(&measuredPosition, id);
-    set_state(name + "/position", tick_to_rad(measuredPosition));
+    can_->getPosition(&measuredPosition, motor.id);
+    set_state(motor.joint_name + "/position", tick_to_rad(measuredPosition*motor.polarity));
     // Get Speed
-    can_->getSpeed(&measuredSpeed, id);
-    set_state(name + "/velocity", tick_to_rad(measuredSpeed));
+    can_->getSpeed(&measuredSpeed, motor.id);
+    set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity));
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
   struct can_frame temp_frame;
 
-  for (const auto& [id, name] : encoders) {
-    temp_frame = (dispatcher_->getMessagesForId(id)).front();
+  for (const auto& encoder : encoders_) {
+    temp_frame = (dispatcher_->getMessagesForId(encoder.id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((tick_to_rad(position)),2*PI) - PI;
-    set_state(name + "/position", data);
+    double data = std::fmod((tick_to_rad(position)-encoder.offset),2*PI) - PI;
+    set_state(encoder.joint_name + "/position", data);
   }
 
 
@@ -237,8 +203,8 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
   std::stringstream ss;
   ss << "Writing commands:";
 
-  for (const auto & [id, name] : motors){
-    std::string joint = name + "/velocity";
+  for (const auto & motor : motors_) {
+    std::string joint = motor.joint_name + "/velocity";
 
     // Simulate sending commands to the hardware
     set_state(joint, get_command(joint));
@@ -246,14 +212,14 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
     ss << std::fixed << std::setprecision(2) << std::endl
        << "\t" << "command " << get_command(joint) << " for '" << joint << "'!";
 
-    int speed_ticks = int(rad_to_tick(get_command(joint))*GEARING);
+    int speed_ticks = int(rad_to_tick(get_command(joint))*GEARING*motor.polarity);
     ss << std::fixed << std::setprecision(2) << std::endl
       << "\t" << "speed ticks " << speed_ticks << " for '" << joint << "'!";
 
     // cap the magnitude, but respect the sign
     speed_ticks = std::min(std::max(speed_ticks, -MAX_SPEED), MAX_SPEED);
 
-    can_->setSpeed(speed_ticks, id);
+    can_->setSpeed(speed_ticks, motor.id);
 
   }
 
