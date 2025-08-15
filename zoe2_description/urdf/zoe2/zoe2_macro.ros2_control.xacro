@@ -36,7 +36,7 @@
       <joint name="${prefix}axle_yaw_back_joint">
           <state_interface name="position" />
       </joint>
-      <joint name="${prefix}axle_roll_back_joint">
+      <joint name="${prefix}axle_roll_front_joint">
           <state_interface name="position" />
       </joint>
 

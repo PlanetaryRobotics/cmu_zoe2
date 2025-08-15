@@ -31,7 +31,7 @@
 // CAN definitions
 #define CAN_INTERFACE "can0"
 
-#define MAX_SPEED 100000
+#define MAX_SPEED 0.25
 
 #define GEARING 50  // gear ratio of harmonic drive
 
@@ -189,7 +189,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto& encoder : encoders_) {
     temp_frame = (dispatcher_->getMessagesForId(encoder.id)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((tick_to_rad(position)-encoder.offset),2*PI) - PI;
+    double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*PI) - PI;
     set_state(encoder.joint_name + "/position", data);
   }
 
@@ -200,30 +200,19 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
 hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
 
-  std::stringstream ss;
-  ss << "Writing commands:";
-
   for (const auto & motor : motors_) {
     std::string joint = motor.joint_name + "/velocity";
 
     // Simulate sending commands to the hardware
     set_state(joint, get_command(joint));
 
-    ss << std::fixed << std::setprecision(2) << std::endl
-       << "\t" << "command " << get_command(joint) << " for '" << joint << "'!";
+    double speed_rad_clamped = std::clamp(get_command(joint), -MAX_SPEED, MAX_SPEED);
 
-    int speed_ticks = int(rad_to_tick(get_command(joint))*GEARING*motor.polarity);
-    ss << std::fixed << std::setprecision(2) << std::endl
-      << "\t" << "speed ticks " << speed_ticks << " for '" << joint << "'!";
-
-    // cap the magnitude, but respect the sign
-    speed_ticks = std::min(std::max(speed_ticks, -MAX_SPEED), MAX_SPEED);
+    int speed_ticks = int(rad_to_tick(speed_rad_clamped)*GEARING*motor.polarity);
 
     can_->setSpeed(speed_ticks, motor.id);
 
   }
-
-  // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
 
   return hardware_interface::return_type::OK;
 }
