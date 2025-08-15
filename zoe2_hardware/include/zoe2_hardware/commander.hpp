@@ -74,7 +74,6 @@ class Command {
         int close_port();
 
         int send(const int size, const std::string& cmd, unsigned int can_id);
-        int sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id);
         int receive(unsigned char *output, unsigned int can_id, FuncCode FCode);
         int receive(struct can_frame& frame, unsigned int can_id, FuncCode FCode);
 

@@ -75,7 +75,6 @@ void Dispatcher::run() {
 
                 
                 std::lock_guard<std::mutex> lock(buffer_mutex_);
-                RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Saving this ID to buffer: %03X", frame.can_id);
                 // auto& queue = buffer_[(frame.can_id&0x7F)];
                 auto& queue = buffer_[(frame.can_id)];
                 queue.push_front(frame);

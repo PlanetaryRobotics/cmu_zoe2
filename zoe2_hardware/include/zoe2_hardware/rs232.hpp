@@ -23,8 +23,6 @@ class TRs232 {
         int sendMsg(const std::string& msg);
         int receiveMsg(unsigned char *output);
 
-        int sendMsgDiscardReply(const std::string& msg);
-
         int setOperational();
 
     private:

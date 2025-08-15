@@ -45,8 +45,6 @@ public:
   int receiveMsg(unsigned char *output, unsigned int can_id, FuncCode FCode);
   int receiveMsg(struct can_frame& frame, unsigned int can_id, FuncCode FCode);
 
-  int sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id, FuncCode FCode) ;
-
   static void createFrame(struct can_frame& frame, int id, int len, unsigned char* data);
 
   void setData(unsigned char* data, int i);

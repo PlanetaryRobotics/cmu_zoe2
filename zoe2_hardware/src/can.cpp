@@ -220,14 +220,6 @@ bool TCan::parseCommand(const std::string& cmd, std::string& command, int& index
   return true;
 }
 
-int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id, FuncCode FCode) { // Depricate Func
-  int result = sendMsg(size, cmd, can_id);
-  unsigned char data[8];
-  // RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN sendMsgDiscardReply. CAN ID: %d", can_id);
-  receiveMsg(data, can_id, FCode);
-  return result;
-}
-
 void TCan::setData(unsigned char* data, int i) {
 
   data[7] = static_cast<unsigned char>((i >> 24));

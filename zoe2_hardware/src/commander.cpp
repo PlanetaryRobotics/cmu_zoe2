@@ -74,16 +74,6 @@ int Command::receive(struct can_frame& frame, unsigned int can_id , FuncCode FCo
     return tcan_->receiveMsg(frame, can_id, FCode);
 }
 
-int Command::sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id) {
-  if(rs232_ != nullptr) {
-    return rs232_->sendMsgDiscardReply(cmd);
-  } else if(tcan_ != nullptr) {
-    return tcan_->sendMsgDiscardReply(size, cmd, can_id, FuncCode::TSDO);
-  } else {
-    return -1000;
-  }
-}
-
 int Command::get_counts(double speed) {
   return int(speed * ENCODER_PPR / (2 * PI));
 }
@@ -134,73 +124,73 @@ int Command::testCan(unsigned int can_id) {
 
 int Command::beginMotion(unsigned int can_id) {
   std::string msg = "BG";
-  return sendMsgDiscardReply(4, msg, can_id);
+  return send(4, msg, can_id);
 }
 
 // To be used with RS232 for CAN setup
 int Command::setCanAddress(int can_address, unsigned int can_id) {
   std::string msg = "PP[13]=" + std::to_string(can_address);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 // To be used with RS232 for CAN setup
 int Command::setCanBaudRate(can_baudrate_t baud_rate, unsigned int can_id) {
   std::string msg = "PP[14]=" + std::to_string(baud_rate);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 // To be used with RS232 for CAN setup
 int Command::saveParametersToFlash(unsigned int can_id) {
   std::string msg = "SV";
-  return sendMsgDiscardReply(4, msg, can_id);
+  return send(4, msg, can_id);
 }
 
 int Command::stopMotor(unsigned int can_id) {
   std::string msg = "MO=0";
-  return sendMsgDiscardReply(8, msg, can_id); 
+  return send(8, msg, can_id); 
 }
 
 int Command::stop(unsigned int can_id) {
 	stopMotor(can_id);
 	setUnitMode(MODE_POS, can_id); /* UnitMode must be MODE_POS for ST to work. */
   std::string msg = "ST";
-	return sendMsgDiscardReply(4, msg, can_id);
+	return send(4, msg, can_id);
 }
 
 int Command::setUnitMode(int mode, unsigned int can_id) {
   std::string msg = "UM=" + std::to_string(mode);
   stopMotor(can_id);
-	return sendMsgDiscardReply(8, msg, can_id);
+	return send(8, msg, can_id);
 }
 
 int Command::startMotor(unsigned int can_id) {
   std::string msg = "MO=1";
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 int Command::setVelocity(int speed, unsigned int can_id) {
   std::string msg = "JV=" + std::to_string(speed);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 int Command::setSpeedPTP(int speed, unsigned int can_id) {
   std::string msg = "SP=" + std::to_string(speed);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 
 int Command::setAbsolutePosition(int pos, unsigned int can_id) {
   std::string data = "PA=" + std::to_string(pos);
-	return sendMsgDiscardReply(8, data, can_id);}
+	return send(8, data, can_id);}
 
 int Command::setRelativePosition(int pos,unsigned int can_id) {
   std::string data = "PR=" + std::to_string(pos);
-	return sendMsgDiscardReply(8, data, can_id);
+	return send(8, data, can_id);
 }
 
 int Command::setTorque(float torque, unsigned int can_id) {
   std::string data = "TC=" + std::to_string(torque);
-	return sendMsgDiscardReply(8, data, can_id);
+	return send(8, data, can_id);
 }
 
 int Command::getMaxCurrent(float* current, unsigned int can_id) {
@@ -227,13 +217,13 @@ int Command::setLimits(int vmin, int vmax, int fmin, int fmax, unsigned int can_
 	stopMotor(can_id); /* The motor must be stopped before any changes in the unit mode can be made. */ 
 	setUnitMode(MODE_POS, can_id); /* Again the damn LL and HL commands work only in MODE_POS. */
   std::string data1 = "VL[2]=" + std::to_string(vmin);
-	sendMsgDiscardReply(8, data1, can_id);
+	send(8, data1, can_id);
   std::string data2 = "VH[2]=" + std::to_string(vmax);
-	sendMsgDiscardReply(8, data2, can_id);
+	send(8, data2, can_id);
   std::string data3 = "LL[2]=" + std::to_string(fmin);
-	sendMsgDiscardReply(8, data3, can_id);
+	send(8, data3, can_id);
   std::string data4 = "HL[2]=" + std::to_string(fmax);
-	sendMsgDiscardReply(8, data4, can_id);
+	send(8, data4, can_id);
 	return 0;
 }
 
