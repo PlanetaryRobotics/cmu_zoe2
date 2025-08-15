@@ -92,9 +92,9 @@ private:
 
   std::vector<Encoder> encoders_ = 
   {
-    {50, "axle_roll_back_joint", 0.0},
-    {52, "axle_yaw_front_joint", 0.0},
-    {53, "axle_yaw_back_joint", 0.0},
+    {52, "axle_roll_back_joint", -1.52},
+    {51, "axle_yaw_front_joint", 0.12},
+    {53, "axle_yaw_back_joint", 0.233},
   };
 };
 
