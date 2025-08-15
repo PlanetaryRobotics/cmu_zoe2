@@ -31,7 +31,7 @@
 // CAN definitions
 #define CAN_INTERFACE "can0"
 
-#define MAX_SPEED 0.25
+#define MAX_SPEED 1.0
 
 #define GEARING 50  // gear ratio of harmonic drive
 

@@ -65,7 +65,7 @@ controller_interface::CallbackReturn Zoe2Controller::on_init() {
 
     RCLCPP_INFO(log(), "starting the Zoe controller@@@@@@@@@@@@@@@@@");
     // todo: make this use rosparams instead of being hardcoded
-    controller = std::make_shared<DrivingController>(1.64, 0.325, 1.91, 5.0);
+    controller = std::make_shared<DrivingController>(1.64, 0.325, 1.91, 1.0);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
