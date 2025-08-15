@@ -35,6 +35,8 @@
 
 #define GEARING 50  // gear ratio of harmonic drive
 
+using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
+
 namespace zoe2_hardware
 {
 
@@ -177,17 +179,18 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
     // Get Position
     can_->getPosition(&measuredPosition, motor.id);
-    set_state(motor.joint_name + "/position", tick_to_rad(measuredPosition*motor.polarity));
+    set_state(motor.joint_name + "/position", tick_to_rad(measuredPosition*motor.polarity) / GEARING);
+
     // Get Speed
     can_->getSpeed(&measuredSpeed, motor.id);
-    set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity));
+    set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity)/ GEARING);
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
   struct can_frame temp_frame;
 
   for (const auto& encoder : encoders_) {
-    temp_frame = (dispatcher_->getMessagesForId(encoder.id)).front();
+    temp_frame = (dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1)).front(); // Check if TPDO1 is correct
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
     double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*PI) - PI;
     set_state(encoder.joint_name + "/position", data);
