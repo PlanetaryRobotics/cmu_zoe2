@@ -122,6 +122,8 @@ class Command {
         int intFromData(unsigned char* data);
         float floatFromData(unsigned char* data);
 
+        int intFromDataBigEndian(unsigned char* data, int start_index, int length);
+
         unsigned int get_can_id();
 
         int get_counts(double speed);

@@ -264,12 +264,7 @@ int Command::getPosition(int* pos, unsigned int can_id) {
     return -2;
   }
 
-  *pos = static_cast<int>(
-    frame.data[0] |
-    frame.data[1] << 8 |
-    frame.data[2] << 16 |
-    frame.data[3] << 24 
-  );
+  *pos = intFromDataBigEndian(frame.data, 0, 4);
 
   RCLCPP_DEBUG(rclcpp::get_logger("COB"), "position: %i", *pos);
 
@@ -283,16 +278,11 @@ int Command::getSpeed(int* speed, unsigned int can_id) {
   can_frame frame;
 
   if(receive(frame, can_id, FuncCode::TPDO3) < 0) { 
-    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Speed: -2");
+    RCLCPP_WARN(rclcpp::get_logger("COB"), "Error in get Speed: -2");
     return -2;
   }
 
-  *speed = static_cast<int>(
-    frame.data[4] |
-    frame.data[5] << 8 |
-    frame.data[6] << 16 |
-    frame.data[7] << 24 
-  );
+  *speed = intFromDataBigEndian(frame.data, 4, 4);
 
   RCLCPP_DEBUG(rclcpp::get_logger("COB"), "speed: %i", *speed);
   return 0;
@@ -350,6 +340,17 @@ int Command::intFromData(unsigned char* data) {
   i |= (data[6] << 16);
   i |= (data[5] << 8);
   i |= (data[4]);
+
+  return i;
+}
+
+int Command::intFromDataBigEndian(unsigned char* data, int start_index, int length) {
+
+  int i = 0x00;
+
+  for (int j = 0; j < length; j++) {
+    i |= (data[start_index + j] << (j * 8));
+  }
 
   return i;
 }
