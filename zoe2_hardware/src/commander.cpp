@@ -302,23 +302,25 @@ int Command::setForce(float force, unsigned int can_id) {
 
 }
 
-int Command::getForce(float* force, unsigned int can_id) {
 
-  can_frame frame;
-  std::string data = "IQ";
+// TODO: Need to test functionality
+// int Command::getForce(float* force, unsigned int can_id) {
+
+//   can_frame frame;
+//   std::string data = "IQ";
   
-  if(send(4, data, can_id) < 0) {
-    return -1;
-  }
+//   if(send(4, data, can_id) < 0) {
+//     return -1;
+//   }
 
-  if(receive(frame, can_id, FuncCode::TSDO) < 0) {// TODO: again, check TSDO
-    return -2;
-  }
+//   if(receive(frame, can_id, FuncCode::TSDO) < 0) {// TODO: again, check TSDO
+//     return -2;
+//   }
 
-  *force = floatFromData(frame.data);
-  return 0;
+//   *force = floatFromData(frame.data);
+//   return 0;
 
-}
+// }
 
 float Command::floatFromData(unsigned char* data) {
 
