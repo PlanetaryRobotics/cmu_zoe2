@@ -1,6 +1,5 @@
 #include "zoe2_hardware/rs232.hpp"
 #include "zoe2_hardware/can.hpp"
-#include "zoe2_hardware/dispatcher.hpp"
 #include <memory>
 
 

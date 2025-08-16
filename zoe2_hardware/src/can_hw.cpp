@@ -24,23 +24,15 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-// Motor Constants
-#define ENCODER_PPR 1024
-#define PI 3.14159265359
-
 // CAN definitions
 #define CAN_INTERFACE "can0"
-
-#define MAX_SPEED 1.5
-
-#define GEARING 50  // gear ratio of harmonic drive
 
 using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
 
 namespace zoe2_hardware
 {
 
-constexpr double TICK_PER_RAD = 4096.0 / (2.0 * PI);
+constexpr double TICK_PER_RAD = 4096.0 / (2.0 * M_PI);
 
 inline int rad_to_tick(double rad) {
     return static_cast<int>(rad * TICK_PER_RAD);
@@ -190,9 +182,9 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   struct can_frame temp_frame;
 
   for (const auto& encoder : encoders_) {
-    temp_frame = (dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1)).front(); // Check if TPDO1 is correct
+    temp_frame = (dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*PI) - PI;
+    double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*M_PI) - M_PI;
     set_state(encoder.joint_name + "/position", data);
   }
 
