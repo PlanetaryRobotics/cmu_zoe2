@@ -70,7 +70,7 @@ int Command::receive(unsigned char *output, unsigned int can_id, FuncCode FCode)
 
 
 int Command::receive(struct can_frame& frame, unsigned int can_id , FuncCode FCode) {
-    RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(frame)");
+    // RCLCPP_INFO(rclcpp::get_logger("TCAN"),"IN receive(frame)");
     return tcan_->receiveMsg(frame, can_id, FCode);
 }
 
@@ -273,7 +273,7 @@ int Command::getPosition(int* pos, unsigned int can_id) {
     frame.data[3] << 24 
   );
 
-  RCLCPP_INFO(rclcpp::get_logger("COB"), "position: %i", *pos);
+  RCLCPP_DEBUG(rclcpp::get_logger("COB"), "position: %i", *pos);
 
   return 0;
 
@@ -296,7 +296,7 @@ int Command::getSpeed(int* speed, unsigned int can_id) {
     frame.data[7] << 24 
   );
 
-  RCLCPP_INFO(rclcpp::get_logger("COB"), "speed: %i", *speed);
+  RCLCPP_DEBUG(rclcpp::get_logger("COB"), "speed: %i", *speed);
   return 0;
 
 }
