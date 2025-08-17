@@ -1,9 +1,8 @@
 for CANID in 1 2 3 4
 do
-	echo $CANID
+	echo "Mapping Velocity PDO for motor $CANID"
     COBID=$(( $CANID + 600 ))
 
-    #Set motor controller (node ID) 2 to upload velocity data
     #DISABLE PDO4
     cansend can0 $COBID#2F.03.18.01.01.05.00.80
     #DISABLE TPDO4 	MAPPING

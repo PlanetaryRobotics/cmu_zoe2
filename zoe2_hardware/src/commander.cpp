@@ -313,8 +313,6 @@ int Command::getActiveCurrent(int* current, unsigned int can_id) {
 
   *current = (int16_t) intFromDataBigEndian(frame.data, 0, 2);
 
-  RCLCPP_DEBUG(rclcpp::get_logger("COB"), "Active current: %d", *current);
-
   return 0;
 }
 

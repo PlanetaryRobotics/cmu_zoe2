@@ -181,7 +181,6 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
     set_state(motor.joint_name + "/effort", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
-    RCLCPP_DEBUG(rclcpp::get_logger("can_hw"), "Node: %i Active current: %d", motor.id, measuredCurrent* motor.polarity);
   }
 
   // READ ENCODER VALUES FROM DISPATCHER

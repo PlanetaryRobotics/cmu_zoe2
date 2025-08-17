@@ -3,7 +3,6 @@ do
 	echo "Mapping Current PDO for motor $CANID"
 	COBID=$(( $CANID + 600 ))
 
-	#Set motor controller (node ID) 2 to upload active current draw data
 	#DISABLE PDO4
 	cansend can0 $COBID#2F.03.18.01.01.05.00.80
 	#DISABLE TPDO4 	MAPPING
