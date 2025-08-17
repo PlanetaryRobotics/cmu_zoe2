@@ -302,6 +302,19 @@ int Command::setForce(float force, unsigned int can_id) {
 
 }
 
+int Command::getActiveCurrent(int* current, unsigned int can_id) {
+  
+  can_frame frame;
+
+  if(receive(frame, can_id, FuncCode::TPDO4) < 0) { 
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Active Current: -2");
+    return -2;
+  }
+
+  *current = (int16_t) intFromDataBigEndian(frame.data, 0, 2);
+
+  return 0;
+}
 
 // TODO: Need to test functionality
 // int Command::getForce(float* force, unsigned int can_id) {

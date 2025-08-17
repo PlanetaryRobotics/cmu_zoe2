@@ -168,6 +168,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto& motor : motors_) {
     int measuredPosition = 0;
     int measuredSpeed = 0;
+    int measuredCurrent = 0;
 
     // Get Position
     can_->getPosition(&measuredPosition, motor.id);
@@ -176,6 +177,10 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     // Get Speed
     can_->getSpeed(&measuredSpeed, motor.id);
     set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity)/ GEARING);
+
+    // Get Current
+    can_->getActiveCurrent(&measuredCurrent, motor.id);
+    set_state(motor.joint_name + "/effort", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
