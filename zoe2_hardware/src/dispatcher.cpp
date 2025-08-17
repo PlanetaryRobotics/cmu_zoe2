@@ -40,12 +40,14 @@ void Dispatcher::stop() {
     if (thread_.joinable()) thread_.join();
 }
 
-
+uint32_t Dispatcher::calculateCOBId(uint32_t can_id, CANFunctionCode functionCode){ // TODO: Find a better place to implement this ideally should be in the can.hpp/cpp files
+    return can_id | ((static_cast<uint32_t>(functionCode)) << 7);
+}
 
 std::vector<can_frame> Dispatcher::getMessagesWithCOB(uint32_t can_id, CANFunctionCode functionCode){ // Depreciated
     std::lock_guard<std::mutex> lock(buffer_mutex_);
 
-    uint32_t bufferIdx = can_id | ((static_cast<uint32_t>(functionCode)) << 7); // TODO: make a COBID conversion function;
+    uint32_t bufferIdx = calculateCOBId(can_id, functionCode);
 
     auto it = buffer_.find(bufferIdx);
     if (it !=buffer_.end()){

@@ -43,8 +43,7 @@ public:
     void stop();   // Signals thread to exit and joins it
 
     std::vector<can_frame> getMessagesWithCOB(uint32_t can_id, CANFunctionCode function_code);
-
-    
+    uint32_t calculateCOBId(uint32_t can_id, CANFunctionCode function_code);
 
 private:
     void run();
