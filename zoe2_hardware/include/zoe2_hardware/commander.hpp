@@ -108,6 +108,9 @@ class Command {
         
         int setSpeed(int speed, unsigned int can_id = -1); 
         int configureSpeedMode(unsigned int can_id = -1);
+        int configurePdo3Mapping(unsigned int can_id = -1);
+        // int configurePdo4Mapping(unsigned int can_id = -1);
+        void sendData(unsigned char* data, unsigned int can_id, int len);
         int getSpeed(int *speed, unsigned int can_id = -1);
 
         int setAbsolutePosition(int pos, unsigned int can_id = -1);

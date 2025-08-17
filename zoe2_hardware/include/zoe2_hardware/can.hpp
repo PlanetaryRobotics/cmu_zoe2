@@ -58,6 +58,7 @@ public:
   std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher_;
 
   void setDispatcher(std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher);
+  int sendFrame(struct can_frame& frame);
 
 private:
 
@@ -66,7 +67,6 @@ private:
   struct ifreq ifr_;
   int socket_;
 
-  int sendFrame(struct can_frame& frame);
   void createCmd(const std::string& input, unsigned char* output, const int size);
   bool parseCommand(const std::string& cmd, std::string& command, int& index, ParseValue& value);
 

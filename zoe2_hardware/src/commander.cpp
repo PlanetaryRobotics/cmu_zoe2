@@ -254,6 +254,68 @@ int Command::configureSpeedMode(unsigned int can_id) {
   return rval;
 }
 
+int Command::configurePdo3Mapping(unsigned int can_id) {
+  // Map Position and Velocity to TPDO3
+  // Disable TPDO3
+  unsigned char data[8] = {0x2F, 0x02, 0x18, 0x01, 0x01, 0x05, 0x00, 0x80};
+  sendData(data, can_id, 8);
+  // Disable TPDO3 mapping
+  unsigned char data1[8] = {0x2F, 0x02, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00};
+  sendData(data1, can_id, 8);
+  // Map Position to 1st index
+  unsigned char data2[8] = {0x2F, 0x02, 0x1A, 0x01, 0x20, 0x00, 0x63, 0x60};
+  sendData(data2, can_id, 8);
+  // Map Velocity to 2nd index
+  unsigned char data3[8] = {0x2F, 0x02, 0x1A, 0x02, 0x20, 0x00, 0x69, 0x60};
+  sendData(data3, can_id, 8);
+  // Set PDO3 transmission type to async
+  unsigned char data4[8] = {0x2F, 0x02, 0x18, 0x02, 0xFF, 0x00, 0x00, 0x00};
+  sendData(data4, can_id, 8);
+  // Set event timer to 100ms
+  unsigned char data5[8] = {0x2F, 0x02, 0x18, 0x05, 0x64, 0x00, 0x00, 0x00};
+  sendData(data5, can_id, 8);
+  // Activate PDO mapping
+  unsigned char data6[8] = {0x2F, 0x02, 0x1A, 0x00, 0x02, 0x00, 0x00, 0x00};
+  sendData(data6, can_id, 8);
+  // Enable PDO
+  unsigned char data7[8] = {0x2F, 0x02, 0x18, 0x01, 0x01, 0x04, 0x00, 0x00};
+  sendData(data7, can_id, 8);
+
+  return 0;
+}
+
+// int Command::configurePdo4Mapping(unsigned int can_id) {
+//   // Disable TPDO4
+//   unsigned char data[8] = {0x2F, 0x03, 0x18, 0x01, 0x01, 0x05, 0x00, 0x80};
+//   sendData(data, can_id, 8);
+//   // Disable TPDO4 mapping
+//   unsigned char data1[8] = {0x2F, 0x03, 0x1A, 0x00, 0x00, 0x00, 0x00, 0x00};
+//   sendData(data1, can_id, 8);
+//   // Map Active Current Draw to 1st index
+//   unsigned char data2[8] = {0x2F, 0x03, 0x1A, 0x01, 0x10, 0x00, 0x77, 0x60};
+//   sendData(data2, can_id, 8);
+//   // Set PDO4 transmission type to async
+//   unsigned char data4[8] = {0x2F, 0x03, 0x18, 0x02, 0xFF, 0x00, 0x00, 0x00};
+//   sendData(data4, can_id, 8);
+//   // Set event timer to 100ms
+//   unsigned char data5[8] = {0x2F, 0x03, 0x18, 0x05, 0x64, 0x00, 0x00, 0x00};
+//   sendData(data5, can_id, 8);
+//   // Activate PDO mapping
+//   unsigned char data6[8] = {0x2F, 0x03, 0x1A, 0x00, 0x01, 0x00, 0x00, 0x00};
+//   sendData(data6, can_id, 8);
+//   // Enable PDO
+//   unsigned char data7[8] = {0x2F, 0x03, 0x18, 0x01, 0x01, 0x04, 0x00, 0x00};
+//   sendData(data7, can_id, 8);
+
+//   return 0;
+// }
+
+void Command::sendData(unsigned char* data, unsigned int can_id, int len){
+  can_frame frame;
+  tcan_->createFrame(frame, can_id | (12<<7), len, data); // TODO: This needs to not be hardcoded for SDOs
+  tcan_->sendFrame(frame);
+}
+
 int Command::getPosition(int* pos, unsigned int can_id) {
   
   can_frame frame;

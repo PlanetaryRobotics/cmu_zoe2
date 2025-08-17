@@ -94,11 +94,13 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
     set_command(name, 0.0);
   }
 
-  // set each can to velocity mode
+  // set each can to velocity mode and configure PDO mapping
   for (const Motor& motor : motors_){
     can_->configureSpeedMode(motor.id);
+    can_->configurePdo3Mapping(motor.id);
+    // can_->configurePdo4Mapping(motor.id);
   }
-  
+
   RCLCPP_INFO(get_logger(), "Successfully configured!");
 
   return CallbackReturn::SUCCESS;
