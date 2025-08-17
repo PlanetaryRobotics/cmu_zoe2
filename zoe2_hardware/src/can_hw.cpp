@@ -180,7 +180,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
-    RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node: %i Active current: %d", motor.id, measuredCurrent);
+    RCLCPP_DEBUG(rclcpp::get_logger("can_hw"), "Node: %i Active current: %d", motor.id, measuredCurrent* motor.polarity);
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
