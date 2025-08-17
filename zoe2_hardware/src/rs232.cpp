@@ -99,15 +99,6 @@ int TRs232::receiveMsg(unsigned char *output) {
     }
 }
 
-int TRs232::sendMsgDiscardReply(const std::string& msg) {
-    std::cout << "Cmd: " << msg << std::endl;
-    int result = sendMsg(msg);
-    unsigned char res[256];
-    receiveMsg(res);
-    printf("Msg send done!!\n");
-    return result;
-}
-
 void TRs232::strToBytes(const std::string& input, unsigned char* output) {
     int i = 0;
     for(char c: input) {

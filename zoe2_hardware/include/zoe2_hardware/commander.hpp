@@ -11,6 +11,7 @@
 #include <iostream>
 #include <rclcpp/rclcpp.hpp>
 
+using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
 
 #ifndef ZOE_COMMAND
 #define ZOE_COMMAND
@@ -72,9 +73,8 @@ class Command {
         int close_port();
 
         int send(const int size, const std::string& cmd, unsigned int can_id);
-        int sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id);
-        int receive(unsigned char *output, unsigned int can_id);
-        int receive(struct can_frame& frame, unsigned int can_id);
+        int receive(unsigned char *output, unsigned int can_id, FuncCode FCode);
+        int receive(struct can_frame& frame, unsigned int can_id, FuncCode FCode);
 
         bool checkOpenResult();
         int setOperational(unsigned int can_id = -1); 
@@ -93,7 +93,7 @@ class Command {
         int getPosition(int* pos, unsigned int can_id = -1);
         
         int setForce(float force, unsigned int can_id = -1);
-        int getForce(float* force,unsigned int id = -1);
+        // int getForce(float* force,unsigned int id = -1);
 
         int startMotor(unsigned int can_id = -1);
         int stopMotor(unsigned int can_id = -1);
@@ -121,6 +121,8 @@ class Command {
 
         int intFromData(unsigned char* data);
         float floatFromData(unsigned char* data);
+
+        int intFromDataBigEndian(unsigned char* data, int start_index, int length);
 
         unsigned int get_can_id();
 

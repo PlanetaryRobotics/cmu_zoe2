@@ -1,6 +1,7 @@
 
 #include <termio.h>
 #include <string>
+#include "zoe2_hardware/dispatcher.hpp"
 
 #ifndef ZOE_RS232
 #define ZOE_RS232
@@ -21,8 +22,6 @@ class TRs232 {
         int setup();
         int sendMsg(const std::string& msg);
         int receiveMsg(unsigned char *output);
-
-        int sendMsgDiscardReply(const std::string& msg);
 
         int setOperational();
 
