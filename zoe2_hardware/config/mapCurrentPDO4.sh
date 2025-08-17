@@ -1,6 +1,6 @@
 for CANID in 1 2 3 4
 do
-	echo $CANID
+	echo "Mapping Current PDO for motor $CANID"
 	COBID=$(( $CANID + 600 ))
 
 	#Set motor controller (node ID) 2 to upload active current draw data
