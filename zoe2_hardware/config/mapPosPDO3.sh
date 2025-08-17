@@ -1,0 +1,24 @@
+for CANID in 1 2 3 4
+do
+	echo $CANID
+	COBID=$(( $CANID + 600 ))
+
+	#Set motor controller (node ID) 2 to upload position data
+	#DISABLE PDO3
+	cansend can0 $COBID#2F.02.18.01.01.04.00.80
+	#DISABLE TPDO3 	MAPPING
+	cansend can0 $COBID#2F.02.1A.00.00.00.00.00
+
+	#MAP POSITION TO 1ST INDEX
+	cansend can0 $COBID#2F.02.1A.01.20.00.63.60
+
+	#SET PDO3 TRANSMISSION TYPE TO ASYNCH
+	cansend can0 $COBID#2F.02.18.02.FF.00.00.00
+	#SET EVENT TIMER TO 100MS
+	cansend can0 $COBID#2F.02.18.05.64.00.00.00
+
+	#ACTIVATE PDO MAPPING
+	cansend can0 $COBID#2F.02.1A.00.01.00.00.00
+	#ENABLE PDO
+	cansend can0 $COBID#2F.02.18.01.01.04.00.00
+done

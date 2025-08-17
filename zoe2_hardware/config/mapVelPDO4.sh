@@ -1,0 +1,24 @@
+for CANID in 1 2 3 4
+do
+	echo $CANID
+    COBID=$(( $CANID + 600 ))
+
+    #Set motor controller (node ID) 2 to upload velocity data
+    #DISABLE PDO4
+    cansend can0 $COBID#2F.03.18.01.01.05.00.80
+    #DISABLE TPDO4 	MAPPING
+    cansend can0 $COBID#2F.03.1A.00.00.00.00.00
+
+    #MAP Velocity TO 1ST INDEX
+    cansend can0 $COBID#2F.03.1A.01.20.00.69.60
+
+    #SET PDO4 TRANSMISSION TYPE TO ASYNC
+    cansend can0 $COBID#2F.03.18.02.FF.00.00.00
+    #SET EVENT TIMER TO 100MS
+    cansend can0 $COBID#2F.03.18.05.64.00.00.00
+
+    #ACTIVATE PDO MAPPING
+    cansend can0 $COBID#2F.03.1A.00.01.00.00.00
+    #ENABLE PDO
+    cansend can0 $COBID#2F.03.18.01.01.04.00.00 
+done
