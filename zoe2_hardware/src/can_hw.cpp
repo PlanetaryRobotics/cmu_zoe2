@@ -168,6 +168,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto& motor : motors_) {
     int measuredPosition = 0;
     int measuredSpeed = 0;
+    int measuredCurrent = 0;
 
     // Get Position
     can_->getPosition(&measuredPosition, motor.id);
@@ -176,6 +177,10 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     // Get Speed
     can_->getSpeed(&measuredSpeed, motor.id);
     set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity)/ GEARING);
+
+    // Get Current
+    can_->getActiveCurrent(&measuredCurrent, motor.id);
+    RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Node: %i Active current: %d", motor.id, measuredCurrent);
   }
 
   // READ ENCODER VALUES FROM DISPATCHER

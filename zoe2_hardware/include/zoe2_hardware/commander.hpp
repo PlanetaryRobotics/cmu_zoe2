@@ -116,6 +116,7 @@ class Command {
         int setTorque(float torque, unsigned int can_id = -1);
 
         int getMaxCurrent(float* current, unsigned int can_id = -1);
+        int getActiveCurrent(int* current, unsigned int can_id = -1);
 
         int setLimits(int vmin, int vmax, int fmin, int fmax, unsigned int can_id = -1);
 
