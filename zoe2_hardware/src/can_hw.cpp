@@ -180,6 +180,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
+    set_state(motor.joint_name + "/effort", (measuredCurrent * motor.polarity)/1000.0);
     RCLCPP_DEBUG(rclcpp::get_logger("can_hw"), "Node: %i Active current: %d", motor.id, measuredCurrent* motor.polarity);
   }
 
