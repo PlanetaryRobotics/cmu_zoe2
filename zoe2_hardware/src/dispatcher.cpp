@@ -53,7 +53,7 @@ std::vector<can_frame> Dispatcher::getMessagesWithCOB(uint32_t can_id, CANFuncti
     if (it !=buffer_.end()){
         return std::vector<can_frame>(it->second.begin(), it->second.end());
     } else if (it == buffer_.end()){
-        RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Requested data from can_id: %03X and Fcode: %03X but no data found in buffer", can_id, (static_cast<uint32_t>(functionCode)));
+        RCLCPP_WARN(rclcpp::get_logger("TCAN"), "Requested data from can_id: %03X and Fcode: %03X but no data found in buffer", can_id, (static_cast<uint32_t>(functionCode)));
     }
     
     return{};
@@ -77,7 +77,6 @@ void Dispatcher::run() {
 
                 
                 std::lock_guard<std::mutex> lock(buffer_mutex_);
-                // auto& queue = buffer_[(frame.can_id&0x7F)];
                 auto& queue = buffer_[(frame.can_id)];
                 queue.push_front(frame);
                 if (queue.size() > max_buffer_size){
