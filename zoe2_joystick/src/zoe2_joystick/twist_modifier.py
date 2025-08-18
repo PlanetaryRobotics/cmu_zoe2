@@ -39,7 +39,7 @@ class TwistModifier(Node):
         if math.abs(msg.angular.z) < 0.1:
             modified_twist.angular.z = 1000.0
         else:
-            modified_twist.angular.z = -4.0 * math.atan(msg.angular.z - math.pi/2.0)
+            modified_twist.angular.z = -4.0 * math.tan(msg.angular.z - math.pi/2.0)
         
         # Publish the modified message
         self.publisher_.publish(modified_twist)
