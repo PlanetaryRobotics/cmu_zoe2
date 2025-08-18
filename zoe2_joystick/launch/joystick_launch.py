@@ -11,7 +11,7 @@ def generate_launch_description():
             default_value='0.05'),
         Node(
             package='joy',
-            namespace='zoe2',
+            #namespace='zoe2',
             executable='joy_node',
             name='joystick',
             parameters=[{'deadzone': LaunchConfiguration('deadzone'),
@@ -26,28 +26,38 @@ def generate_launch_description():
             default_value='true'),
         Node(
             package='teleop_twist_joy',
-            namespace='zoe2',
+            # namespace='zoe2',
             executable='teleop_node',
             name='joy2twist',
-            remappings=[('/zoe2/cmd_vel', '/cmd_vel_unstamped')],
+            remappings=[('/cmd_vel', '/cmd_vel_raw')],
 
             parameters=[{
                 'publish_stamped_twist': LaunchConfiguration('publish_stamped_twist'),
                 'require_enable_button': LaunchConfiguration('require_enable_button'),
 
-                # #these parameters work for TX16 joystick 
-                # 'enable_button': 3,  # Button SH is the deadman switch
-                # 'axis_linear.x': 1,  # Left joystick Y-axis
-                # 'axis_angular.yaw': 3,  # Right joystick X-axis
-                # 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
-
-                #these parameters work for logitech F710 joystick 
-                'enable_button': 5,  # Button RB (right bottom) is the deadman switch
-                'enable_turbo_button': 4, # Button LB (left bottom) is the turbo button
+                #these parameters work for TX16 joystick 
+                'enable_button': 5,  # Button SH is the deadman switch
+                'enable_turbo_button': 7, # Button LB (left bottom) is the turbo button
                 'axis_linear.x': 1,  # Left joystick Y-axis
                 'axis_angular.yaw': 2,  # Right joystick X-axis
                 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
+
+                # #these parameters work for logitech F710 joystick 
+                # 'enable_button': 5,  # Button RB (right bottom) is the deadman switch
+                # 'enable_turbo_button': 7, # Button LB (left bottom) is the turbo button
+                # 'axis_linear.x': 3,  # Left joystick Y-axis
+                # 'axis_angular.yaw': 2,  # Right joystick X-axis
+                # 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
             }]
         ),
+        Node(
+            package='zoe2_joystick',
+            # namespace='zoe2',
+            executable='twist_modifier.py',
+            name='twist_modifier',
+            # remappings=[('/cmd_vel_raw', '/cmd_vel_raw'),
+            #             ('/cmd_vel_unstamped', '/cmd_vel')],
+            output='screen'
+        )
         
     ])

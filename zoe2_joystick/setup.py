@@ -28,6 +28,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'twist_modifier.py = zoe2_joystick.twist_modifier:main',
         ],
     },
 )
