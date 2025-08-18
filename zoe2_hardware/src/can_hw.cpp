@@ -24,21 +24,15 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-// Motor Constants
-#define ENCODER_PPR 1024
-#define PI 3.14159265359
-
 // CAN definitions
 #define CAN_INTERFACE "can0"
 
-#define MAX_SPEED 100000
-
-#define GEARING 50  // gear ratio of harmonic drive
+using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
 
 namespace zoe2_hardware
 {
 
-constexpr double TICK_PER_RAD = 4096.0 / (2.0 * PI);
+constexpr double TICK_PER_RAD = 4096.0 / (2.0 * M_PI);
 
 inline int rad_to_tick(double rad) {
     return static_cast<int>(rad * TICK_PER_RAD);
@@ -174,22 +168,28 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
   for (const auto& motor : motors_) {
     int measuredPosition = 0;
     int measuredSpeed = 0;
+    int measuredCurrent = 0;
 
     // Get Position
     can_->getPosition(&measuredPosition, motor.id);
-    set_state(motor.joint_name + "/position", tick_to_rad(measuredPosition*motor.polarity));
+    set_state(motor.joint_name + "/position", tick_to_rad(measuredPosition*motor.polarity) / GEARING);
+
     // Get Speed
     can_->getSpeed(&measuredSpeed, motor.id);
-    set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity));
+    set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity)/ GEARING);
+
+    // Get Current
+    can_->getActiveCurrent(&measuredCurrent, motor.id);
+    set_state(motor.joint_name + "/effort", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
   struct can_frame temp_frame;
 
   for (const auto& encoder : encoders_) {
-    temp_frame = (dispatcher_->getMessagesForId(encoder.id)).front();
+    temp_frame = (dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1)).front();
     uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((tick_to_rad(position)-encoder.offset),2*PI) - PI;
+    double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*M_PI) - M_PI;
     set_state(encoder.joint_name + "/position", data);
   }
 
@@ -200,30 +200,19 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
 hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
 
-  std::stringstream ss;
-  ss << "Writing commands:";
-
   for (const auto & motor : motors_) {
     std::string joint = motor.joint_name + "/velocity";
 
     // Simulate sending commands to the hardware
     set_state(joint, get_command(joint));
 
-    ss << std::fixed << std::setprecision(2) << std::endl
-       << "\t" << "command " << get_command(joint) << " for '" << joint << "'!";
+    double speed_rad_clamped = std::clamp(get_command(joint), -MAX_SPEED, MAX_SPEED);
 
-    int speed_ticks = int(rad_to_tick(get_command(joint))*GEARING*motor.polarity);
-    ss << std::fixed << std::setprecision(2) << std::endl
-      << "\t" << "speed ticks " << speed_ticks << " for '" << joint << "'!";
-
-    // cap the magnitude, but respect the sign
-    speed_ticks = std::min(std::max(speed_ticks, -MAX_SPEED), MAX_SPEED);
+    int speed_ticks = int(rad_to_tick(speed_rad_clamped)*GEARING*motor.polarity);
 
     can_->setSpeed(speed_ticks, motor.id);
 
   }
-
-  // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 500, "%s", ss.str().c_str());  
 
   return hardware_interface::return_type::OK;
 }

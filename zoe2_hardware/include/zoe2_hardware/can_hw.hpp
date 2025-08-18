@@ -87,15 +87,20 @@ private:
   struct Encoder {
     int id;
     std::string joint_name;
+    int polarity;
     double offset;
   };
 
   const std::vector<Encoder> encoders_ = 
   {
-    // {52, "axle_roll_back_joint", -1.52},
-    {51, "axle_yaw_front_joint", 0.12},
-    {53, "axle_yaw_back_joint", 0.233},
+    {52, "axle_roll_front_joint", -1, -1.52},
+    {51, "axle_yaw_front_joint", 1, 0.12},
+    {53, "axle_yaw_back_joint", 1, 0.233},
   };
+
+  const double MAX_SPEED = 1.5;
+  const int GEARING = 50;
+  const int ENCODER_PPR = 1024;
 };
 
 }  // namespace zoe2_hardware

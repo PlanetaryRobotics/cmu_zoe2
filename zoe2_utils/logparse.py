@@ -106,7 +106,7 @@ def parse_can_log(file_path):
 
     return parsed_data
 
-log_file_path = '../../candump-2025-03-21_131706.log'  # Replace with your log file path
+log_file_path = '/home/zoe/Desktop/candump-2025-08-16_203946.log'  # Replace with your log file path
 parsed_can_data = parse_can_log(log_file_path)
 
 print_and_format(parsed_can_data, log_file_path)
