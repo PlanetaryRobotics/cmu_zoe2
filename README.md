@@ -41,7 +41,7 @@ The robot can be steered by publishing a twist to `/cmd_vel_unstamped`. This can
 3. Tilt the left stick front/back to command forward velocity, right stick side/side for turn radius, and use the upper right trigger to trigger motion
 
 
-## Demo
+## Simulation Demo
 [![Zoe Rover Demo](http://img.youtube.com/vi/RqhPxBom7Jg/0.jpg)](http://www.youtube.com/watch?v=RqhPxBom7Jg)
 
 ## Troubleshooting
