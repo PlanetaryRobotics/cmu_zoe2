@@ -25,13 +25,21 @@ rosdep install --from-paths src -y --ignore-src
 1. Open a new terminal and source your package using `source install/setup.bash` at the root of your workspace. This needs to be done in any new terminal when running the program.
 2. Plug the Kvaser Leaf Light v2 USB into your computer. Run `lsusb` to see if it is recognized.
 3. In your terminal, run `sudo ip link set can0 type can bitrate 1000000 && sudo ip link set up can0` to establish communication
-4. Launch the hardware using `ros2 launch zoe2_bringup hw.launch.py`.
+4. Run `source zoe2_hardware/config/mapMotors.sh` to map the motor's PDO commands. This only needs to be done once per power cycle.
+5. Launch the hardware using `ros2 launch zoe2_bringup hw.launch.py`.
 
 ## Operation
+The robot can be steered by publishing a twist to `/cmd_vel_unstamped`. This can currently be done with the RQT Robot Steering plugin, or by a physical gamepad configured in `zoe2_joystick`.
+### RQT Steering
 1. Open a new terminal and `source install/setup.bash` at the root of your workspace.
 2. Launch rqt: `rqt` and open the Robot Steering plugin (Plugins -> Robot Tools -> Robot Steering)
 3. Set the message topic to `/cmd_vel_unstamped`
 4. Use the sliders to steer the robot!
+### Joystick Steering
+1. Open a new terminal and `source install/setup.bash` at the root of your workspace.
+2. Launch the joystick node: `ros2 launch zoe2_joystick joystick_launch.py`
+3. Tilt the left stick front/back to command forward velocity, right stick side/side for turn radius, and use the upper right trigger to trigger motion
+
 
 ## Demo
 [![Zoe Rover Demo](http://img.youtube.com/vi/RqhPxBom7Jg/0.jpg)](http://www.youtube.com/watch?v=RqhPxBom7Jg)
