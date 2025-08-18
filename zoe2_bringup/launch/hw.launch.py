@@ -25,7 +25,7 @@ def generate_launch_description():
         [
             FindPackageShare("zoe2_bringup"),
             "config",
-            "zoe2_controllers.yaml",
+            "zoe2_hw_controllers.yaml",
         ]
     )
 

@@ -1,0 +1,23 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 30  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    zoe2_controller:
+      type: zoe2_controller/Zoe2Controller
+
+zoe2_controller:
+  ros__parameters:
+    wheel_front_left: wheel_front_left_joint
+    wheel_front_right: wheel_front_right_joint
+    wheel_back_left: wheel_back_left_joint
+    wheel_back_right: wheel_back_right_joint
+    axle_yaw_front: axle_yaw_front_joint
+    axle_yaw_back: axle_yaw_back_joint
+    base_width: 1.115
+    wheel_radius: 0.292
+    robot_length: 1.264
+    proportional_gain: 1.0
+    publish_rate: 50.0

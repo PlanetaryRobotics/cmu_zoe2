@@ -27,6 +27,22 @@ zoe2_controller:
     type: string,
     default_value: "back_roll_back_axle_joint"
   }
+  base_width: {
+    type: double,
+    default_value: 1.64, # meters
+  }
+  wheel_radius: {
+    type: double,
+    default_value: 0.325, # meters
+  }
+  robot_length: {
+    type: double,
+    default_value: 1.91, # meters
+  }
+  proportional_gain: {
+    type: double,
+    default_value: 1.0,
+  }
   publish_rate: {
     type: double,
     default_value: 50.0, # Hz
