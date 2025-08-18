@@ -29,7 +29,7 @@ def generate_launch_description():
             namespace='zoe2',
             executable='teleop_node',
             name='joy2twist',
-            remappings=[('/zoe2/cmd_vel', '/cmd_vel_unstamped')],
+            remappings=[('/zoe2/cmd_vel', '/cmd_vel_raw')],
 
             parameters=[{
                 'publish_stamped_twist': LaunchConfiguration('publish_stamped_twist'),
@@ -49,5 +49,14 @@ def generate_launch_description():
                 'inverted_reverse': False,  # whether to invert turning lef-right while reversing 
             }]
         ),
+        Node(
+            package='zoe2_joystick',
+            namespace='zoe2',
+            executable='twist_modifier.py',
+            name='twist_modifier',
+            # remappings=[('/cmd_vel_raw', '/cmd_vel_raw'),
+            #             ('/cmd_vel_unstamped', '/cmd_vel')],
+            output='screen'
+        )
         
     ])
