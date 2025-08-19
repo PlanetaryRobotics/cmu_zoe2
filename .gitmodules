@@ -1,0 +1,4 @@
+[submodule "zoe2_sensors/vectornav"]
+	path = zoe2_sensors/vectornav
+	url = git@github.com:PlanetaryRobotics/vectornav.git
+	branch = ros2
