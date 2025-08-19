@@ -11,12 +11,17 @@ find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
-find_package(zoe_motor_hardware REQUIRED)
+
 
 add_library(
   zoe2_hardware
   SHARED
   src/can_hw.cpp
+  src/dispatcher.cpp
+  src/can.cpp
+  src/rs232.cpp
+  src/commander.cpp
+
 )
 target_include_directories(
   zoe2_hardware
@@ -28,7 +33,7 @@ ament_target_dependencies(
   hardware_interface
   rclcpp
   rclcpp_lifecycle
-  zoe_motor_hardware
+
 )
 # prevent pluginlib from using boost
 target_compile_definitions(zoe2_hardware PUBLIC "PLUGINLIB__DISABLE_BOOST_FUNCTIONS")

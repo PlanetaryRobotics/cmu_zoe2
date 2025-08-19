@@ -1,4 +1,4 @@
-#include "zoe_motor_hardware/commander.hpp"
+#include "zoe2_hardware/commander.hpp"
 #include <memory>
 
 #define ENCODER_PPR 1024
@@ -24,6 +24,26 @@ int Command::setOperational(unsigned int can_id) {
   }
 }
 
+int Command::nmtStart(unsigned int can_id) {
+  if(rs232_ != nullptr) {
+    return -1;
+  } else if(tcan_ != nullptr) {
+    return tcan_->nmtStart(can_id);
+  } else {
+    return -1000;
+  }
+}
+
+int Command::nmtStop(unsigned int can_id) {
+  if(rs232_ != nullptr) {
+    return -1;
+  } else if(tcan_ != nullptr) {
+    return tcan_->nmtStop(can_id);
+  } else {
+    return -1000;
+  }
+}
+
 
 int Command::send(const int size, const std::string& cmd, unsigned int can_id) {
   if(rs232_ != nullptr) {
@@ -36,29 +56,20 @@ int Command::send(const int size, const std::string& cmd, unsigned int can_id) {
 
 }
 
-int Command::receive(unsigned char *output, unsigned int can_id) {
+int Command::receive(unsigned char *output, unsigned int can_id, FuncCode FCode) {
   if(rs232_ != nullptr) {
     return rs232_->receiveMsg(output);
   } else if(tcan_ != nullptr) {
-    return tcan_->receiveMsg(output, can_id);
+    return tcan_->receiveMsg(output, can_id, FCode);
   } else {
+    RCLCPP_WARN(rclcpp::get_logger("TCAN"),"IN receive(data) error -1000");
     return -1000;
   }
 }
 
 
-int Command::receive(struct can_frame& frame, unsigned int can_id) {
-    return tcan_->receiveMsg(frame, can_id);
-}
-
-int Command::sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id) {
-  if(rs232_ != nullptr) {
-    return rs232_->sendMsgDiscardReply(cmd);
-  } else if(tcan_ != nullptr) {
-    return tcan_->sendMsgDiscardReply(size, cmd, can_id);
-  } else {
-    return -1000;
-  }
+int Command::receive(struct can_frame& frame, unsigned int can_id , FuncCode FCode) {
+    return tcan_->receiveMsg(frame, can_id, FCode);
 }
 
 int Command::get_counts(double speed) {
@@ -82,8 +93,10 @@ int Command::testCan(unsigned int can_id) {
     }
 
     printf("SENT MESSAGE!!\n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
-    if(receive(frame, can_id) < 0) {
+    if(receive(frame, can_id, FuncCode::TPDO2) < 0) {
+      RCLCPP_ERROR(rclcpp::get_logger("TCan"),"RECIEVE HAS FAILED");
       return -2;
     }
 
@@ -109,73 +122,73 @@ int Command::testCan(unsigned int can_id) {
 
 int Command::beginMotion(unsigned int can_id) {
   std::string msg = "BG";
-  return sendMsgDiscardReply(4, msg, can_id);
+  return send(4, msg, can_id);
 }
 
 // To be used with RS232 for CAN setup
 int Command::setCanAddress(int can_address, unsigned int can_id) {
   std::string msg = "PP[13]=" + std::to_string(can_address);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 // To be used with RS232 for CAN setup
 int Command::setCanBaudRate(can_baudrate_t baud_rate, unsigned int can_id) {
   std::string msg = "PP[14]=" + std::to_string(baud_rate);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 // To be used with RS232 for CAN setup
 int Command::saveParametersToFlash(unsigned int can_id) {
   std::string msg = "SV";
-  return sendMsgDiscardReply(4, msg, can_id);
+  return send(4, msg, can_id);
 }
 
 int Command::stopMotor(unsigned int can_id) {
   std::string msg = "MO=0";
-  return sendMsgDiscardReply(8, msg, can_id); 
+  return send(8, msg, can_id); 
 }
 
 int Command::stop(unsigned int can_id) {
 	stopMotor(can_id);
 	setUnitMode(MODE_POS, can_id); /* UnitMode must be MODE_POS for ST to work. */
   std::string msg = "ST";
-	return sendMsgDiscardReply(4, msg, can_id);
+	return send(4, msg, can_id);
 }
 
 int Command::setUnitMode(int mode, unsigned int can_id) {
   std::string msg = "UM=" + std::to_string(mode);
   stopMotor(can_id);
-	return sendMsgDiscardReply(8, msg, can_id);
+	return send(8, msg, can_id);
 }
 
 int Command::startMotor(unsigned int can_id) {
   std::string msg = "MO=1";
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 int Command::setVelocity(int speed, unsigned int can_id) {
   std::string msg = "JV=" + std::to_string(speed);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 int Command::setSpeedPTP(int speed, unsigned int can_id) {
   std::string msg = "SP=" + std::to_string(speed);
-  return sendMsgDiscardReply(8, msg, can_id);
+  return send(8, msg, can_id);
 }
 
 
 int Command::setAbsolutePosition(int pos, unsigned int can_id) {
   std::string data = "PA=" + std::to_string(pos);
-	return sendMsgDiscardReply(8, data, can_id);}
+	return send(8, data, can_id);}
 
 int Command::setRelativePosition(int pos,unsigned int can_id) {
   std::string data = "PR=" + std::to_string(pos);
-	return sendMsgDiscardReply(8, data, can_id);
+	return send(8, data, can_id);
 }
 
 int Command::setTorque(float torque, unsigned int can_id) {
   std::string data = "TC=" + std::to_string(torque);
-	return sendMsgDiscardReply(8, data, can_id);
+	return send(8, data, can_id);
 }
 
 int Command::getMaxCurrent(float* current, unsigned int can_id) {
@@ -188,7 +201,7 @@ int Command::getMaxCurrent(float* current, unsigned int can_id) {
 		return rval;
 	}
 
-	rval = receive(frame, can_id);
+	rval = receive(frame, can_id, FuncCode::TSDO); // TODO: Check what the FuncCode actually is
 	if (rval < 0) {
 		return rval;
 	}
@@ -202,13 +215,13 @@ int Command::setLimits(int vmin, int vmax, int fmin, int fmax, unsigned int can_
 	stopMotor(can_id); /* The motor must be stopped before any changes in the unit mode can be made. */ 
 	setUnitMode(MODE_POS, can_id); /* Again the damn LL and HL commands work only in MODE_POS. */
   std::string data1 = "VL[2]=" + std::to_string(vmin);
-	sendMsgDiscardReply(8, data1, can_id);
+	send(8, data1, can_id);
   std::string data2 = "VH[2]=" + std::to_string(vmax);
-	sendMsgDiscardReply(8, data2, can_id);
+	send(8, data2, can_id);
   std::string data3 = "LL[2]=" + std::to_string(fmin);
-	sendMsgDiscardReply(8, data3, can_id);
+	send(8, data3, can_id);
   std::string data4 = "HL[2]=" + std::to_string(fmax);
-	sendMsgDiscardReply(8, data4, can_id);
+	send(8, data4, can_id);
 	return 0;
 }
 
@@ -226,7 +239,7 @@ int Command::setPosition(int pos, unsigned int can_id) {
 }
 
 int Command::setSpeed(int speed, unsigned int can_id) {
-  int rval;
+  int rval=0;
   rval |= setVelocity(speed, can_id);
   rval |= beginMotion(can_id);
   return rval;
@@ -244,17 +257,17 @@ int Command::configureSpeedMode(unsigned int can_id) {
 int Command::getPosition(int* pos, unsigned int can_id) {
   
   can_frame frame;
-  std::string data = "PX";
-  
-  if(send(4, data, can_id) < 0) {
-    return -1;
-  }
 
-  if(receive(frame, can_id) < 0) {
+  if(receive(frame, can_id, FuncCode::TPDO3) < 0) { 
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Position: -2");
+
     return -2;
   }
 
-  *pos = intFromData(frame.data);
+  *pos = intFromDataBigEndian(frame.data, 0, 4);
+
+  RCLCPP_DEBUG(rclcpp::get_logger("COB"), "position: %i", *pos);
+
   return 0;
 
 }
@@ -263,17 +276,15 @@ int Command::getPosition(int* pos, unsigned int can_id) {
 int Command::getSpeed(int* speed, unsigned int can_id) {
   
   can_frame frame;
-  std::string data = "VX";
-  
-  if(send(4, data, can_id) < 0) {
-    return -1;
-  }
 
-  if(receive(frame, can_id) < 0) {
+  if(receive(frame, can_id, FuncCode::TPDO3) < 0) { 
+    RCLCPP_WARN(rclcpp::get_logger("COB"), "Error in get Speed: -2");
     return -2;
   }
 
-  *speed = intFromData(frame.data);
+  *speed = intFromDataBigEndian(frame.data, 4, 4);
+
+  RCLCPP_DEBUG(rclcpp::get_logger("COB"), "speed: %i", *speed);
   return 0;
 
 }
@@ -291,23 +302,38 @@ int Command::setForce(float force, unsigned int can_id) {
 
 }
 
-int Command::getForce(float* force, unsigned int can_id) {
-
-  can_frame frame;
-  std::string data = "IQ";
+int Command::getActiveCurrent(int* current, unsigned int can_id) {
   
-  if(send(4, data, can_id) < 0) {
-    return -1;
-  }
+  can_frame frame;
 
-  if(receive(frame, can_id) < 0) {
+  if(receive(frame, can_id, FuncCode::TPDO4) < 0) { 
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Active Current: -2");
     return -2;
   }
 
-  *force = floatFromData(frame.data);
-  return 0;
+  *current = (int16_t) intFromDataBigEndian(frame.data, 0, 2);
 
+  return 0;
 }
+
+// TODO: Need to test functionality
+// int Command::getForce(float* force, unsigned int can_id) {
+
+//   can_frame frame;
+//   std::string data = "IQ";
+  
+//   if(send(4, data, can_id) < 0) {
+//     return -1;
+//   }
+
+//   if(receive(frame, can_id, FuncCode::TSDO) < 0) {// TODO: again, check TSDO
+//     return -2;
+//   }
+
+//   *force = floatFromData(frame.data);
+//   return 0;
+
+// }
 
 float Command::floatFromData(unsigned char* data) {
 
@@ -329,6 +355,17 @@ int Command::intFromData(unsigned char* data) {
   i |= (data[6] << 16);
   i |= (data[5] << 8);
   i |= (data[4]);
+
+  return i;
+}
+
+int Command::intFromDataBigEndian(unsigned char* data, int start_index, int length) {
+
+  int i = 0x00;
+
+  for (int j = 0; j < length; j++) {
+    i |= (data[start_index + j] << (j * 8));
+  }
 
   return i;
 }

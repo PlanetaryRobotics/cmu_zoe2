@@ -1,6 +1,17 @@
-#include "zoe_motor_hardware/rs232.hpp"
-#include "zoe_motor_hardware/can.hpp"
+#include "zoe2_hardware/rs232.hpp"
+#include "zoe2_hardware/can.hpp"
 #include <memory>
+
+
+#include <linux/can.h>
+#include <linux/can/raw.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstring>
+#include <iostream>
+#include <rclcpp/rclcpp.hpp>
+
+using FuncCode = zoe2_hardware::Dispatcher::CANFunctionCode;
 
 #ifndef ZOE_COMMAND
 #define ZOE_COMMAND
@@ -50,7 +61,6 @@ class Command {
                 tcan_ = nullptr;
                 int res = rs232_->serial_open();
                 int res_setup = rs232_->setup();
-                open_result_t open_res;
                 if (res < 0 || res_setup < 0) {
                     open_res_ = OPEN_FAILED;
                 } else {
@@ -63,12 +73,13 @@ class Command {
         int close_port();
 
         int send(const int size, const std::string& cmd, unsigned int can_id);
-        int sendMsgDiscardReply(const int size, const std::string& cmd, unsigned int can_id);
-        int receive(unsigned char *output, unsigned int can_id);
-        int receive(struct can_frame& frame, unsigned int can_id);
+        int receive(unsigned char *output, unsigned int can_id, FuncCode FCode);
+        int receive(struct can_frame& frame, unsigned int can_id, FuncCode FCode);
 
         bool checkOpenResult();
         int setOperational(unsigned int can_id = -1); 
+        int nmtStart(unsigned int can_id = -1);
+        int nmtStop(unsigned int can_id = -1);
         
         // Commands implemented
 
@@ -82,7 +93,7 @@ class Command {
         int getPosition(int* pos, unsigned int can_id = -1);
         
         int setForce(float force, unsigned int can_id = -1);
-        int getForce(float* force,unsigned int id = -1);
+        // int getForce(float* force,unsigned int id = -1);
 
         int startMotor(unsigned int can_id = -1);
         int stopMotor(unsigned int can_id = -1);
@@ -105,16 +116,31 @@ class Command {
         int setTorque(float torque, unsigned int can_id = -1);
 
         int getMaxCurrent(float* current, unsigned int can_id = -1);
+        int getActiveCurrent(int* current, unsigned int can_id = -1);
 
         int setLimits(int vmin, int vmax, int fmin, int fmax, unsigned int can_id = -1);
 
         int intFromData(unsigned char* data);
         float floatFromData(unsigned char* data);
 
+        int intFromDataBigEndian(unsigned char* data, int start_index, int length);
+
         unsigned int get_can_id();
 
         int get_counts(double speed);
         double get_speed_counts(int count);
+
+
+
+        int getSocketFD() const{
+            return tcan_->getSocket();
+        }
+
+        void setDispatcher(std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher){
+            if(tcan_){
+                tcan_ -> setDispatcher(dispatcher);
+            }
+        }
 
 
         private:

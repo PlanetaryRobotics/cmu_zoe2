@@ -26,7 +26,8 @@
 #include "rclcpp/macros.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
-#include "zoe_motor_hardware/commander.hpp"
+#include "zoe2_hardware/commander.hpp"
+#include "zoe2_hardware/dispatcher.hpp"
 
 namespace zoe2_hardware
 {
@@ -62,6 +63,44 @@ private:
 
   // CAN pointer
   std::shared_ptr<Command> can_;
+
+  // Dispatcher
+
+  std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher_;
+
+  // Motors
+  struct Motor {
+    int id;
+    std::string joint_name;
+    int polarity;
+  };
+
+  const std::vector<Motor> motors_= 
+  {
+    {1, "wheel_front_right_joint", -1},
+    {2, "wheel_front_left_joint", 1},
+    {3, "wheel_back_left_joint", 1},
+    {4, "wheel_back_right_joint", -1},
+  };
+
+  // Encoders
+  struct Encoder {
+    int id;
+    std::string joint_name;
+    int polarity;
+    double offset;
+  };
+
+  const std::vector<Encoder> encoders_ = 
+  {
+    {52, "axle_roll_front_joint", -1, -1.52},
+    {51, "axle_yaw_front_joint", 1, 0.12},
+    {53, "axle_yaw_back_joint", 1, 0.233},
+  };
+
+  const double MAX_SPEED = 1.5;
+  const int GEARING = 50;
+  const int ENCODER_PPR = 1024;
 };
 
 }  // namespace zoe2_hardware

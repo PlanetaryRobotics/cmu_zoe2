@@ -10,7 +10,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>generate_parameter_library</build_depend>
-  <!-- <depend>zoe_motor_hardware</depend> -->
+
 
   <depend>backward_ros</depend>
   <depend>controller_interface</depend>

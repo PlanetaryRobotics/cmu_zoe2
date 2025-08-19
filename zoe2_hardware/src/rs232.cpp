@@ -1,4 +1,4 @@
-#include "zoe_motor_hardware/rs232.hpp"
+#include "zoe2_hardware/rs232.hpp"
 #include <fcntl.h>
 #include <cerrno>
 #include <cstdio>
@@ -97,15 +97,6 @@ int TRs232::receiveMsg(unsigned char *output) {
         }
         return SUCCESS_CODE;
     }
-}
-
-int TRs232::sendMsgDiscardReply(const std::string& msg) {
-    std::cout << "Cmd: " << msg << std::endl;
-    int result = sendMsg(msg);
-    unsigned char res[256];
-    receiveMsg(res);
-    printf("Msg send done!!\n");
-    return result;
 }
 
 void TRs232::strToBytes(const std::string& input, unsigned char* output) {

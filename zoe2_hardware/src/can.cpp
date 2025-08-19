@@ -1,4 +1,4 @@
-#include "zoe_motor_hardware/can.hpp"
+#include "zoe2_hardware/can.hpp"
 #include <cstring>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <stdbool.h>
+#include <rclcpp/rclcpp.hpp>
 
 TCan::TCan(const std::string& iface) : iface_(iface) {}
 
@@ -41,10 +42,6 @@ TCan::~TCan() {
   close(socket_);
 }
 
-// unsigned int TCan::get_can_id() {
-//   return can_id;
-// }
-
 int TCan::setOperational(unsigned int can_id) {
   can_frame frame;
   unsigned char data[8] = {0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -63,9 +60,29 @@ int TCan::setPreOperational(unsigned int can_id) {
   return sendFrame(frame);
 }
 
+int TCan::nmtStart(unsigned int can_id) {
+  can_frame frame;
+  unsigned char data[8] = {0x01, static_cast<unsigned char>(can_id), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  createFrame(frame, 0, 2, data);
+
+  return sendFrame(frame);
+
+}
+
+int TCan::nmtStop(unsigned int can_id) {
+  can_frame frame;
+  unsigned char data[8] = {0x02, static_cast<unsigned char>(can_id), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+  createFrame(frame, 0, 2, data);
+
+  return sendFrame(frame);
+
+}
+
 
 int TCan::sendFrame(can_frame& frame) {
-  int bytes = write(socket_, &frame, sizeof(frame));
+  long int bytes = write(socket_, &frame, sizeof(frame));
   if(bytes != sizeof(frame)) {
     return -1;
   }
@@ -74,7 +91,7 @@ int TCan::sendFrame(can_frame& frame) {
 
 void TCan::createFrame(can_frame& frame, int id, int len, unsigned char* data) {
   frame.can_id = id;
-  frame.can_dlc = len;
+  frame.can_dlc = static_cast<__u8>(len);
   memcpy(frame.data, data, 8);
 }
 
@@ -88,43 +105,31 @@ int TCan::sendMsg(int size, const std::string& cmd, unsigned int can_id) {
 
 }
 
-int TCan::receiveMsg(unsigned char *output, unsigned int can_id) {
-  int bytes;
-  can_frame frame;
+int TCan::receiveMsg(unsigned char *output, unsigned int can_id, FuncCode FCode) {
+  // Returns only CAN data
 
-  while(true) {
-    bytes = read(socket_, &frame, sizeof(frame));
-
-    if(bytes < 0) {
-      perror("Read error");
-      return -1;
-    }
-
-    if (frame.can_id == (can_id | 5 << 7)) {
-      memcpy(output, frame.data, 8);
-      return 0;
-    }
-  }
+  if (!dispatcher_) return -1;
+  auto messages = dispatcher_->getMessagesWithCOB(can_id, FCode);
+  if (messages.empty()) return -1;
+  memcpy(output, messages.front().data, 8);
+  return 0;
 }
 
-int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id) {
-  int bytes;
-
-  while(true) {
-    bytes = read(socket_, &frame, sizeof(frame));
-
-    if(bytes < 0) {
-      perror("Read error");
-      return -1;
-    }
-
-
-    if (frame.can_id == (can_id | 5 << 7)) {
-    // printf("DONE READING!!\n");
-
-      return 0;
-    }
+int TCan::receiveMsg(struct can_frame& frame, unsigned int can_id, FuncCode FCode) {
+  // Returns whole frame
+  if (!dispatcher_){
+    RCLCPP_INFO(rclcpp::get_logger("TCAN"), "exited with error -1");
+    return -1;}
+  auto messages = dispatcher_->getMessagesWithCOB(can_id, FCode);
+  if (messages.empty()){
+    //RCLCPP_INFO(rclcpp::get_logger("TCAN"), "attempting to read from %d exited with error -2",can_id);
+    return -2;
   }
+  frame = messages.front();
+  //RCLCPP_INFO(rclcpp::get_logger("TCAN"), "Setting Frame Correctly");
+
+  return 0;
+
 }
 
 
@@ -163,8 +168,8 @@ void TCan::createCmd(const std::string& input, unsigned char* output, const int 
 }
 
 void TCan::setIndex(unsigned char* data, int index) {
-  data[2] = index & 0xFF;
-  data[3] = (index >> 8) & 0x3F;
+  data[2] = static_cast<unsigned char>(index & 0xFF);
+  data[3] = static_cast<unsigned char>((index >> 8) & 0x3F);
   
 }
 
@@ -215,19 +220,12 @@ bool TCan::parseCommand(const std::string& cmd, std::string& command, int& index
   return true;
 }
 
-int TCan::sendMsgDiscardReply(int size, const std::string& cmd, unsigned int can_id) {
-  int result = sendMsg(size, cmd, can_id);
-  unsigned char data[8];
-  receiveMsg(data, can_id);
-  return result;
-}
-
 void TCan::setData(unsigned char* data, int i) {
 
-  data[7] = (i >> 24);
-  data[6] = ((i << 8) >> 24); 
-  data[5] = ((i << 16) >> 24);
-  data[4] = ((i << 24) >> 24);
+  data[7] = static_cast<unsigned char>((i >> 24));
+  data[6] = static_cast<unsigned char>(((i << 8) >> 24));
+  data[5] = static_cast<unsigned char>(((i << 16) >> 24));
+  data[4] = static_cast<unsigned char>(((i << 24) >> 24));
 
 }
 
@@ -235,10 +233,10 @@ void TCan::setData(unsigned char* data, float f) {
 
   int i = *(int*)&f;
   
-  data[7] = (i >> 24);
-  data[6] = ((i << 8) >> 24);
-  data[5] = ((i << 16) >> 24); 
-  data[4] = ((i << 24) >> 24);
+  data[7] = static_cast<unsigned char>((i >> 24));
+  data[6] = static_cast<unsigned char>(((i << 8) >> 24));
+  data[5] = static_cast<unsigned char>(((i << 16) >> 24));
+  data[4] = static_cast<unsigned char>(((i << 24) >> 24));
 
   data[3] |= 1 << 7; 
 
@@ -268,6 +266,13 @@ int TCan::intFromData(unsigned char* data) {
   return i;
 }
 
+int TCan::getSocket() const{
+  return socket_;
+}
+
+void TCan::setDispatcher(std::shared_ptr<zoe2_hardware::Dispatcher> dispatcher){
+  dispatcher_= dispatcher;
+}
 
 
 
