@@ -37,7 +37,7 @@ The robot can be steered by publishing a twist to `/cmd_vel_unstamped`. This can
 4. Use the sliders to steer the robot!
 ### Joystick Steering
 1. Open a new terminal and `source install/setup.bash` at the root of your workspace.
-2. Launch the joystick node: `ros2 launch zoe2_joystick joystick_launch.py`
+2. Launch the joystick node: `ros2 launch zoe2_joystick joystick.launch.py`
 3. Tilt the left stick front/back to command forward velocity, right stick side/side for turn radius, and use the upper right trigger to trigger motion
 
 
