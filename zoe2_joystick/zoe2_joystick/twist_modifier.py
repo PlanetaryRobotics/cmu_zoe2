@@ -56,12 +56,16 @@ def main(args=None):
     # Create an instance of the TwistModifier node
     twist_modifier_node = TwistModifier()
     
-    # Spin the node to process callbacks
-    rclpy.spin(twist_modifier_node)
-    
-    # Destroy the node and shutdown rclpy when done
-    twist_modifier_node.destroy_node()
-    rclpy.shutdown()
+    try:
+        # Spin the node to process callbacks
+        rclpy.spin(twist_modifier_node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        # Destroy the node and shutdown rclpy when done
+        twist_modifier_node.destroy_node()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
