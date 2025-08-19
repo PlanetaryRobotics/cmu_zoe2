@@ -246,6 +246,11 @@ int Command::setSpeed(int speed, unsigned int can_id) {
 
 }
 
+int Command::setAcceleration(int acceleration, unsigned int can_id) {
+  std::string msg = "AC=" + std::to_string(acceleration);
+  return send(8, msg, can_id);
+}
+
 int Command::configureSpeedMode(unsigned int can_id) {
   int rval;
   rval = stopMotor(can_id);
