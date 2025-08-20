@@ -15,10 +15,16 @@ def generate_launch_description():
             ]),
             description="Full path to the RViz configuration file to use",
         ),
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="false",
+            description="Use simulation time if true",
+        ),
     ]
 
-    # Use LaunchConfiguration to retrieve the value of the rviz_config_file argument
+    # Use LaunchConfiguration to retrieve the value of the arguments
     rviz_config_file = LaunchConfiguration("rviz_config_file")
+    use_sim_time = LaunchConfiguration("use_sim_time")
 
     log_rviz_path = LogInfo(msg=["Using RViz config file: ", rviz_config_file])
 
@@ -29,6 +35,7 @@ def generate_launch_description():
         name="rviz2",
         output="both",
         arguments=["-d", rviz_config_file],
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
     return LaunchDescription(

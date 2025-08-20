@@ -12,6 +12,7 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
 from launch.event_handlers import OnProcessExit
+from launch.conditions import IfCondition
 
 bringup_package_name="zoe2_bringup"
 odom_package_name = 'zoe2_odom'
@@ -56,16 +57,25 @@ def generate_launch_description():
             description='yaw of the robot',
         )
     )
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_joystick",
+            default_value="true",
+            description='Use joystick for control if true',
+        )
+    )
 
     # Unwrap Launch Arguments
     world_file = LaunchConfiguration("world")
 
     world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
 
+    use_joystick = LaunchConfiguration("use_joystick")
+
     # launch the robot state publisher
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory(bringup_package_name),'launch','rsp.launch.py'
+                    get_package_share_directory(bringup_package_name),'launch','common','rsp.launch.py'
                 )]), launch_arguments={'sim': 'true'}.items()
     )
 
@@ -127,10 +137,11 @@ def generate_launch_description():
     # launch rviz
     rviz = IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
-                get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
+                get_package_share_directory(bringup_package_name),'launch','common','rviz.launch.py'
             )]),
             launch_arguments={
                 "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "sim.rviz"]),
+                "use_sim_time": "true",
             }.items()
     )
 
@@ -142,6 +153,13 @@ def generate_launch_description():
         launch_arguments={'use_sim_time': 'true'}.items()
     )
 
+    joystick_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory("zoe2_joystick"),'launch','joystick.launch.py'
+        )]),
+        launch_arguments={'use_sim_time': 'true'}.items(),
+        condition=IfCondition(use_joystick)
+    )
 
     # Launch them all!
     return LaunchDescription(
@@ -155,5 +173,6 @@ def generate_launch_description():
         ros_gz_bridge,
         odom,
         rviz,
-        drive_arc_visualizer_node
+        drive_arc_visualizer_node,
+        joystick_node
     ])
