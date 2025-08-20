@@ -12,6 +12,7 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
 from launch.event_handlers import OnProcessExit
+from launch.conditions import IfCondition
 
 bringup_package_name="zoe2_bringup"
 
@@ -20,6 +21,17 @@ def generate_launch_description():
     # Declare Launch Arguments. 
     # These can be called by ros2 launch <package_name> <launch_file.py> <argname_1>:=<value> <argname_1>:=<value> ...
     declared_arguments = []
+
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_joystick",
+            default_value="true",
+            description='Use joystick for control if true',
+        )
+    )
+
+    # unwrap Launch Arguments
+    use_joystick = LaunchConfiguration("use_joystick")
 
     robot_controllers = PathJoinSubstitution(
         [
@@ -95,6 +107,14 @@ def generate_launch_description():
         )])
     )
 
+    # If joystick is enabled, launch the joystick node
+    joystick_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory("zoe2_joystick"),'launch','joystick.launch.py'
+        )]),
+        launch_arguments={'use_sim_time': 'true'}.items(),
+        condition=IfCondition(use_joystick)
+    )
 
     # Launch them all!
     return LaunchDescription(
@@ -107,4 +127,5 @@ def generate_launch_description():
         delay_joint_state_broadcaster_after_robot_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         drive_arc_visualizer_node,
+        joystick_node
     ])
