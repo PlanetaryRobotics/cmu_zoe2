@@ -88,6 +88,13 @@ def generate_launch_description():
         )])
     )
 
+    # launch the vectornav sensor
+    vectornav_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory("vectornav"),'launch','vectornav.launch.py'
+        )])
+    )
+
 
     # Launch them all!
     return LaunchDescription(
@@ -96,6 +103,7 @@ def generate_launch_description():
         control_node,
         rsp,
         zoe2_controller_spawner,
+        vectornav_node,
         delay_joint_state_broadcaster_after_robot_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         drive_arc_visualizer_node,
