@@ -99,6 +99,8 @@ private:
   };
 
   const double MAX_SPEED = 2.0;
+  const int ACCELERATION = 250000;
+  const int DECELERATION = 250000;
   const int GEARING = 50;
   const int ENCODER_PPR = 1024;
 };

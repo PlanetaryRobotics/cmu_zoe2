@@ -99,8 +99,8 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   // set each can to velocity mode
   for (const Motor& motor : motors_){
     can_->configureSpeedMode(motor.id);
-    can_->setAcceleration(250000, motor.id);
-    can_->setDeceleration(250000, motor.id);
+    can_->setAcceleration(ACCELERATION, motor.id);
+    can_->setDeceleration(DECELERATION, motor.id);
   }
   
   RCLCPP_INFO(get_logger(), "Successfully configured!");
