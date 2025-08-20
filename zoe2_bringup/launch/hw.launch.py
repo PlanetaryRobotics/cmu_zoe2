@@ -12,7 +12,7 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
 from launch.event_handlers import OnProcessExit
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 
 bringup_package_name="zoe2_bringup"
 
@@ -30,8 +30,17 @@ def generate_launch_description():
         )
     )
 
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "headless",
+            default_value="true",
+            description='Run in headless mode if true',
+        )
+    )
+
     # unwrap Launch Arguments
     use_joystick = LaunchConfiguration("use_joystick")
+    headless = LaunchConfiguration("headless")
 
     robot_controllers = PathJoinSubstitution(
         [
@@ -82,7 +91,8 @@ def generate_launch_description():
             launch_arguments={
                 "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "wheel_speeds.rviz"]),
                 "use_sim_time": "false",
-            }.items()
+            }.items(),
+            condition=UnlessCondition(headless)
     )
 
     # Delay rviz start after `joint_state_broadcaster`
