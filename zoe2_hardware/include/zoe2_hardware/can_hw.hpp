@@ -98,7 +98,9 @@ private:
     {53, "axle_yaw_back_joint", 1, 0.233},
   };
 
-  const double MAX_SPEED = 1.5;
+  const double MAX_SPEED = 2.0;
+  const int ACCELERATION = 250000;
+  const int DECELERATION = 250000;
   const int GEARING = 50;
   const int ENCODER_PPR = 1024;
 };

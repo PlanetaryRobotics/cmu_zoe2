@@ -105,7 +105,9 @@ class Command {
         
         int setSpeedPTP(int speed, unsigned int can_id = -1);
         int setVelocity(int speed, unsigned int can_id = -1);
-        
+        int setAcceleration(int acceleration, unsigned int can_id = -1);
+        int setDeceleration(int deceleration, unsigned int can_id = -1);
+
         int setSpeed(int speed, unsigned int can_id = -1); 
         int configureSpeedMode(unsigned int can_id = -1);
         int getSpeed(int *speed, unsigned int can_id = -1);

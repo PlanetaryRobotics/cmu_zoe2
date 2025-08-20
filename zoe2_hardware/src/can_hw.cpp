@@ -50,20 +50,12 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interfac
 
   RCLCPP_INFO(get_logger(), "Initializing ...please wait...");
 
+  // Set ros2 control states and commands
   hw_states_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_commands_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
-  return CallbackReturn::SUCCESS;
-}
-
-hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifecycle::State & /*previous_state*/){
-  // TODO(anyone): prepare the robot to be ready for read calls and write calls of some interfaces
-
-  RCLCPP_INFO(get_logger(), "Configuring... please wait...");
-
   // creating Can instance 
   can_ = std::make_shared<Command>(CAN_INTERFACE, true);
-
 
   // creating Dispatcher Before CAN init
   int socket = can_->getSocketFD();
@@ -80,8 +72,18 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
       RCLCPP_INFO(rclcpp::get_logger("can_hw"), "Not open");
       return CallbackReturn::ERROR;
   } 
-  
+
+  // add a 2s delay - workaround to make sure all CAN messages get processed
+  std::this_thread::sleep_for(std::chrono::seconds(2));
+
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
+
+  return CallbackReturn::SUCCESS;
+}
+
+hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifecycle::State & /*previous_state*/){
+
+  RCLCPP_INFO(get_logger(), "Configuring... please wait...");
 
   // reset values always when configuring hardware
   for (const auto & [name, descr] : joint_state_interfaces_)
@@ -97,6 +99,8 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   // set each can to velocity mode
   for (const Motor& motor : motors_){
     can_->configureSpeedMode(motor.id);
+    can_->setAcceleration(ACCELERATION, motor.id);
+    can_->setDeceleration(DECELERATION, motor.id);
   }
   
   RCLCPP_INFO(get_logger(), "Successfully configured!");
