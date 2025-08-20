@@ -82,7 +82,6 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interfac
 }
 
 hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifecycle::State & /*previous_state*/){
-  // TODO(anyone): prepare the robot to be ready for read calls and write calls of some interfaces
 
   RCLCPP_INFO(get_logger(), "Configuring... please wait...");
 
