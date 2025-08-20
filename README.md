@@ -8,7 +8,9 @@
 1. Install ROS2, ROS2 Control, and Gazebo, following their documentation. See [INSTALL.md](INSTALL.md) for more details
 2. If you don't already have one, create a [ROS workspace](https://docs.ros.org/en/jazzy/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html). 
 3. Clone this repo into the `src/` directory of your ROS workspace.
-4. Run [rosdep](https://docs.ros.org/en/jazzy/Tutorials/Intermediate/Rosdep.html#rosdep-operation) to install all missing packages.
+4. Initialize the submodules with `git submodule update --init`
+    1. If you run into an error, you may need to [generate an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux) and retry.
+6. Run [rosdep](https://docs.ros.org/en/jazzy/Tutorials/Intermediate/Rosdep.html#rosdep-operation) to install all missing packages.
 ```
 sudo rosdep init
 rosdep update
@@ -37,7 +39,7 @@ The robot can be steered by publishing a twist to `/cmd_vel_unstamped`. This can
 4. Use the sliders to steer the robot!
 ### Joystick Steering
 1. Open a new terminal and `source install/setup.bash` at the root of your workspace.
-2. Launch the joystick node: `ros2 launch zoe2_joystick joystick_launch.py`
+2. Launch the joystick node: `ros2 launch zoe2_joystick joystick.launch.py`
 3. Tilt the left stick front/back to command forward velocity, right stick side/side for turn radius, and use the upper right trigger to trigger motion
 
 
