@@ -39,7 +39,7 @@ def generate_launch_description():
     # launch the robot state publisher
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
-                    get_package_share_directory(bringup_package_name),'launch','rsp.launch.py'
+                    get_package_share_directory(bringup_package_name),'launch','common','rsp.launch.py'
                 )]), launch_arguments={'sim': 'false'}.items()
     )
 
@@ -65,7 +65,7 @@ def generate_launch_description():
     # launch rviz
     rviz = IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
-                get_package_share_directory(bringup_package_name),'launch','rviz.launch.py'
+                get_package_share_directory(bringup_package_name),'launch','common','rviz.launch.py'
             )]),
             launch_arguments={
                 "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "wheel_speeds.rviz"]),
