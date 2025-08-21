@@ -21,5 +21,5 @@
     <xacro:property name="axle_drop" value="0.119"/>
 
     <!-- Speed limits -->
-    <xacro:property name="max_wheel_speed" value="2.0"/>
+    <xacro:property name="max_wheel_speed" value="4.0"/>
 </robot>

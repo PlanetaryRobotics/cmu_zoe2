@@ -20,5 +20,5 @@ zoe2_controller:
     base_width: 1.115
     wheel_radius: 0.292
     robot_length: 1.264
-    proportional_gain: 3.0
+    proportional_gain: 1.0
     publish_rate: 50.0
