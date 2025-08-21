@@ -9,7 +9,7 @@ do
 	cansend can0 $COBID#2F.03.1A.00.00.00.00.00
 
 	#MAP Current TO 1ST INDEX
-	cansend can0 $COBID#2F.03.1A.01.10.00.77.60
+	cansend can0 $COBID#2F.03.1A.01.10.00.78.60
 
 	#SET PDO4 TRANSMISSION TYPE TO ASYNC
 	cansend can0 $COBID#2F.03.18.02.FF.00.00.00
