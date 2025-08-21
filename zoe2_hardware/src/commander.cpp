@@ -314,6 +314,19 @@ int Command::setForce(float force, unsigned int can_id) {
 
 }
 
+int Command::getTorque(int* torque, unsigned int can_id){
+  can_frame frame;
+
+  if(receive(frame, can_id, FuncCode::TPDO4) < 0) { 
+    RCLCPP_INFO(rclcpp::get_logger("COB"), "Error in get Active Torque: -2");
+    return -2;
+  }
+
+  *torque = (int16_t) intFromDataBigEndian(frame.data, 0, 2);
+
+  return 0;  
+}
+
 int Command::getActiveCurrent(int* current, unsigned int can_id) {
   
   can_frame frame;
@@ -323,7 +336,7 @@ int Command::getActiveCurrent(int* current, unsigned int can_id) {
     return -2;
   }
 
-  *current = (int16_t) intFromDataBigEndian(frame.data, 0, 2);
+  *current = (int16_t) intFromDataBigEndian(frame.data, 2, 2);
 
   return 0;
 }

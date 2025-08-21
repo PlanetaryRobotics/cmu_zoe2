@@ -1,0 +1,25 @@
+for CANID in 1 2 3 4
+do
+	echo "Mapping Torque and Current to PDO4 for motor $CANID"
+	COBID=$(( $CANID + 600 ))
+
+	#DISABLE PDO4
+	cansend can0 $COBID#2F.03.18.01.01.05.00.80
+	#DISABLE TPDO4 	MAPPING
+	cansend can0 $COBID#2F.03.1A.00.00.00.00.00
+
+	#MAP Torque TO 1ST INDEX
+	cansend can0 $COBID#2F.03.1A.01.10.00.77.60
+	#MAP Current TO 2ND INDEX
+	cansend can0 $COBID#2F.03.1A.02.10.00.78.60
+
+	#SET PDO4 TRANSMISSION TYPE TO ASYNC
+	cansend can0 $COBID#2F.03.18.02.FF.00.00.00
+	#SET EVENT TIMER TO 50MS
+	cansend can0 $COBID#2F.03.18.05.32.00.00.00
+
+	#ACTIVATE PDO MAPPING
+	cansend can0 $COBID#2F.03.1A.00.02.00.00.00
+	#ENABLE PDO
+	cansend can0 $COBID#2F.03.18.01.01.04.00.00
+done

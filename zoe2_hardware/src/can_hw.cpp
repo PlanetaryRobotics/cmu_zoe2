@@ -167,11 +167,12 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
 }
 
 hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
-  
+
   // READ MOTOR VALUES FROM DISPATCHER
   for (const auto& motor : motors_) {
     int measuredPosition = 0;
     int measuredSpeed = 0;
+    int measuredTorque = 0;
     int measuredCurrent = 0;
 
     // Get Position
@@ -182,9 +183,12 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     can_->getSpeed(&measuredSpeed, motor.id);
     set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity)/ GEARING);
 
+    // Get Torque (effort)
+    can_->getTorque(&measuredTorque, motor.id);
+    set_state(motor.joint_name + "/effort", (measuredTorque * motor.polarity)/1000.0); // convert mN*m to N*m
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
-    set_state(motor.joint_name + "/effort", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
+    set_state(motor.joint_name + "/current", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
