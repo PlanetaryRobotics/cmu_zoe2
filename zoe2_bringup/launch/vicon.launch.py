@@ -9,7 +9,8 @@ def generate_launch_description():
             executable='vicon_bridge',
             name='vicon_bridge',
             output='screen',
-            parameters=[{'host_name': '192.168.10.1:801'}]
+            parameters=[{'host_name': '192.168.10.1:801'}],
+            arguments=['--ros-args', '--log-level', 'ERROR'],
         ),
         Node(
             package='tf2_ros',
