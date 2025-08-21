@@ -35,6 +35,8 @@
 
   <exec_depend>ros2_controllers_test_nodes</exec_depend>
 
+  <exec_depend>foxglove_bridge</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
     <!-- gazebo export working based on this comment https://answers.gazebosim.org//question/6568/uri-paths-to-packages-in-the-sdf-model-file/ -->
