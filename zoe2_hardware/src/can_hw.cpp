@@ -74,7 +74,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interfac
   } 
 
   // add a 2s delay - workaround to make sure all CAN messages get processed
-  std::this_thread::sleep_for(std::chrono::seconds(2));
+  std::this_thread::sleep_for(std::chrono::seconds(4));
 
   RCLCPP_INFO(rclcpp::get_logger("can_hw"), "CAN Setup Successful.");
 
@@ -167,7 +167,7 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_shutdown(const rclcpp_lifecy
 }
 
 hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/){
-  
+
   // READ MOTOR VALUES FROM DISPATCHER
   for (const auto& motor : motors_) {
     int measuredPosition = 0;
@@ -184,17 +184,26 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
 
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
-    set_state(motor.joint_name + "/effort", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
+    double actualCurrent = (measuredCurrent * motor.polarity) * (MOTOR_RATE_CURRENT / 1000.0);
+    set_state(motor.joint_name + "/current", actualCurrent); 
+
+    double measuredTorque = actualCurrent * TORQUE_CONSTANT * GEARING; // convert to Nm
+    set_state(motor.joint_name + "/effort", measuredTorque); 
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
   struct can_frame temp_frame;
 
   for (const auto& encoder : encoders_) {
-    temp_frame = (dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1)).front();
-    uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*M_PI) - M_PI;
-    set_state(encoder.joint_name + "/position", data);
+    auto messages = dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1);
+    if (!messages.empty()) {
+      temp_frame = messages.front();
+      uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
+      double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*M_PI) - M_PI;
+      set_state(encoder.joint_name + "/position", data);
+    } else {
+      RCLCPP_WARN(get_logger(), "No CAN message available for encoder ID %d", encoder.id);
+    }
   }
 
 

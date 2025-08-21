@@ -93,7 +93,6 @@ class Command {
         int getPosition(int* pos, unsigned int can_id = -1);
         
         int setForce(float force, unsigned int can_id = -1);
-        // int getForce(float* force,unsigned int id = -1);
 
         int startMotor(unsigned int can_id = -1);
         int stopMotor(unsigned int can_id = -1);

@@ -1,6 +1,6 @@
 for CANID in 1 2 3 4
 do
-    echo "Mapping Position and Velocity PDO for motor $CANID"
+    echo "Mapping Position and Velocity to PDO3 for motor $CANID"
 	COBID=$(( $CANID + 600 ))
 
 	#DISABLE PDO
