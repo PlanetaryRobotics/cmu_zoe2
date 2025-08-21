@@ -185,7 +185,7 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
     double actualCurrent = (measuredCurrent * motor.polarity) * (MOTOR_RATE_CURRENT / 1000.0);
-    set_state(motor.joint_name + "/current", actualCurrent); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
+    set_state(motor.joint_name + "/current", actualCurrent); 
 
     double measuredTorque = actualCurrent * TORQUE_CONSTANT * GEARING; // convert to Nm
     set_state(motor.joint_name + "/effort", measuredTorque); 
