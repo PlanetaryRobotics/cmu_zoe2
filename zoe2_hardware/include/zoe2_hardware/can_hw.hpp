@@ -102,8 +102,8 @@ private:
   const int DECELERATION = 250000;
   const int GEARING = 50;
   const int ENCODER_PPR = 1024;
-  const int MOTOR_RATE_CURRENT = 6000;  // OBJECT 0X675
-  const float TORQUE_CONSTANT = 0.21f;  // Nm/A, from AKM31h manual
+  const int MOTOR_RATE_CURRENT = 6000/1000;  // OBJECT 0X675
+  const double TORQUE_CONSTANT = 0.21;  // Nm/A, from AKM31h manual
 };
 
 }  // namespace zoe2_hardware
