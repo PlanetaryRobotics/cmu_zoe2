@@ -210,9 +210,7 @@ hardware_interface::return_type Zoe2Hardware::write(const rclcpp::Time & /*time*
     // Simulate sending commands to the hardware
     set_state(joint, get_command(joint));
 
-    double speed_rad_clamped = std::clamp(get_command(joint), -MAX_SPEED, MAX_SPEED);
-
-    int speed_ticks = int(rad_to_tick(speed_rad_clamped)*GEARING*motor.polarity);
+    int speed_ticks = int(rad_to_tick(get_command(joint))*GEARING*motor.polarity);
 
     can_->setSpeed(speed_ticks, motor.id);
 
