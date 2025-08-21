@@ -20,4 +20,6 @@
     <xacro:property name="axle_length" value="${robot_width-wheel_thickness}"/>
     <xacro:property name="axle_drop" value="0.119"/>
 
+    <!-- Speed limits -->
+    <xacro:property name="max_wheel_speed" value="2.0"/>
 </robot>
