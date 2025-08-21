@@ -183,22 +183,26 @@ hardware_interface::return_type Zoe2Hardware::read(const rclcpp::Time & /*time*/
     can_->getSpeed(&measuredSpeed, motor.id);
     set_state(motor.joint_name + "/velocity", tick_to_rad(measuredSpeed*motor.polarity)/ GEARING);
 
-    // Get Torque (effort)
-    can_->getTorque(&measuredTorque, motor.id);
-    set_state(motor.joint_name + "/effort", (measuredTorque * motor.polarity)/1000.0); // convert mN*m to N*m
     // Get Current
     can_->getActiveCurrent(&measuredCurrent, motor.id);
-    set_state(motor.joint_name + "/current", (measuredCurrent * motor.polarity)/1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
+    set_state(motor.joint_name + "/current", (measuredCurrent * motor.polarity) * MOTOR_RATE_CURRENT / 1000.0); // convert mA to A - The original reading comes in mA and then we switch it to A for the controller.
+
+    set_state(motor.joint_name + "/effort", measuredCurrent * TORQUE_CONSTANT); // convert to Nm
   }
 
   // READ ENCODER VALUES FROM DISPATCHER
   struct can_frame temp_frame;
 
   for (const auto& encoder : encoders_) {
-    temp_frame = (dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1)).front();
-    uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
-    double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*M_PI) - M_PI;
-    set_state(encoder.joint_name + "/position", data);
+    auto messages = dispatcher_->getMessagesWithCOB(encoder.id, FuncCode::TPDO1);
+    if (!messages.empty()) {
+      temp_frame = messages.front();
+      uint32_t position = (temp_frame.data[3] <<24)|(temp_frame.data[2] <<16)|(temp_frame.data[1] <<8)|(temp_frame.data[0]);
+      double data = std::fmod((tick_to_rad(position)-encoder.offset)*encoder.polarity,2*M_PI) - M_PI;
+      set_state(encoder.joint_name + "/position", data);
+    } else {
+      RCLCPP_WARN(get_logger(), "No CAN message available for encoder ID %d", encoder.id);
+    }
   }
 
 
