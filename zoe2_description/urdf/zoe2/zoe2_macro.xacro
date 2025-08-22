@@ -26,13 +26,13 @@
 
     <xacro:wheel name="${prefix}wheel_front_left" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
 
-    <xacro:axle name="${prefix}front_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
+    <xacro:axle name="${prefix}front_axle" rpy="${pi/2} 0 ${pi/2}" xyz="0 0 0" />
 
     <xacro:wheel name="${prefix}wheel_back_right" rpy="0 0 ${pi/2}" xyz="0 0 0" />
 
     <xacro:wheel name="${prefix}wheel_back_left" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
 
-    <xacro:axle name="${prefix}back_axle" rpy="${pi/2} 0 0" xyz="0 0 0" />
+    <xacro:axle name="${prefix}back_axle" rpy="${pi/2} 0 ${pi/2}" xyz="0 0 0" />
 
     <xacro:hinge name="${prefix}back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
 

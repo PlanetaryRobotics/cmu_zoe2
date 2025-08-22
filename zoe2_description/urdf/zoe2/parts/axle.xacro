@@ -38,7 +38,7 @@
                 <geometry>
                     <!-- <mesh
                         filename="file://$(find zoe2_description)/meshes/zoe2/collision/front_axle.STL" /> -->
-                    <box size="${axle_length} ${axle_box_width} ${axle_box_width}" />
+                    <cylinder length="${axle_length}" radius="${axle_radius}" />
                 </geometry>
             </collision>
         </link>

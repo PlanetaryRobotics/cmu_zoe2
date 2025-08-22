@@ -38,7 +38,7 @@
                 <geometry>
                     <!-- <mesh
                         filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" /> -->
-                    <box size="${axle_box_width} ${axle_box_width} ${robot_hinge_length*2}" />
+                    <box size="${axle_radius} ${axle_radius} ${robot_hinge_length*2}" />
                 </geometry>
             </collision>
         </link>

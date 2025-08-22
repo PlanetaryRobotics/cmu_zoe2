@@ -16,7 +16,7 @@
     <xacro:property name="wheel_radius" value="0.292"/>
     <xacro:property name="wheel_thickness" value="0.074"/>
     <!-- Axle -->
-    <xacro:property name="axle_box_width" value="0.1"/>
+    <xacro:property name="axle_radius" value="0.05715"/>
     <xacro:property name="axle_length" value="${robot_width-wheel_thickness}"/>
     <xacro:property name="axle_drop" value="0"/>
 
