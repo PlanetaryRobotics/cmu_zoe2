@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+    <robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="robot">
+    <!-- all are in meters -->
+    <xacro:property name="robot_width" value="1.115" />
+    <xacro:property name="robot_length" value="1.264"/>
+    <xacro:property name="base_link_height" value="0.2"/>
+    <!-- Chassis -->
+    <xacro:property name="chassis_length" value="1"/>
+    <xacro:property name="chassis_width" value="0.230"/>
+    <xacro:property name="chassis_height" value="0.3"/>
+
+    <!-- Hinge -->
+    <xacro:property name="robot_hinge_length" value="0.132"/>
+    <xacro:property name="front_vertical_limit" value="${pi/4}"/>
+    <!-- Wheel -->
+    <xacro:property name="wheel_radius" value="0.292"/>
+    <xacro:property name="wheel_thickness" value="0.074"/>
+    <!-- Axle -->
+    <xacro:property name="axle_radius" value="0.05715"/>
+    <xacro:property name="axle_length" value="${robot_width-wheel_thickness}"/>
+    <xacro:property name="axle_drop" value="0"/>
+    <!-- Antenna -->
+    <xacro:property name="antenna_length" value="0.52"/>
+    <xacro:property name="antenna_radius" value="0.015"/>
+    <xacro:property name="antenna_location" value="-0.3"/>
+
+    <!-- Speed limits -->
+    <xacro:property name="max_wheel_speed" value="4.0"/>
+</robot>

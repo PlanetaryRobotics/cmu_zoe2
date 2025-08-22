@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:macro name="zoe1_ros2_control" params="
+               name
+               prefix
+               use_mock_hardware:=false
+               mock_sensor_commands:=false
+               sim_gazebo_classic:=false
+               sim_gazebo:=false
+               simulation_controllers"
+               >
+
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <xacro:if value="${use_mock_hardware}">
+          <plugin>mock_components/GenericSystem</plugin>
+          <param name="mock_sensor_commands">${mock_sensor_commands}</param>
+        </xacro:if>
+        <xacro:if value="${sim_gazebo_classic}">
+          <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+        </xacro:if>
+        <xacro:if value="${sim_gazebo}">
+          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </xacro:if>
+        <xacro:unless value="${use_mock_hardware or sim_gazebo_classic or sim_gazebo}">
+          <plugin>zoe2_hardware/Zoe2Hardware</plugin>
+        </xacro:unless>
+      </hardware>
+
+      <!-- Pivot Joints -->
+
+      <joint name="${prefix}axle_yaw_front_joint">
+        <state_interface name="position" />
+      </joint>
+      <joint name="${prefix}axle_yaw_back_joint">
+          <state_interface name="position" />
+      </joint>
+      <joint name="${prefix}axle_roll_front_joint">
+          <state_interface name="position" />
+      </joint>
+
+      <!-- Wheel Joints -->
+      <joint name="${prefix}wheel_front_left_joint">
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <state_interface name="effort" />
+          <state_interface name="current" />
+          <command_interface name="velocity" >
+            <param name="min">-${max_wheel_speed}</param>
+            <param name="max">${max_wheel_speed}</param>
+          </command_interface>
+      </joint>
+      <joint name="${prefix}wheel_front_right_joint">
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <state_interface name="effort" />
+          <state_interface name="current" />
+          <command_interface name="velocity" >
+            <param name="min">-${max_wheel_speed}</param>
+            <param name="max">${max_wheel_speed}</param>
+          </command_interface>
+      </joint>
+      <joint name="${prefix}wheel_back_right_joint">
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <state_interface name="effort" />
+          <state_interface name="current" />
+          <command_interface name="velocity" >
+            <param name="min">-${max_wheel_speed}</param>
+            <param name="max">${max_wheel_speed}</param>
+          </command_interface>
+      </joint>
+      <joint name="${prefix}wheel_back_left_joint">
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <state_interface name="effort" />
+          <state_interface name="current" />
+          <command_interface name="velocity" >
+            <param name="min">-${max_wheel_speed}</param>
+            <param name="max">${max_wheel_speed}</param>
+          </command_interface>
+      </joint>
+
+
+
+    </ros2_control>
+
+    <xacro:if value="$(arg sim_gazebo_classic)">
+      <!-- Gazebo plugins -->
+      <gazebo reference="world">
+      </gazebo>
+      <gazebo>
+        <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+          <parameters>${simulation_controllers}</parameters>
+        </plugin>
+        <plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+          <!-- <alwaysOn>true</alwaysOn> -->
+          <update_rate>50.0</update_rate>
+          <body_name>base_link</body_name>
+          <gaussian_noise>0.01</gaussian_noise>
+          <frame_name>world</frame_name>
+          <xyz_offset>0 0 0</xyz_offset>
+          <rpy_offset>0 0 0</rpy_offset>
+        </plugin>
+      </gazebo>
+    </xacro:if>
+
+    <xacro:if value="$(arg sim_gazebo)">
+      <!-- Gazebo plugins -->
+      <gazebo reference="world">
+      </gazebo>
+      <gazebo>
+        <!-- ROS2 Control plugin -->
+        <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+          <parameters>${simulation_controllers}</parameters>
+          <controller_manager_node_name>${prefix}controller_manager</controller_manager_node_name>
+        </plugin>
+        <!-- Odometry plugin. Returns ground truth simulation position/orientation -->
+        <plugin
+          filename="libgz-sim-odometry-publisher-system.so"
+          name="gz::sim::systems::OdometryPublisher">
+          <odom_frame>world</odom_frame>
+          <robot_base_frame>base_link</robot_base_frame>
+          <odom_publish_frequency>50</odom_publish_frequency>
+          <!-- Dimensions can be set to 2 or 3. Controls how much pose information is sent -->
+          <dimensions>2</dimensions>
+          <xyz_offset>0 0 0</xyz_offset>
+          <rpy_offset>0 0 0</rpy_offset>
+          <gaussian_noise>0.01</gaussian_noise>
+        </plugin>
+      </gazebo>
+    </xacro:if>
+
+  </xacro:macro>
+</robot>
