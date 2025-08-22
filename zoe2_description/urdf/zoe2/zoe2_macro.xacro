@@ -6,10 +6,11 @@
   <xacro:include filename="$(find zoe2_description)/urdf/common/inertials.xacro" />
   <xacro:include filename="$(find zoe2_description)/urdf/common/materials.xacro" />
 
-  <xacro:include filename="$(find zoe2_description)/urdf/common/wheel.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/common/chassis.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/common/axle.xacro" />
-  <xacro:include filename="$(find zoe2_description)/urdf/common/hinge.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/wheel.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/chassis.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/axle.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/hinge.xacro" />
+
   <xacro:include filename="$(find zoe2_description)/urdf/common/params.xacro" />
 
   <xacro:macro name="zoe2" params="prefix *origin">
