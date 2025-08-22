@@ -33,7 +33,7 @@
             </visual>
             <collision>
                 <origin
-                    xyz="0 0 ${chassis_height/2-axle_box_width/2}"
+                    xyz="0 0 ${chassis_height/2}"
                     rpy="${rpy}" />
                 <geometry>
                     <!-- <mesh
