@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
+    <xacro:macro name="axle" params="name rpy xyz" >
+        <link
+            name="${name}">
+            <inertial>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <mass
+                    value="2.76276470983555" />
+                <inertia
+                    ixx="0.0151578893043941"
+                    ixy="-6.10514243326588E-15"
+                    ixz="-8.69280987887411E-16"
+                    iyy="0.615173226679267"
+                    iyz="-9.50117240753409E-16"
+                    izz="0.620920397735107" />
+            </inertial>
+            <visual>
+                <origin
+                    xyz="0 0 -0.075"
+                    rpy="${rpy}" />
+                <geometry>
+                    <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/front_axle.STL" />
+                </geometry>
+                <material
+                    name="">
+                    <color
+                        rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+                </material>
+            </visual>
+            <collision>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <!-- <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/front_axle.STL" /> -->
+                    <box size="${axle_length} ${axle_box_width} ${axle_box_width}" />
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+</robot>
+  

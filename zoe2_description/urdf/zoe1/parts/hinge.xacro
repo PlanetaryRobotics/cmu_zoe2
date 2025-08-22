@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
+    <xacro:macro name="hinge" params="name rpy xyz" >
+        <link
+            name="${name}">
+            <inertial>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <mass
+                    value="1.60265212368031" />
+                <inertia
+                    ixx="0.00789007052519473"
+                    ixy="-4.51083375595945E-06"
+                    ixz="-3.52376942846933E-05"
+                    iyy="0.00778556714593041"
+                    iyz="1.5780343532552E-06"
+                    izz="0.00273377335912292" />
+            </inertial>
+            <visual>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" />
+                </geometry>
+                <material
+                    name="">
+                    <color
+                        rgba="0.866666666666667 0.909803921568627 1 1" />
+                </material>
+            </visual>
+            <collision>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <!-- <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" /> -->
+                    <box size="${axle_box_width} ${axle_box_width} ${robot_hinge_length*2}" />
+                </geometry>
+            </collision>
+        </link>
+
+    </xacro:macro>
+</robot>
+  
