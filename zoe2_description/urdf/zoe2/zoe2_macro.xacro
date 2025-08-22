@@ -10,6 +10,7 @@
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/chassis.xacro" />
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/axle.xacro" />
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/hinge.xacro" />
+  <xacro:include filename="$(find zoe2_description)/urdf/zoe2/parts/antenna.xacro" />
 
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/zoe2_params.xacro" />
 
@@ -35,6 +36,8 @@
     <xacro:axle name="${prefix}back_axle" rpy="${pi/2} 0 ${pi/2}" xyz="0 0 0" />
 
     <xacro:hinge name="${prefix}back_roll" rpy="${-pi/2} 0 0" xyz="0 0 0" />
+
+    <xacro:antenna name="${prefix}antenna" rpy="0 0 0" xyz="0 0 ${antenna_length/2}" />
 
     <!-- Link gazebo params -->
     <gazebo reference="wheel_back_left">
@@ -75,6 +78,12 @@
         <origin xyz="0 0 ${base_link_height}" />
     </joint>
 
+    <joint name="${prefix}antenna_joint" type="fixed">
+        <parent link="${prefix}chassis" />
+        <child link="${prefix}antenna" />
+        <origin xyz="0 ${antenna_location} ${chassis_height}" />
+    </joint>
+
 
     <joint name="${prefix}axle_roll_front_joint" type="revolute">
         <parent link="${prefix}chassis" />
@@ -106,7 +115,6 @@
         <axis xyz="-1 0 0" />
     </joint>
 
-    <!-- temp set to fixed -->
     <joint name="${prefix}axle_yaw_back_joint" type="revolute">
         <parent link="${prefix}back_roll" />
         <child link="${prefix}back_axle" />
@@ -129,7 +137,6 @@
         <axis xyz="-1 0 0" />
     </joint>
 
-    <!-- current roll joint limits set arbitrarily... -->
     <joint name="${prefix}axle_roll_back_joint" type="fixed">
         <parent link="${prefix}chassis" />
         <child link="${prefix}back_roll" />

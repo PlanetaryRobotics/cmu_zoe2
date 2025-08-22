@@ -19,6 +19,10 @@
     <xacro:property name="axle_radius" value="0.05715"/>
     <xacro:property name="axle_length" value="${robot_width-wheel_thickness}"/>
     <xacro:property name="axle_drop" value="0"/>
+    <!-- Antenna -->
+    <xacro:property name="antenna_length" value="0.52"/>
+    <xacro:property name="antenna_radius" value="0.015"/>
+    <xacro:property name="antenna_location" value="-0.3"/>
 
     <!-- Speed limits -->
     <xacro:property name="max_wheel_speed" value="4.0"/>

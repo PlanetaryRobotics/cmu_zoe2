@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot">
+    <xacro:macro name="antenna" params="name rpy xyz" >
+        <link
+            name="${name}">
+            <collision>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <cylinder length="${antenna_length}" radius="${antenna_radius}" />
+                </geometry>
+            </collision>
+        </link>
+    </xacro:macro>
+</robot>
