@@ -17,7 +17,14 @@ def generate_launch_description():
             executable='static_transform_publisher',
             name='static_transform_pub',
             output='screen',
-            arguments=['0', '0.3', '-.47', '3.1415', '0', '0', 'vicon/morphin/morphin', 'base_link']
+            arguments=['--x', '0', 
+                        '--y', '0.3', 
+                        '--z', '-.47', 
+                        '--yaw', '3.1415', 
+                        '--pitch', '0', 
+                        '--roll', '0', 
+                        '--frame-id', 'vicon/morphin/morphin', 
+                        '--child-frame-id', 'base_link']
             # transform between morphin's lid to zoe's base_link, centered on chassis and level with wheels
             # args are (x, y, z) in m, (yaw, pitch roll) in rad
         )
