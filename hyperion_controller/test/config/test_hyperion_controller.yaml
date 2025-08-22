@@ -1,0 +1,6 @@
+test_hyperion_controller:
+  ros__parameters:
+    wheel_front_left: "wheel_front_left"
+    wheel_front_right: "wheel_front_right"
+    wheel_back_left: "wheel_back_left"
+    wheel_back_right: "wheel_back_right"

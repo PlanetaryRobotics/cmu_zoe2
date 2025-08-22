@@ -1,0 +1,50 @@
+hyperion_controller:
+  wheel_front_left: {
+    type: string,
+    default_value: "wheel_front_left",
+    description: "Link names of the left side wheels",
+  }
+  wheel_front_right: {
+    type: string,
+    default_value: "wheel_front_left",
+    description: "Link names of the left side wheels",
+  }
+  wheel_back_left: {
+    type: string,
+    default_value: "wheel_front_left",
+    description: "Link names of the left side wheels",
+  }
+  wheel_back_right: {
+    type: string,
+    default_value: "wheel_front_left",
+    description: "Link names of the left side wheels",
+  }
+  axle_yaw_front: {
+    type: string,
+    default_value: "front_roll_front_axle_joint"
+  }
+  axle_yaw_back: {
+    type: string,
+    default_value: "back_roll_back_axle_joint"
+  }
+  base_width: {
+    type: double,
+    default_value: 1.64, # meters
+  }
+  wheel_radius: {
+    type: double,
+    default_value: 0.325, # meters
+  }
+  robot_length: {
+    type: double,
+    default_value: 1.91, # meters
+  }
+  proportional_gain: {
+    type: double,
+    default_value: 1.0,
+  }
+  publish_rate: {
+    type: double,
+    default_value: 50.0, # Hz
+    description: "Publishing rate (Hz) of the odometry and TF messages.",
+  }
