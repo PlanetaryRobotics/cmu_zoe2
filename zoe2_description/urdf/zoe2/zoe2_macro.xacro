@@ -19,19 +19,19 @@
     <link name = "${prefix}base_link">
     </link>
 
-    <xacro:chassis name="${prefix}chassis" rpy="0 0 0" xyz="0 0 0" />
+    <xacro:chassis name="${prefix}chassis" rpy="0 0 0" xyz="0 0 ${chassis_height/2}" />
 
     <xacro:hinge name="${prefix}front_roll" rpy="${pi/2} 0 0" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}wheel_front_right" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_front_right" rpy="0 ${pi/2} 0" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}wheel_front_left" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_front_left" rpy="0 ${-pi/2} 0" xyz="0 0 0" />
 
     <xacro:axle name="${prefix}front_axle" rpy="${pi/2} 0 ${pi/2}" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}wheel_back_right" rpy="0 0 ${pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_back_right" rpy="0 ${pi/2} 0" xyz="0 0 0" />
 
-    <xacro:wheel name="${prefix}wheel_back_left" rpy="0 0 ${-pi/2}" xyz="0 0 0" />
+    <xacro:wheel name="${prefix}wheel_back_left" rpy="0 ${-pi/2} 0" xyz="0 0 0" />
 
     <xacro:axle name="${prefix}back_axle" rpy="${pi/2} 0 ${pi/2}" xyz="0 0 0" />
 
