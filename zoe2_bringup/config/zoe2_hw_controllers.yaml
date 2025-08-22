@@ -17,7 +17,7 @@ zoe2_controller:
     wheel_back_right: wheel_back_right_joint
     axle_yaw_front: axle_yaw_front_joint
     axle_yaw_back: axle_yaw_back_joint
-    base_width: 1.115
+    base_width: 1.1115
     wheel_radius: 0.292
     robot_length: 1.264
     proportional_gain: 1.0
