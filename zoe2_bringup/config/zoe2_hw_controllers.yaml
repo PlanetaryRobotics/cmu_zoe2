@@ -6,9 +6,11 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    zoe2_controller:
+      type: zoe2_controller/Zoe2Controller
+
 zoe2_controller:
   ros__parameters:
-    type: zoe2_controller/Zoe2Controller
     wheel_front_left: wheel_front_left_joint
     wheel_front_right: wheel_front_right_joint
     wheel_back_left: wheel_back_left_joint
