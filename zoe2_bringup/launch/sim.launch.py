@@ -109,10 +109,20 @@ def generate_launch_description():
         arguments=["zoe2_controller"],
     )
 
+    diff_drive_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["zoe2_diff_drive_controller", "--inactive",
+                   "-p", os.path.join(
+                    get_package_share_directory(bringup_package_name),'config','zoe2_diff_drive_controller.yaml'
+                )
+                   ],
+    )
+
     delayed_zoe2_controller_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=spawn_entity,
-            on_exit=[zoe2_controller_spawner],
+            on_exit=[zoe2_controller_spawner, diff_drive_controller_spawner],
         )
     )
 
