@@ -2,7 +2,7 @@
 
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped, Twist
 import math
 
 class TwistModifier(Node):
@@ -21,9 +21,10 @@ class TwistModifier(Node):
             self.listener_callback,
             10)
         
-        # Create a publisher to the modified message for the controller
-        self.publisher_ = self.create_publisher(Twist, '/cmd_vel_unstamped', 10)
-        
+        # Create publishers for stamped and unstamped messages
+        self.publisher_stamped = self.create_publisher(TwistStamped, '/cmd_vel', 10)
+        self.publisher_unstamped = self.create_publisher(Twist, '/cmd_vel_unstamped', 10)
+
     def listener_callback(self, msg):
         """
         Callback function for the subscriber. This function is called every time
@@ -31,21 +32,33 @@ class TwistModifier(Node):
         """
         #self.get_logger().info(f'Received Twist message: linear.x={msg.linear.x}, angular.z={msg.angular.z}')
 
-        # Create a new Twist message for publishing
-        modified_twist = Twist()
-        
+        # Create a new TwistStamped message for publishing
+        modified_twist = TwistStamped()
+        modified_twist.header.stamp = self.get_clock().now().to_msg()
+        modified_twist.header.frame_id = "base_link"
+
         # Perform the mathematical operation: scale the linear and angular components
-        modified_twist.linear.x = msg.linear.x
+        modified_twist.twist.linear.x = msg.linear.x
         turn_radius = 0.0
         if math.fabs(msg.angular.z) < 0.1:
             turn_radius = 1000.0
         else:
             turn_radius = -2.0 * math.tan(msg.angular.z - math.pi/2.0)
-        
-        modified_twist.angular.z = msg.linear.x / turn_radius if turn_radius != 0 else 0.0
 
-        # Publish the modified message
-        self.publisher_.publish(modified_twist)
+        modified_twist.twist.angular.z = msg.linear.x / turn_radius if turn_radius != 0 else 0.0
+
+        # Publish the stamped message
+        self.publisher_stamped.publish(modified_twist)
+        
+        # Also publish the unstamped Twist message
+        unstamped_twist = Twist()
+        unstamped_twist.linear.x = modified_twist.twist.linear.x
+        unstamped_twist.linear.y = modified_twist.twist.linear.y
+        unstamped_twist.linear.z = modified_twist.twist.linear.z
+        unstamped_twist.angular.x = modified_twist.twist.angular.x
+        unstamped_twist.angular.y = modified_twist.twist.angular.y
+        unstamped_twist.angular.z = modified_twist.twist.angular.z
+        self.publisher_unstamped.publish(unstamped_twist)
         
         #self.get_logger().info(f'Published modified Twist: linear.x={modified_twist.linear.x}, angular.z={modified_twist.angular.z}')
 
