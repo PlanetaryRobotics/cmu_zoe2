@@ -1,0 +1,188 @@
+import os
+
+from ament_index_python.packages import get_package_share_directory
+
+
+from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument, RegisterEventHandler, ExecuteProcess
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_ros.substitutions import FindPackageShare
+
+from launch_ros.actions import Node
+
+from launch.event_handlers import OnProcessExit
+from launch.conditions import IfCondition
+
+bringup_package_name="zoe2_bringup"
+odom_package_name = 'zoe2_odom'
+
+def generate_launch_description():
+
+    # Declare Launch Arguments. 
+    # These can be called by ros2 launch <package_name> <launch_file.py> <argname_1>:=<value> <argname_1>:=<value> ...
+    declared_arguments = [
+        DeclareLaunchArgument(
+            "world",
+            default_value="empty.world",
+            description='World to load into Gazebo',
+        ),
+        DeclareLaunchArgument(
+            "x",
+            default_value="0.0",
+            description='X position of the robot',
+        ),
+        DeclareLaunchArgument(
+            "y",
+            default_value="0.0",
+            description='Y position of the robot',
+        ),
+        DeclareLaunchArgument(
+            "z",
+            default_value="0.1",
+            description='Z position of the robot',
+        ),
+        DeclareLaunchArgument(
+            "heading",
+            default_value="0.0",
+            description='yaw of the robot',
+        ),
+        DeclareLaunchArgument(
+            "use_joystick",
+            default_value="true",
+            description='Use joystick for control if true',
+        ),
+        DeclareLaunchArgument(
+            'lock_front_yaw',
+            default_value='false',
+            description='Lock the front yaw if true'
+        ),
+        DeclareLaunchArgument(
+            'lock_front_roll',
+            default_value='false',
+            description='Lock the front roll if true'
+        ),
+        DeclareLaunchArgument(
+            'lock_back_yaw',
+            default_value='true',
+            description='Lock the back yaw if true'
+        ),
+    ]
+
+    # Unwrap Launch Arguments
+    world_file = LaunchConfiguration("world")
+
+    world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
+
+    use_joystick = LaunchConfiguration("use_joystick")
+    # launch the robot state publisher
+    rsp = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory(bringup_package_name),'launch','common','rsp.launch.py'
+                )]), launch_arguments={
+                    'sim': 'true',
+                    'lock_front_yaw': LaunchConfiguration('lock_front_yaw'),
+                    'lock_front_roll': LaunchConfiguration('lock_front_roll'),
+                    'lock_back_yaw': LaunchConfiguration('lock_back_yaw')
+                }.items()
+    )
+
+    # Include the Gazebo launch file, provided by the ros_gz_sim package
+    gazebo = IncludeLaunchDescription(
+                PythonLaunchDescriptionSource([os.path.join(
+                    get_package_share_directory('ros_gz_sim'), 'launch', 'gz_sim.launch.py')]),
+                    launch_arguments={'gz_args': ['-r -v4 ', world_path], 'on_exit_shutdown': 'true'}.items()
+             )
+
+    # Run the spawner node from the ros_gz_sim package. The entity name doesn't really matter if you only have a single robot.
+    spawn_entity = Node(package='ros_gz_sim', executable='create',
+                        arguments=['-topic', 'robot_description',
+                                   '-name', 'zoe2',
+                                   '-x', LaunchConfiguration('x'),
+                                   '-y', LaunchConfiguration('y'),
+                                   '-z', LaunchConfiguration('z'),
+                                   '-Y', LaunchConfiguration('heading'),
+                                   ],
+                        output='screen')
+
+    joint_broad_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster"],
+    )
+
+    hyperion_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["zoe2_hyperion_controller",
+                    "-p", os.path.join(
+                    get_package_share_directory(bringup_package_name),'config','hyperion_sim_controllers.yaml'),],
+    )
+
+    delayed_hyperion_controller_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=spawn_entity,
+            on_exit=[hyperion_controller_spawner],
+        )
+    )
+
+    bridge_params = os.path.join(get_package_share_directory(bringup_package_name),'config','gz_bridge.yaml')
+    ros_gz_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            '--ros-args',
+            '-p',
+            f'config_file:={bridge_params}',
+        ]
+    )
+
+    # launch the odom_tf_broadcaster node
+    odom = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory(odom_package_name),'launch','odom_tf_broadcaster.launch.py'
+        )])
+    )
+
+    # launch rviz
+    rviz = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory(bringup_package_name),'launch','common','rviz.launch.py'
+            )]),
+            launch_arguments={
+                "rviz_config_file": PathJoinSubstitution([FindPackageShare("zoe2_bringup"), "rviz", "sim.rviz"]),
+                "use_sim_time": "true",
+            }.items()
+    )
+
+    # launch the drive_arc_visualizer node
+    drive_arc_visualizer_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory("zoe2_visualizers"),'launch','drive_arc_visualizer.launch.py'
+        )]),
+        launch_arguments={'use_sim_time': 'true'}.items()
+    )
+
+    joystick_node = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource([os.path.join(
+            get_package_share_directory("zoe2_joystick"),'launch','joystick.launch.py'
+        )]),
+        launch_arguments={'use_sim_time': 'true'}.items(),
+        condition=IfCondition(use_joystick)
+    )
+
+    # Launch them all!
+    return LaunchDescription(
+        declared_arguments +
+        [
+        rsp,
+        gazebo,
+        spawn_entity,   
+        joint_broad_spawner,
+        delayed_hyperion_controller_spawner,
+        ros_gz_bridge,
+        odom,
+        rviz,
+        drive_arc_visualizer_node,
+        joystick_node
+    ])
