@@ -93,7 +93,6 @@ InterfaceConfiguration HyperionController::state_interface_configuration() const
         mParams.wheel_back_right + "/velocity",
         mParams.wheel_front_right + "/velocity",
         mParams.axle_yaw_front + "/position",
-        mParams.axle_yaw_back + "/position"
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -274,7 +273,6 @@ HyperionController::on_activate(const rclcpp_lifecycle::State & /*state*/) {
     frontRight = getWheelHandleByName(mParams.wheel_front_right);
     backLeft = getWheelHandleByName(mParams.wheel_back_left);
     backRight = getWheelHandleByName(mParams.wheel_back_right);
-    backYaw = getYawStateIface(mParams.axle_yaw_back);
     frontYaw = getYawStateIface(mParams.axle_yaw_front);
 
     subscriber_is_active_ = true;

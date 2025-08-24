@@ -23,10 +23,6 @@ hyperion_controller:
     type: string,
     default_value: "front_roll_front_axle_joint"
   }
-  axle_yaw_back: {
-    type: string,
-    default_value: "back_roll_back_axle_joint"
-  }
   base_width: {
     type: double,
     default_value: 1.64, # meters
