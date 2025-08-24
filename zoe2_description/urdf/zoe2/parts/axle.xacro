@@ -19,7 +19,7 @@
             </inertial>
             <visual>
                 <origin
-                    xyz="0 0 -0.075"
+                    xyz="${xyz}"
                     rpy="${rpy}" />
                 <geometry>
                     <!-- <mesh

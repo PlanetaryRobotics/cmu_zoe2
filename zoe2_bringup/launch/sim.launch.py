@@ -21,49 +21,53 @@ def generate_launch_description():
 
     # Declare Launch Arguments. 
     # These can be called by ros2 launch <package_name> <launch_file.py> <argname_1>:=<value> <argname_1>:=<value> ...
-    declared_arguments = []
-    declared_arguments.append(
+    declared_arguments = [
         DeclareLaunchArgument(
             "world",
             default_value="empty.world",
             description='World to load into Gazebo',
-        )
-    )
-    declared_arguments.append(
+        ),
         DeclareLaunchArgument(
             "x",
             default_value="0.0",
             description='X position of the robot',
-        )
-    )
-    declared_arguments.append(
+        ),
         DeclareLaunchArgument(
             "y",
             default_value="0.0",
             description='Y position of the robot',
-        )
-    )
-    declared_arguments.append(
+        ),
         DeclareLaunchArgument(
             "z",
             default_value="0.1",
             description='Z position of the robot',
-        )
-    )
-    declared_arguments.append(
+        ),
         DeclareLaunchArgument(
             "heading",
             default_value="0.0",
             description='yaw of the robot',
-        )
-    )
-    declared_arguments.append(
+        ),
         DeclareLaunchArgument(
             "use_joystick",
             default_value="true",
             description='Use joystick for control if true',
-        )
-    )
+        ),
+        DeclareLaunchArgument(
+            'lock_front_yaw',
+            default_value='false',
+            description='Lock the front yaw if true'
+        ),
+        DeclareLaunchArgument(
+            'lock_front_roll',
+            default_value='false',
+            description='Lock the front roll if true'
+        ),
+        DeclareLaunchArgument(
+            'lock_back_yaw',
+            default_value='false',
+            description='Lock the back yaw if true'
+        ),
+    ]
 
     # Unwrap Launch Arguments
     world_file = LaunchConfiguration("world")
@@ -71,12 +75,16 @@ def generate_launch_description():
     world_path = PathJoinSubstitution([FindPackageShare(bringup_package_name), 'worlds', world_file])
 
     use_joystick = LaunchConfiguration("use_joystick")
-
     # launch the robot state publisher
     rsp = IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([os.path.join(
                     get_package_share_directory(bringup_package_name),'launch','common','rsp.launch.py'
-                )]), launch_arguments={'sim': 'true'}.items()
+                )]), launch_arguments={
+                    'sim': 'true',
+                    'lock_front_yaw': LaunchConfiguration('lock_front_yaw'),
+                    'lock_front_roll': LaunchConfiguration('lock_front_roll'),
+                    'lock_back_yaw': LaunchConfiguration('lock_back_yaw')
+                }.items()
     )
 
     # Include the Gazebo launch file, provided by the ros_gz_sim package
@@ -109,10 +117,20 @@ def generate_launch_description():
         arguments=["zoe2_controller"],
     )
 
+    diff_drive_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["zoe2_diff_drive_controller", "--inactive",
+                   "-p", os.path.join(
+                    get_package_share_directory(bringup_package_name),'config','zoe2_diff_drive_controller.yaml'),
+                   "--controller-ros-args", "-r /zoe2_diff_drive_controller/cmd_vel:=/cmd_vel",
+                   ],
+    )
+
     delayed_zoe2_controller_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=spawn_entity,
-            on_exit=[zoe2_controller_spawner],
+            on_exit=[zoe2_controller_spawner, diff_drive_controller_spawner],
         )
     )
 
