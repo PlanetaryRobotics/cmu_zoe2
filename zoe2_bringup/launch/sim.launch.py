@@ -122,8 +122,8 @@ def generate_launch_description():
         executable="spawner",
         arguments=["zoe2_diff_drive_controller", "--inactive",
                    "-p", os.path.join(
-                    get_package_share_directory(bringup_package_name),'config','zoe2_diff_drive_controller.yaml'
-                )
+                    get_package_share_directory(bringup_package_name),'config','zoe2_diff_drive_controller.yaml'),
+                   "--controller-ros-args", "-r /zoe2_diff_drive_controller/cmd_vel:=/cmd_vel",
                    ],
     )
 
