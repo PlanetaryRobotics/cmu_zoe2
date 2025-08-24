@@ -37,18 +37,6 @@ public:
     // theta_a = measured axle angle [rad]
     WheelSpeeds compute(double v_d, double R_cmd, double theta_a) const {
 
-        WheelSpeeds w;
-
-        if (std::fabs(R_cmd) > 1e6) {
-            // Straight line: all wheels move forward at same speed
-            w.w_fl = v_d / P.r_wheel;
-            w.w_fr = v_d / P.r_wheel;
-            w.w_rl = v_d / P.r_wheel;
-            w.w_rr = v_d / P.r_wheel;
-            return w;
-        }
-
-
         double theta_d = radiusToTheta(R_cmd);
 
         // Helper functions (paper Fig. 6)
@@ -56,12 +44,11 @@ public:
             return P.L / std::sin(th);
         };
         auto Rback = [&](double th)->double {
-            double Rs = Rsteer(th);
-            return std::sqrt(Rs*Rs - (P.L*P.L)/4.0);
+            return P.L / std::tan(th);
         };
         auto Rrobot = [&](double th)->double {
             double Rb = Rback(th);
-            return std::sqrt(Rb*Rb + (P.L*P.L)/4.0);
+            return std::copysign(std::sqrt(Rb*Rb + (P.L*P.L)/4.0), Rb);
         };
 
         // Base wheel speed factor [rad/s]
@@ -79,34 +66,17 @@ public:
         double f_rear_inner = (Rb_a - P.B/2.0) / Rrob_a;
         double f_rear_outer = (Rb_a + P.B/2.0) / Rrob_a;
 
+        // Assign wheel speeds
         WheelSpeeds w;
-
-        // Decide inner/outer sides: left turn if θ>0
-        if (theta_d >= 0.0) { // left turn
-            w.w_fl = base * f_front_inner;
-            w.w_fr = base * f_front_outer;
-        } else {              // right turn
-            w.w_fr = base * f_front_inner;
-            w.w_fl = base * f_front_outer;
-        }
-
-        if (theta_a >= 0.0) { // left turn
-            w.w_rl = base * f_rear_inner;
-            w.w_rr = base * f_rear_outer;
-        } else {              // right turn
-            w.w_rr = base * f_rear_inner;
-            w.w_rl = base * f_rear_outer;
-        }
+        w.w_fl = base * f_front_inner;
+        w.w_fr = base * f_front_outer;
+        w.w_rl = base * f_rear_inner;
+        w.w_rr = base * f_rear_outer;
 
         // --- Proportional steering bias (Δω) ---
         double delta = P.Kp * (theta_d - theta_a);
-        if (theta_d >= 0.0) { // left turn: inner=FL, outer=FR
-            w.w_fl -= delta;
-            w.w_fr += delta;
-        } else {              // right turn: inner=FR, outer=FL
-            w.w_fr -= delta;
-            w.w_fl += delta;
-        }
+        w.w_fl -= delta;
+        w.w_fr += delta;
 
         return w;
     }

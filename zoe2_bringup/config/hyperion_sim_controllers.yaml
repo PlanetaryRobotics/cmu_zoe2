@@ -16,3 +16,8 @@ zoe2_hyperion_controller:
     wheel_back_right: wheel_back_right_joint
     axle_yaw_front: axle_yaw_front_joint
     publish_rate: 50.0
+    base_width: 1.1115
+    wheel_radius: 0.292
+    robot_length: 1.264
+    proportional_gain: 1.0
+    publish_rate: 50.0
