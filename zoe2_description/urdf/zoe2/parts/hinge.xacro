@@ -22,8 +22,9 @@
                     xyz="${xyz}"
                     rpy="${rpy}" />
                 <geometry>
-                    <mesh
-                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" />
+                    <!-- <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/back_hinge.STL" /> -->
+                    <box size="${axle_radius} ${axle_radius} ${robot_hinge_length*2}" />
                 </geometry>
                 <material
                     name="">

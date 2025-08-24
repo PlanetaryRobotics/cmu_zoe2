@@ -11,6 +11,19 @@
                     <cylinder length="${antenna_length}" radius="${antenna_radius}" />
                 </geometry>
             </collision>
+            <visual>
+                <origin
+                    xyz="${xyz}"
+                    rpy="${rpy}" />
+                <geometry>
+                    <cylinder length="${antenna_length}" radius="${antenna_radius}" />
+                </geometry>
+                <material
+                    name="">
+                    <color
+                        rgba="0.866666666666667 0.909803921568627 1 1" />
+                </material>
+            </visual>
         </link>
     </xacro:macro>
 </robot>

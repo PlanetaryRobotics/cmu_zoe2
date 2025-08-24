@@ -19,11 +19,12 @@
             </inertial>
             <visual>
                 <origin
-                    xyz="0 0 -0.075"
+                    xyz="${xyz}"
                     rpy="${rpy}" />
                 <geometry>
-                    <mesh
-                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/front_axle.STL" />
+                    <!-- <mesh
+                        filename="file://$(find zoe2_description)/meshes/zoe2/collision/front_axle.STL" /> -->
+                    <cylinder length="${axle_length}" radius="${axle_radius}" />
                 </geometry>
                 <material
                     name="">
