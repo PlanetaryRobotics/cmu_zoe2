@@ -24,7 +24,7 @@ public:
         double Kp;
 
         Params(double L_=1.50, double B_=1.20,
-               double r_wheel_=0.25, double Kp_=30.0)
+               double r_wheel_=0.25, double Kp_=1.0)
             : L(L_), B(B_), r_wheel(r_wheel_), Kp(Kp_) {}
     };
 

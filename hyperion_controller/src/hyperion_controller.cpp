@@ -68,7 +68,7 @@ controller_interface::CallbackReturn HyperionController::on_init() {
     params.L = mParams.robot_length;       // chassis length [m]
     params.B = mParams.base_width;       // wheel track [m]
     params.r_wheel = mParams.wheel_radius; // wheel radius [m]
-    params.Kp = 1.0;     // proportional steering gain
+    params.Kp = mParams.proportional_gain;     // proportional steering gain
     controller = std::make_shared<PassiveArticulatedKinematics>(params);
 
     return controller_interface::CallbackReturn::SUCCESS;
