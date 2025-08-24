@@ -64,7 +64,12 @@ controller_interface::CallbackReturn HyperionController::on_init() {
     }
 
     RCLCPP_INFO(log(), "starting the Zoe controller@@@@@@@@@@@@@@@@@");
-    controller = std::make_shared<DrivingController>(mParams.base_width, mParams.wheel_radius, mParams.robot_length, mParams.proportional_gain);
+    PassiveArticulatedKinematics::Params params;
+    params.L = mParams.robot_length;       // chassis length [m]
+    params.B = mParams.base_width;       // wheel track [m]
+    params.r_wheel = mParams.wheel_radius; // wheel radius [m]
+    params.Kp = 1.0;     // proportional steering gain
+    controller = std::make_shared<PassiveArticulatedKinematics>(params);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -134,23 +139,13 @@ HyperionController::update(const rclcpp::Time &time,
     auto speed = linear_command;
     auto radius = (std::abs(angular_command) < 1e-6) ? std::numeric_limits<double>::max() : (linear_command / angular_command);
 
-    controller->setTarget(radius, speed);
+    auto w = controller->compute(speed, radius, frontYaw->yaw.get().get_optional().value());
 
-    controller->setVfl(frontLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
-    controller->setVfr(frontRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
-    controller->setVbl(backLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
-    controller->setVbr(backRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
+    setVelocityCommand(frontLeft->cmd_velocity.get(), w.w_fl, "front left", log());
+    setVelocityCommand(frontRight->cmd_velocity.get(), w.w_fr, "front right", log());
+    setVelocityCommand(backLeft->cmd_velocity.get(), w.w_rl, "back left", log());
+    setVelocityCommand(backRight->cmd_velocity.get(), w.w_rr, "back right", log());
 
-    controller->setThetaf(frontYaw->yaw.get().get_optional().value());
-    controller->setThetab(backYaw->yaw.get().get_optional().value());
-    
-    controller->computeWheelSpeed();
-
-    setVelocityCommand(frontLeft->cmd_velocity.get(), controller->getcVfl() / controller->getWheelRadius(), "front left", log());
-    setVelocityCommand(frontRight->cmd_velocity.get(), controller->getcVfr() / controller->getWheelRadius(), "front right", log());
-    setVelocityCommand(backLeft->cmd_velocity.get(), controller->getcVbl() / controller->getWheelRadius(), "back left", log());
-    setVelocityCommand(backRight->cmd_velocity.get(), controller->getcVbr() / controller->getWheelRadius(), "back right", log());
-    
     return controller_interface::return_type::OK;
 }
 
