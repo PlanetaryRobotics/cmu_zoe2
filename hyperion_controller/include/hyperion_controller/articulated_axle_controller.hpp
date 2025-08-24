@@ -36,6 +36,19 @@ public:
     // R_cmd = commanded arc radius [m] (inf = straight, sign = turn direction)
     // theta_a = measured axle angle [rad]
     WheelSpeeds compute(double v_d, double R_cmd, double theta_a) const {
+
+        WheelSpeeds w;
+
+        if (std::fabs(R_cmd) > 1e6) {
+            // Straight line: all wheels move forward at same speed
+            w.w_fl = v_d / P.r_wheel;
+            w.w_fr = v_d / P.r_wheel;
+            w.w_rl = v_d / P.r_wheel;
+            w.w_rr = v_d / P.r_wheel;
+            return w;
+        }
+
+
         double theta_d = radiusToTheta(R_cmd);
 
         // Helper functions (paper Fig. 6)
