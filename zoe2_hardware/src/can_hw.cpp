@@ -42,8 +42,8 @@ inline double tick_to_rad(int tick) {
     return tick / TICK_PER_RAD;
 }
 
-hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interface::HardwareInfo & info){
-  if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
+hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interface::HardwareComponentInterfaceParams & params){
+  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS)
   {
     return CallbackReturn::ERROR;
   }
