@@ -1,9 +1,19 @@
 # ros2 control load_controller zoe2_diff_drive_controller /home/zoe/Documents/zoe2_ws/src/cmu_zoe2/zoe2_bringup/config/zoe2_diff_drive_controller.yaml
 # Call service call from controller manager to configure the controller
 
+controller_manager:
+  ros__parameters:
+    update_rate: 30  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    zoe2_diff_drive_controller:
+        type: diff_drive_controller/DiffDriveController
+
+
 zoe2_diff_drive_controller:
   ros__parameters:
-    type: diff_drive_controller/DiffDriveController
     left_wheel_names: ["wheel_front_left_joint", "wheel_back_left_joint"]
     right_wheel_names: ["wheel_front_right_joint", "wheel_back_right_joint"]
 
