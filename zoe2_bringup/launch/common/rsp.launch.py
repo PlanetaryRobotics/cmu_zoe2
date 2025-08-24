@@ -18,6 +18,21 @@ def generate_launch_description():
             default_value='false',
             description='Use sim time if true'
         ),
+        DeclareLaunchArgument(
+            'lock_front_yaw',
+            default_value='false',
+            description='Lock the front yaw if true'
+        ),
+        DeclareLaunchArgument(
+            'lock_front_roll',
+            default_value='false',
+            description='Lock the front roll if true'
+        ),
+        DeclareLaunchArgument(
+            'lock_back_yaw',
+            default_value='false',
+            description='Lock the back yaw if true'
+        ),
     ]
 
     # Check if we're launching in sim
@@ -28,9 +43,11 @@ def generate_launch_description():
     xacro_file = os.path.join(pkg_path,'urdf','zoe2.urdf.xacro')
 
     # robot_description_config = Command(['xacro ', xacro_file, ' sim_gazebo:=', sim, ' use_mock_hardware:=true'])
-    robot_description_config = Command(['xacro ', xacro_file, ' sim_gazebo:=', sim])
-    
-
+    robot_description_config = Command(['xacro ', xacro_file, 
+                                        ' sim_gazebo:=', sim, 
+                                        ' lock_front_yaw:=', LaunchConfiguration('lock_front_yaw'), 
+                                        ' lock_front_roll:=', LaunchConfiguration('lock_front_roll'),
+                                        ' lock_back_yaw:=', LaunchConfiguration('lock_back_yaw')])
     # Create a robot_state_publisher node
     params = {'robot_description': robot_description_config, 'use_sim_time': sim}
     node_robot_state_publisher = Node(

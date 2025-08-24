@@ -8,8 +8,11 @@
                mock_sensor_commands:=false
                sim_gazebo_classic:=false
                sim_gazebo:=false
-               simulation_controllers"
-               >
+               simulation_controllers
+               lock_front_yaw:=true 
+               lock_front_roll:=false
+               lock_back_yaw:=false
+               ">
 
     <ros2_control name="${name}" type="system">
       <hardware>
@@ -30,16 +33,25 @@
 
       <!-- Pivot Joints -->
 
-      <joint name="${prefix}axle_yaw_front_joint">
-        <state_interface name="position" />
-      </joint>
+      <xacro:unless value="${lock_front_yaw}">
+        <joint name="${prefix}axle_yaw_front_joint">
+          <state_interface name="position" />
+        </joint>
+      </xacro:unless>
+
+      <xacro:unless value="${lock_back_yaw}">
       <joint name="${prefix}axle_yaw_back_joint">
           <state_interface name="position" />
-      </joint>
-      <joint name="${prefix}axle_roll_front_joint">
-          <state_interface name="position" />
-      </joint>
+        </joint>
+      </xacro:unless>
 
+      <xacro:unless value="${lock_front_roll}">
+        <joint name="${prefix}axle_roll_front_joint">
+            <state_interface name="position" />
+        </joint>
+      </xacro:unless>
+
+      
       <!-- Wheel Joints -->
       <joint name="${prefix}wheel_front_left_joint">
           <state_interface name="position" />

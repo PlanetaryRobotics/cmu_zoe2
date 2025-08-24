@@ -9,16 +9,20 @@
   <xacro:arg name="sim_gazebo_classic" default="false" />
   <xacro:arg name="sim_gazebo" default="false" />
   <xacro:arg name="simulation_controllers" default="$(find zoe2_bringup)/config/zoe2_sim_controllers.yaml" />
+  <xacro:arg name="lock_front_yaw" default="false" />
+  <xacro:arg name="lock_front_roll" default="false" />
+  <xacro:arg name="lock_back_yaw" default="false" />
 
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/zoe2_macro.xacro"/>
   <xacro:include filename="$(find zoe2_description)/urdf/zoe2/zoe2_macro.ros2_control.xacro"/>
 
   <!-- Load robot's macro with parameters -->
   <!-- set prefix if multiple robots are used -->
-  <xacro:zoe2 prefix="$(arg prefix)" >
-    <!-- TODO: Check if origin is actually implemented -->
-    <origin xyz="0 0 0" rpy="0 0 0" />          <!-- position robot in the world -->
-  </xacro:zoe2>
+  <xacro:zoe2 prefix="$(arg prefix)"
+    lock_front_yaw="$(arg lock_front_yaw)"  
+    lock_front_roll="$(arg lock_front_roll)" 
+    lock_back_yaw="$(arg lock_back_yaw)"
+  />
 
   <xacro:zoe2_ros2_control
     name="zoe2"
@@ -27,6 +31,10 @@
     mock_sensor_commands="$(arg mock_sensor_commands)"
     sim_gazebo_classic="$(arg sim_gazebo_classic)"
     sim_gazebo="$(arg sim_gazebo)"
-    simulation_controllers="$(arg simulation_controllers)" />
+    simulation_controllers="$(arg simulation_controllers)" 
+    lock_front_yaw="$(arg lock_front_yaw)" 
+    lock_front_roll="$(arg lock_front_roll)"
+    lock_back_yaw="$(arg lock_back_yaw)"
+    />
 
 </robot>
