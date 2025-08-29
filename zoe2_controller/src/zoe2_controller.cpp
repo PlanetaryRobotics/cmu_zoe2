@@ -32,11 +32,8 @@
 
 namespace 
 {
-constexpr auto DEFAULT_COMMAND_TOPIC = "/cmd_vel";
-constexpr auto DEFAULT_COMMAND_UNSTAMPED_TOPIC = "/cmd_vel_unstamped";
-constexpr auto DEFAULT_COMMAND_OUT_TOPIC = "~/cmd_vel_out";
-constexpr auto DEFAULT_ODOMETRY_TOPIC = "~/odom";
-constexpr auto DEFAULT_TRANSFORM_TOPIC = "/tf";
+constexpr auto DEFAULT_COMMAND_TOPIC = "/drive_cmd";
+constexpr auto DEFAULT_COMMAND_UNSTAMPED_TOPIC = "/drive_cmd_unstamped";
 }
 
 namespace zoe2_controller {
@@ -98,7 +95,7 @@ controller_interface::return_type
 Zoe2Controller::update(const rclcpp::Time &time,
                       const rclcpp::Duration & /*period*/) {
 
-    std::shared_ptr<Twist> last_command_msg;
+    std::shared_ptr<DriveCmdStamped> last_command_msg;
     received_velocity_msg_ptr_.get([&](const auto &msg) {
         last_command_msg = msg;
     });
@@ -113,13 +110,13 @@ Zoe2Controller::update(const rclcpp::Time &time,
     // Brake if cmd_vel has timeout, override the stored command
     if (age_of_last_command > cmd_vel_timeout_)
     {
-        last_command_msg->twist.linear.x = 0.0;
-        last_command_msg->twist.angular.z = 0.0;
+        last_command_msg->drive_cmd.speed = 0.0;
+        last_command_msg->drive_cmd.angle = 0.0;
     }
 
     // command may be limited further by SpeedLimit,
     // without affecting the stored twist command
-    Twist command = *last_command_msg;
+    DriveCmdStamped command = *last_command_msg;
     previous_update_timestamp_ = time;
 
     previous_commands_.pop();
@@ -127,7 +124,7 @@ Zoe2Controller::update(const rclcpp::Time &time,
 
     // Compute wheel velocities
 
-    controller->setDriveCommand(command.twist.linear.x, command.twist.angular.z);
+    controller->setDriveCommand(command.drive_cmd.speed, command.drive_cmd.angle);
 
     controller->setVfl(frontLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
     controller->setVfr(frontRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
@@ -150,9 +147,9 @@ Zoe2Controller::update(const rclcpp::Time &time,
 controller_interface::CallbackReturn
 Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
 
-    const Twist empty_twist;
+    const DriveCmdStamped empty_twist;
     received_velocity_msg_ptr_.set([&](auto &msg) {
-        msg = std::make_shared<Twist>(empty_twist);
+        msg = std::make_shared<DriveCmdStamped>(empty_twist);
     });
 
     // Fill last two commands with default constructed commands
@@ -162,9 +159,9 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
     // initialize command subscriber
     if (use_stamped_vel_)
     {
-        velocity_command_subscriber_ = get_node()->create_subscription<Twist>(
+        velocity_command_subscriber_ = get_node()->create_subscription<DriveCmdStamped>(
         DEFAULT_COMMAND_TOPIC, rclcpp::SystemDefaultsQoS(),
-        [this](const std::shared_ptr<Twist> msg) -> void
+        [this](const std::shared_ptr<DriveCmdStamped> msg) -> void
         {
             if (!subscriber_is_active_)
             {
@@ -186,9 +183,9 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
     else
     {
         velocity_command_unstamped_subscriber_ =
-        get_node()->create_subscription<geometry_msgs::msg::Twist>(
+        get_node()->create_subscription<DriveCmd>(
             DEFAULT_COMMAND_UNSTAMPED_TOPIC, rclcpp::SystemDefaultsQoS(),
-            [this](const std::shared_ptr<geometry_msgs::msg::Twist> msg) -> void
+            [this](const std::shared_ptr<DriveCmd> msg) -> void
             {
             if (!subscriber_is_active_)
             {
@@ -198,9 +195,10 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
             }
 
             // Write fake header in the stored stamped command
-            std::shared_ptr<Twist> twist_stamped;
+            std::shared_ptr<DriveCmdStamped> twist_stamped;
             received_velocity_msg_ptr_.get([&](const auto& value) { twist_stamped = value; });
-            twist_stamped->twist = *msg;
+            // twist_stamped->twist = *msg;
+            twist_stamped->drive_cmd = *msg;
             twist_stamped->header.stamp = get_node()->get_clock()->now();
             });
     }
