@@ -29,15 +29,15 @@ zoe2_controller:
   }
   base_width: {
     type: double,
-    default_value: 1.64, # meters
+    default_value: 1.1115, # meters
   }
   wheel_radius: {
     type: double,
-    default_value: 0.325, # meters
+    default_value: 0.292, # meters
   }
   robot_length: {
     type: double,
-    default_value: 1.91, # meters
+    default_value: 1.264, # meters
   }
   proportional_gain: {
     type: double,
