@@ -37,8 +37,8 @@ private:
     const double L;    // Length
     const double Kp; // Proportional gain
     
-    double cV_x{0}; // Target velocity
-    double cOmega_z{0}; // Target angular velocity
+    double cV{0}; // Target speed
+    double cTheta{0}; // Target steering angle
 
     double Thetaf{0}; // Front theta
     double Thetab{0}; // Back theta
@@ -73,7 +73,7 @@ public:
 
     void computeWheelSpeed();
 
-    double cTheta() const;
+    double cOmega_z() const;
 
-    void setDriveCommand(double command_vel, double command_angular);
+    void setDriveCommand(double command_vel, double command_theta);
 };

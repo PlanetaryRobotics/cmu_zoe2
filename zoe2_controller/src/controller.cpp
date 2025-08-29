@@ -25,22 +25,18 @@ void DrivingController::setThetaf(double val) { Thetaf = val; }
 void DrivingController::setThetab(double val) { Thetab = val; }
 
 // Set the target drive arc
-void DrivingController::setDriveCommand(double command_vel, double command_angular) {
-    cV_x = command_vel;
-    cOmega_z = command_angular;
+void DrivingController::setDriveCommand(double command_vel, double command_theta) {
+    cV = command_vel;
+    cTheta = command_theta;
 }
 
 // Compute steering angle
-double DrivingController::cTheta() const {
-    double cR = (std::abs(cOmega_z) < 1e-6) ? 
-                1e6 
-                : // else
-                (cV_x / cOmega_z);
-    return std::atan(L / (2 * cR));
+double DrivingController::cOmega_z() const {
+    return cV * 2 * std::tan(cTheta) / L;
 }
 
 void DrivingController::computeFront() {
-    double E1 = -(cTheta() - Thetaf);
+    double E1 = -(cTheta - Thetaf);
     double E2 = -E1;
     cVfl += Kp * E1;
     cVfr += Kp * E2;
@@ -50,7 +46,7 @@ void DrivingController::computeFront() {
 }
 
 void DrivingController::computeBack() {
-    double E1 = cTheta() + Thetab;
+    double E1 = cTheta + Thetab;
     double E2 = -E1;
     cVbl += Kp * E1;
     cVbr += Kp * E2; 
@@ -61,8 +57,8 @@ void DrivingController::computeBack() {
 
 void DrivingController::computeWheelSpeed() {
 
-    double commonTerm = cV_x / std::cos(cTheta());
-    double adjustment = 0.5 * B * cOmega_z;
+    double commonTerm = cV / std::cos(cTheta);
+    double adjustment = 0.5 * B * cOmega_z();
 
     cVfl = commonTerm - adjustment;
     cVfr = commonTerm + adjustment;
