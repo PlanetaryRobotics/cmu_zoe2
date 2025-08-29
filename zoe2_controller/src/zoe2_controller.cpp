@@ -120,10 +120,6 @@ Zoe2Controller::update(const rclcpp::Time &time,
     // command may be limited further by SpeedLimit,
     // without affecting the stored twist command
     Twist command = *last_command_msg;
-    double & linear_command = command.twist.linear.x;
-    double & angular_command = command.twist.angular.z;
-
-
     previous_update_timestamp_ = time;
 
     previous_commands_.pop();
@@ -131,10 +127,7 @@ Zoe2Controller::update(const rclcpp::Time &time,
 
     // Compute wheel velocities
 
-    auto speed = linear_command;
-    auto radius = (std::abs(angular_command) < 1e-6) ? std::numeric_limits<double>::max() : (linear_command / angular_command);
-
-    controller->setTarget(radius, speed);
+    controller->setDriveCommand(command.twist.linear.x, command.twist.angular.z);
 
     controller->setVfl(frontLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
     controller->setVfr(frontRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());

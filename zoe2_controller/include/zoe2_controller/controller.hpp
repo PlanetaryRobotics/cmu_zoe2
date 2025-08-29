@@ -37,8 +37,8 @@ private:
     const double L;    // Length
     const double Kp; // Proportional gain
     
-    double cR{0}; // anti-clockwise is positive
-    double cV{0}; // Target velocity
+    double cV_x{0}; // Target velocity
+    double cOmega_z{0}; // Target angular velocity
 
     double Thetaf{0}; // Front theta
     double Thetab{0}; // Back theta
@@ -75,5 +75,5 @@ public:
 
     double cTheta() const;
 
-    void setTarget(double radius, double velocity);
+    void setDriveCommand(double command_vel, double command_angular);
 };

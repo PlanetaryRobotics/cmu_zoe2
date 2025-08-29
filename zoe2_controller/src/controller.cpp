@@ -25,16 +25,17 @@ void DrivingController::setThetaf(double val) { Thetaf = val; }
 void DrivingController::setThetab(double val) { Thetab = val; }
 
 // Set the target drive arc
-void DrivingController::setTarget(double radius, double velocity) {
-    cR = radius;
-    cV = velocity;
+void DrivingController::setDriveCommand(double command_vel, double command_angular) {
+    cV_x = command_vel;
+    cOmega_z = command_angular;
 }
 
 // Compute steering angle
 double DrivingController::cTheta() const {
-    if (doubleEqual(cR, 0)) {
-        return PI / 2;
-    }
+    double cR = (std::abs(cOmega_z) < 1e-6) ? 
+                1e6 
+                : // else
+                (cV_x / cOmega_z);
     return std::atan(L / (2 * cR));
 }
 
@@ -59,25 +60,15 @@ void DrivingController::computeBack() {
 }
 
 void DrivingController::computeWheelSpeed() {
-    if (doubleEqual(cR, 0)) {
-        cVfr = cV;
-        cVfl = cV;
-        cVbl = cV;
-        cVbr = cV;
-        return;
-    }
 
-    double commonTerm = cV / std::cos(cTheta());
-    double adjustment = cV * B / (2 * cR);
+    double commonTerm = cV_x / std::cos(cTheta());
+    double adjustment = 0.5 * B * cOmega_z;
 
     cVfl = commonTerm - adjustment;
     cVfr = commonTerm + adjustment;
     cVbl = commonTerm - adjustment;
     cVbr = commonTerm + adjustment;
 
-    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
     computeBack();
-    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
     computeFront();
-    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
 }
