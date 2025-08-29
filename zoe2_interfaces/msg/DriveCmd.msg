@@ -1,6 +1,3 @@
-# header, used for timestamp
-std_msgs/Header header
-
 # forward drive velocity command, in m/s
 float64 speed
 
