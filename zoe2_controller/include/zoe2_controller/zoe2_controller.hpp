@@ -53,8 +53,8 @@ class Zoe2Controller : public controller_interface::ControllerInterface {
     using DriveCmd = zoe2_interfaces::msg::DriveCmd;
     using DriveCmdStamped = zoe2_interfaces::msg::DriveCmdStamped;
 
-    Params mParams;
-    std::shared_ptr<ParamListener> mParamListener;
+    Params params_;
+    std::shared_ptr<ParamListener> param_listener_;
 
     std::shared_ptr<DrivingController> controller;
 

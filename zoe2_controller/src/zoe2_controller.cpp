@@ -52,8 +52,8 @@ rclcpp::Logger Zoe2Controller::log() { return get_node()->get_logger(); }
 controller_interface::CallbackReturn Zoe2Controller::on_init() {
     
     try {
-        mParamListener = std::make_shared<ParamListener>(get_node());
-        mParams = mParamListener->get_params();
+        param_listener_ = std::make_shared<ParamListener>(get_node());
+        params_ = param_listener_->get_params();
 
     } 
     catch (const std::exception & e)
@@ -63,7 +63,7 @@ controller_interface::CallbackReturn Zoe2Controller::on_init() {
     }
 
     RCLCPP_INFO(log(), "starting the Zoe controller@@@@@@@@@@@@@@@@@");
-    controller = std::make_shared<DrivingController>(mParams.base_width, mParams.wheel_radius, mParams.robot_length, mParams.proportional_gain);
+    controller = std::make_shared<DrivingController>(params_.base_width, params_.wheel_radius, params_.robot_length, params_.proportional_gain);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -71,10 +71,10 @@ controller_interface::CallbackReturn Zoe2Controller::on_init() {
 InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
     std::vector<std::string> conf_names{
-        mParams.wheel_back_left + "/" + HW_IF_VELOCITY,
-        mParams.wheel_front_left + "/" + HW_IF_VELOCITY,
-        mParams.wheel_back_right + "/" + HW_IF_VELOCITY,
-        mParams.wheel_front_right + "/" + HW_IF_VELOCITY,
+        params_.wheel_back_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_back_right + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_right + "/" + HW_IF_VELOCITY,
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -82,12 +82,12 @@ InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
 InterfaceConfiguration Zoe2Controller::state_interface_configuration() const {
     std::vector<std::string> conf_names{
-        mParams.wheel_back_left + "/" + HW_IF_VELOCITY,
-        mParams.wheel_front_left + "/" + HW_IF_VELOCITY,
-        mParams.wheel_back_right + "/" + HW_IF_VELOCITY,
-        mParams.wheel_front_right + "/" + HW_IF_VELOCITY,
-        mParams.axle_yaw_front + "/" + HW_IF_POSITION,
-        mParams.axle_yaw_back + "/" + HW_IF_POSITION
+        params_.wheel_back_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_back_right + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_right + "/" + HW_IF_VELOCITY,
+        params_.axle_yaw_front + "/" + HW_IF_POSITION,
+        params_.axle_yaw_back + "/" + HW_IF_POSITION
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -148,6 +148,13 @@ Zoe2Controller::update(const rclcpp::Time &time,
 
 controller_interface::CallbackReturn
 Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
+
+    // update parameters if they have changed
+    if (param_listener_->is_old(params_))
+    {
+        params_ = param_listener_->get_params();
+        RCLCPP_INFO(get_node()->get_logger(), "Parameters were updated");
+    }
 
     const DriveCmdStamped empty_command;
     received_cmd_msg_ptr_.set([&](auto &msg) {
@@ -267,12 +274,12 @@ void Zoe2Controller::setVelocityCommand(
 
 controller_interface::CallbackReturn
 Zoe2Controller::on_activate(const rclcpp_lifecycle::State & /*state*/) {
-    frontLeft = getWheelHandleByName(mParams.wheel_front_left);
-    frontRight = getWheelHandleByName(mParams.wheel_front_right);
-    backLeft = getWheelHandleByName(mParams.wheel_back_left);
-    backRight = getWheelHandleByName(mParams.wheel_back_right);
-    backYaw = getYawStateIface(mParams.axle_yaw_back);
-    frontYaw = getYawStateIface(mParams.axle_yaw_front);
+    frontLeft = getWheelHandleByName(params_.wheel_front_left);
+    frontRight = getWheelHandleByName(params_.wheel_front_right);
+    backLeft = getWheelHandleByName(params_.wheel_back_left);
+    backRight = getWheelHandleByName(params_.wheel_back_right);
+    backYaw = getYawStateIface(params_.axle_yaw_back);
+    frontYaw = getYawStateIface(params_.axle_yaw_front);
 
     subscriber_is_active_ = true;
     
