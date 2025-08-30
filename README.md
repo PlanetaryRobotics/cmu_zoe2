@@ -31,16 +31,28 @@ rosdep install --from-paths src -y --ignore-src
 5. Launch the hardware using `ros2 launch zoe2_bringup hw.launch.py`.
 
 ## Operation
-The robot can be steered by publishing a twist to `/cmd_vel_unstamped`. This can currently be done with the RQT Robot Steering plugin, or by a physical gamepad configured in `zoe2_joystick`.
+The robot can be steered in several ways:
+1. Publish a custom `DriveCmd` message to `/drive_cmd_unstamped`. 
+2. Publish a twist to `/cmd_vel_raw`, which is forwarded through `zoe2_joystick/twist_modifer.py`.
+    1. Send the twist using a physical gamepad configured in `zoe2_joystick`.
+    2. Send the twist using `rqt_robot_steering`
+
+Details are described in the following sections.
+### Direct Command
+Send a command directly to the controller, using the following format. This example will publish at a rate of 50 hz.
+```bash
+ros2 topic pub /drive_cmd_unstamped zoe2_interfaces/msg/DriveCmd "{speed: 0.5, angle: 0.0}" -r 50
+# sends a command of 0.5 m/s with a steering angle of 0 rad at a rate of 50 hz
+```
 ### RQT Steering
 1. Open a new terminal and `source install/setup.bash` at the root of your workspace.
 2. Launch rqt: `rqt` and open the Robot Steering plugin (Plugins -> Robot Tools -> Robot Steering)
-3. Set the message topic to `/cmd_vel_unstamped`
+3. Set the message topic to `/cmd_vel_raw`
 4. Use the sliders to steer the robot!
 ### Joystick Steering
 1. Open a new terminal and `source install/setup.bash` at the root of your workspace.
 2. Launch the joystick node: `ros2 launch zoe2_joystick joystick.launch.py`
-3. Tilt the left stick front/back to command forward velocity, right stick side/side for turn radius, and use the upper right trigger to trigger motion
+3. Tilt the left stick up/down to command forward velocity, right stick side/side for steering angle. The upper right trigger is the deadman switch (hold to enable motion), and the lower right trigger is "boost" mode, which allows full speed.
 
 
 ## Simulation Demo
@@ -53,3 +65,9 @@ The robot can be steered by publishing a twist to `/cmd_vel_unstamped`. This can
     - Make sure you are on the correct version of Ubuntu, ROS2, and Gazebo. This will not work on previous versions.
     - Make sure you have installed the correct version of ROS2 control (Jazzy branch, not rolling).
     - Make sure you properly sourced your ROS2 installation
+- The program launched but the motors aren't moving!
+    - Make sure the CAN network is on. On the rover, send the commands `candown` followed by `canup` to reset.
+    - Make sure the motors are physically enabled via the power switches
+    - Try quitting the program and relaunching
+- My changes aren't being reflected on the system!
+    - Make sure you rebuild and re-source the workspace. `colcon build` and `source install/setup.bash`.
