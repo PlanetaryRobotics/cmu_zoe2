@@ -24,7 +24,10 @@ class TwistModifier(Node):
         
         # Create a publisher to the modified message for the controller
         self.publisher_ = self.create_publisher(DriveCmd, '/drive_cmd_unstamped', 10)
-        
+
+        self.declare_parameter('max_speed', 1.0)
+        self.declare_parameter('max_turning_angle', math.radians(25))
+
     def listener_callback(self, msg):
         """
         Callback function for the subscriber. This function is called every time
@@ -36,8 +39,8 @@ class TwistModifier(Node):
         drive_cmd_out = DriveCmd()
 
         # Perform the mathematical operation: scale the linear and angular components
-        drive_cmd_out.speed = msg.linear.x      # speed is unchanged (m/s)
-        drive_cmd_out.angle = msg.angular.z * math.radians(25)     # limit angle to [-25 degree, 25 degree]
+        drive_cmd_out.speed = msg.linear.x * self.get_parameter('max_speed').value  # speed in m/s
+        drive_cmd_out.angle = msg.angular.z * self.get_parameter('max_turning_angle').value  # angle in radians
 
         # Publish the modified message
         self.publisher_.publish(drive_cmd_out)
