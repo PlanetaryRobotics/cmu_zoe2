@@ -55,9 +55,11 @@ controller_interface::CallbackReturn Zoe2Controller::on_init() {
         mParamListener = std::make_shared<ParamListener>(get_node());
         mParams = mParamListener->get_params();
 
-    } catch (std::exception &e) {
-        fprintf(stderr, "failed node on_init overriden function");
-        return controller_interface::CallbackReturn::SUCCESS;
+    } 
+    catch (const std::exception & e)
+    {
+        fprintf(stderr, "Exception thrown during init stage with message: %s \n", e.what());
+        return controller_interface::CallbackReturn::ERROR;
     }
 
     RCLCPP_INFO(log(), "starting the Zoe controller@@@@@@@@@@@@@@@@@");
