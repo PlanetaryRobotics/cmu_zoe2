@@ -96,26 +96,26 @@ Zoe2Controller::update(const rclcpp::Time &time,
                       const rclcpp::Duration & /*period*/) {
 
     std::shared_ptr<DriveCmdStamped> last_command_msg;
-    received_velocity_msg_ptr_.get([&](const auto &msg) {
+    received_cmd_msg_ptr_.get([&](const auto &msg) {
         last_command_msg = msg;
     });
 
     if (last_command_msg == nullptr)
     {
-        RCLCPP_WARN(log(), "Velocity message received was a nullptr.");
+        RCLCPP_WARN(log(), "Command message received was a nullptr.");
         return controller_interface::return_type::ERROR;
     }
 
     const auto age_of_last_command = time - last_command_msg->header.stamp;
     // Brake if cmd_vel has timeout, override the stored command
-    if (age_of_last_command > cmd_vel_timeout_)
+    if (age_of_last_command > cmd_timeout_)
     {
         last_command_msg->drive_cmd.speed = 0.0;
         last_command_msg->drive_cmd.angle = 0.0;
     }
 
     // command may be limited further by SpeedLimit,
-    // without affecting the stored twist command
+    // without affecting the stored command
     DriveCmdStamped command = *last_command_msg;
     previous_update_timestamp_ = time;
 
@@ -147,19 +147,19 @@ Zoe2Controller::update(const rclcpp::Time &time,
 controller_interface::CallbackReturn
 Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
 
-    const DriveCmdStamped empty_twist;
-    received_velocity_msg_ptr_.set([&](auto &msg) {
-        msg = std::make_shared<DriveCmdStamped>(empty_twist);
+    const DriveCmdStamped empty_command;
+    received_cmd_msg_ptr_.set([&](auto &msg) {
+        msg = std::make_shared<DriveCmdStamped>(empty_command);
     });
 
     // Fill last two commands with default constructed commands
-    previous_commands_.emplace(empty_twist);
-    previous_commands_.emplace(empty_twist);
+    previous_commands_.emplace(empty_command);
+    previous_commands_.emplace(empty_command);
 
     // initialize command subscriber
-    if (use_stamped_vel_)
+    if (use_stamped_cmd_)
     {
-        velocity_command_subscriber_ = get_node()->create_subscription<DriveCmdStamped>(
+        command_subscriber_ = get_node()->create_subscription<DriveCmdStamped>(
         DEFAULT_COMMAND_TOPIC, rclcpp::SystemDefaultsQoS(),
         [this](const std::shared_ptr<DriveCmdStamped> msg) -> void
         {
@@ -173,16 +173,16 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
             {
             RCLCPP_WARN_ONCE(
                 get_node()->get_logger(),
-                "Received TwistStamped with zero timestamp, setting it to current "
+                "Received DriveCmdStamped with zero timestamp, setting it to current "
                 "time, this message will only be shown once");
             msg->header.stamp = get_node()->get_clock()->now();
             }
-            received_velocity_msg_ptr_.set([&](auto& value) { value = std::move(msg); });
+            received_cmd_msg_ptr_.set([&](auto& value) { value = std::move(msg); });
         });
     }
     else
     {
-        velocity_command_unstamped_subscriber_ =
+        command_unstamped_subscriber_ =
         get_node()->create_subscription<DriveCmd>(
             DEFAULT_COMMAND_UNSTAMPED_TOPIC, rclcpp::SystemDefaultsQoS(),
             [this](const std::shared_ptr<DriveCmd> msg) -> void
@@ -195,11 +195,10 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
             }
 
             // Write fake header in the stored stamped command
-            std::shared_ptr<DriveCmdStamped> twist_stamped;
-            received_velocity_msg_ptr_.get([&](const auto& value) { twist_stamped = value; });
-            // twist_stamped->twist = *msg;
-            twist_stamped->drive_cmd = *msg;
-            twist_stamped->header.stamp = get_node()->get_clock()->now();
+            std::shared_ptr<DriveCmdStamped> command_stamped;
+            received_cmd_msg_ptr_.get([&](const auto& value) { command_stamped = value; });
+            command_stamped->drive_cmd = *msg;
+            command_stamped->header.stamp = get_node()->get_clock()->now();
             });
     }
     previous_update_timestamp_ = get_node()->get_clock()->now();

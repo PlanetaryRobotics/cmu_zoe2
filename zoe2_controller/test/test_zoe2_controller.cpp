@@ -41,7 +41,7 @@ class TestableZoe2Controller : public zoe2_controller::Zoe2Controller {
     using Zoe2Controller::Zoe2Controller;
     std::shared_ptr<geometry_msgs::msg::TwistStamped> getLastReceivedTwist() {
         std::shared_ptr<geometry_msgs::msg::TwistStamped> ret;
-        received_velocity_msg_ptr_.get(ret);
+        received_cmd_msg_ptr_.get(ret);
         return ret;
     }
 
@@ -56,7 +56,7 @@ class TestableZoe2Controller : public zoe2_controller::Zoe2Controller {
                         const std::chrono::milliseconds &timeout =
                             std::chrono::milliseconds(500)) {
         rclcpp::WaitSet wait_set;
-        wait_set.add_subscription(velocity_command_subscriber_);
+        wait_set.add_subscription(command_subscriber_);
 
         if (wait_set.wait(timeout).kind() == rclcpp::WaitResultKind::Ready) {
             executor.spin_some();

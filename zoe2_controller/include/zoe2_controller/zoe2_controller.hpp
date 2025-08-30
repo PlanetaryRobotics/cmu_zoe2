@@ -104,19 +104,19 @@ class Zoe2Controller : public controller_interface::ControllerInterface {
         rclcpp::Logger logger);
 
     // Timeout to consider cmd_vel commands old
-    std::chrono::milliseconds cmd_vel_timeout_{500};
+    std::chrono::milliseconds cmd_timeout_{500};
     bool subscriber_is_active_ = false;
-    rclcpp::Subscription<DriveCmdStamped>::SharedPtr velocity_command_subscriber_ = nullptr;
+    rclcpp::Subscription<DriveCmdStamped>::SharedPtr command_subscriber_ = nullptr;
     rclcpp::Subscription<DriveCmd>::SharedPtr
-        velocity_command_unstamped_subscriber_ = nullptr;
+        command_unstamped_subscriber_ = nullptr;
 
-    realtime_tools::RealtimeThreadSafeBox<std::shared_ptr<DriveCmdStamped>> received_velocity_msg_ptr_{nullptr};
+    realtime_tools::RealtimeThreadSafeBox<std::shared_ptr<DriveCmdStamped>> received_cmd_msg_ptr_{nullptr};
 
     std::queue<DriveCmdStamped> previous_commands_;  // last two commands
 
     rclcpp::Time previous_update_timestamp_{0};
 
-    bool use_stamped_vel_ = false;
+    bool use_stamped_cmd_ = false;
     
 
     ZOE2_CONTROLLER_PUBLIC
