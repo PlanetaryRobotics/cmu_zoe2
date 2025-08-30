@@ -69,10 +69,10 @@ controller_interface::CallbackReturn Zoe2Controller::on_init() {
 InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
     std::vector<std::string> conf_names{
-        mParams.wheel_back_left + "/velocity",
-        mParams.wheel_front_left + "/velocity",
-        mParams.wheel_back_right + "/velocity",
-        mParams.wheel_front_right + "/velocity",
+        mParams.wheel_back_left + "/" + HW_IF_VELOCITY,
+        mParams.wheel_front_left + "/" + HW_IF_VELOCITY,
+        mParams.wheel_back_right + "/" + HW_IF_VELOCITY,
+        mParams.wheel_front_right + "/" + HW_IF_VELOCITY,
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -80,12 +80,12 @@ InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
 InterfaceConfiguration Zoe2Controller::state_interface_configuration() const {
     std::vector<std::string> conf_names{
-        mParams.wheel_back_left + "/velocity",
-        mParams.wheel_front_left + "/velocity",
-        mParams.wheel_back_right + "/velocity",
-        mParams.wheel_front_right + "/velocity",
-        mParams.axle_yaw_front + "/position",
-        mParams.axle_yaw_back + "/position"
+        mParams.wheel_back_left + "/" + HW_IF_VELOCITY,
+        mParams.wheel_front_left + "/" + HW_IF_VELOCITY,
+        mParams.wheel_back_right + "/" + HW_IF_VELOCITY,
+        mParams.wheel_front_right + "/" + HW_IF_VELOCITY,
+        mParams.axle_yaw_front + "/" + HW_IF_POSITION,
+        mParams.axle_yaw_back + "/" + HW_IF_POSITION
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
