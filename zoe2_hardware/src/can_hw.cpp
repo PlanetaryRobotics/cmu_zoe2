@@ -42,8 +42,8 @@ inline double tick_to_rad(int tick) {
     return tick / TICK_PER_RAD;
 }
 
-hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interface::HardwareComponentInterfaceParams & params){
-  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS)
+hardware_interface::CallbackReturn Zoe2Hardware::on_init(const hardware_interface::HardwareInfo & info){
+  if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS)
   {
     return CallbackReturn::ERROR;
   }
@@ -99,8 +99,8 @@ hardware_interface::CallbackReturn Zoe2Hardware::on_configure(const rclcpp_lifec
   // set each can to velocity mode
   for (const Motor& motor : motors_){
     can_->configureSpeedMode(motor.id);
-    can_->setAcceleration(ACCELERATION, motor.id);
-    can_->setDeceleration(DECELERATION, motor.id);
+    // can_->setAcceleration(ACCELERATION, motor.id);
+    // can_->setDeceleration(DECELERATION, motor.id);
   }
   
   RCLCPP_INFO(get_logger(), "Successfully configured!");

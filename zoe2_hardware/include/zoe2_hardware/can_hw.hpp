@@ -37,8 +37,8 @@ public:
   RCLCPP_SHARED_PTR_DEFINITIONS(Zoe2Hardware);
 
   hardware_interface::CallbackReturn on_init(
-    const hardware_interface::HardwareComponentInterfaceParams & params) override;
-
+    const hardware_interface::HardwareInfo & info) override;
+    
   hardware_interface::CallbackReturn on_configure(
     const rclcpp_lifecycle::State & previous_state) override;
     
@@ -94,15 +94,15 @@ private:
   const std::vector<Encoder> encoders_ = 
   {
     {52, "axle_roll_front_joint", -1, -1.52},
-    {51, "axle_yaw_front_joint", 1, 0.12},
-    {53, "axle_yaw_back_joint", 1, 0.233},
+    {51, "axle_yaw_front_joint", 1, 0.8283496254582481},
+    {53, "axle_yaw_back_joint", 1, 0.2285631373949535},
   };
 
   const int ACCELERATION = 250000;
   const int DECELERATION = 250000;
   const int GEARING = 50;
   const int ENCODER_PPR = 1024;
-  const int MOTOR_RATE_CURRENT = 6000/1000;  // OBJECT 0X675 divided by 1000
+  const int MOTOR_RATE_CURRENT = 5850/1000;  // OBJECT 0X675 divided by 1000
   const double TORQUE_CONSTANT = 0.21;  // Nm/A, from AKM31h manual
 };
 
