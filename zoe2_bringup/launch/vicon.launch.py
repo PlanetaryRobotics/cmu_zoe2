@@ -18,7 +18,7 @@ def generate_launch_description():
             name='static_transform_pub',
             output='screen',
             arguments=['--x', '0', 
-                        '--y', '0.3', 
+                        '--y', '0.0', 
                         '--z', '-.47', 
                         '--yaw', '3.1415', 
                         '--pitch', '0', 
