@@ -25,21 +25,18 @@ void DrivingController::setThetaf(double val) { Thetaf = val; }
 void DrivingController::setThetab(double val) { Thetab = val; }
 
 // Set the target drive arc
-void DrivingController::setTarget(double radius, double velocity) {
-    cR = radius;
-    cV = velocity;
+void DrivingController::setDriveCommand(double command_vel, double command_theta) {
+    cV = command_vel;
+    cTheta = command_theta;
 }
 
 // Compute steering angle
-double DrivingController::cTheta() const {
-    if (doubleEqual(cR, 0)) {
-        return PI / 2;
-    }
-    return std::atan(L / (2 * cR));
+double DrivingController::cOmega_z() const {
+    return cV * 2 * std::tan(cTheta) / L;
 }
 
 void DrivingController::computeFront() {
-    double E1 = -(cTheta() - Thetaf);
+    double E1 = -(cTheta - Thetaf);
     double E2 = -E1;
     cVfl += Kp * E1;
     cVfr += Kp * E2;
@@ -49,7 +46,7 @@ void DrivingController::computeFront() {
 }
 
 void DrivingController::computeBack() {
-    double E1 = cTheta() + Thetab;
+    double E1 = cTheta + Thetab;
     double E2 = -E1;
     cVbl += Kp * E1;
     cVbr += Kp * E2; 
@@ -59,25 +56,15 @@ void DrivingController::computeBack() {
 }
 
 void DrivingController::computeWheelSpeed() {
-    if (doubleEqual(cR, 0)) {
-        cVfr = cV;
-        cVfl = cV;
-        cVbl = cV;
-        cVbr = cV;
-        return;
-    }
 
-    double commonTerm = cV / std::cos(cTheta());
-    double adjustment = cV * B / (2 * cR);
+    double commonTerm = cV / std::cos(cTheta);
+    double adjustment = 0.5 * B * cOmega_z();
 
     cVfl = commonTerm - adjustment;
     cVfr = commonTerm + adjustment;
     cVbl = commonTerm - adjustment;
     cVbr = commonTerm + adjustment;
 
-    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
     computeBack();
-    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
     computeFront();
-    // RCLCPP_INFO(rclcpp::get_logger("controller.hpp"), "======================================");
 }

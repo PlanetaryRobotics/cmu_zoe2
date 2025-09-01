@@ -32,11 +32,8 @@
 
 namespace 
 {
-constexpr auto DEFAULT_COMMAND_TOPIC = "/cmd_vel";
-constexpr auto DEFAULT_COMMAND_UNSTAMPED_TOPIC = "/cmd_vel_unstamped";
-constexpr auto DEFAULT_COMMAND_OUT_TOPIC = "~/cmd_vel_out";
-constexpr auto DEFAULT_ODOMETRY_TOPIC = "~/odom";
-constexpr auto DEFAULT_TRANSFORM_TOPIC = "/tf";
+constexpr auto DEFAULT_COMMAND_TOPIC = "/drive_cmd";
+constexpr auto DEFAULT_COMMAND_UNSTAMPED_TOPIC = "/drive_cmd_unstamped";
 }
 
 namespace zoe2_controller {
@@ -55,16 +52,18 @@ rclcpp::Logger Zoe2Controller::log() { return get_node()->get_logger(); }
 controller_interface::CallbackReturn Zoe2Controller::on_init() {
     
     try {
-        mParamListener = std::make_shared<ParamListener>(get_node());
-        mParams = mParamListener->get_params();
+        param_listener_ = std::make_shared<ParamListener>(get_node());
+        params_ = param_listener_->get_params();
 
-    } catch (std::exception &e) {
-        fprintf(stderr, "failed node on_init overriden function");
-        return controller_interface::CallbackReturn::SUCCESS;
+    } 
+    catch (const std::exception & e)
+    {
+        fprintf(stderr, "Exception thrown during init stage with message: %s \n", e.what());
+        return controller_interface::CallbackReturn::ERROR;
     }
 
     RCLCPP_INFO(log(), "starting the Zoe controller@@@@@@@@@@@@@@@@@");
-    controller = std::make_shared<DrivingController>(mParams.base_width, mParams.wheel_radius, mParams.robot_length, mParams.proportional_gain);
+    controller = std::make_shared<DrivingController>(params_.base_width, params_.wheel_radius, params_.robot_length, params_.proportional_gain);
 
     return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -72,10 +71,10 @@ controller_interface::CallbackReturn Zoe2Controller::on_init() {
 InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
     std::vector<std::string> conf_names{
-        mParams.wheel_back_left + "/velocity",
-        mParams.wheel_front_left + "/velocity",
-        mParams.wheel_back_right + "/velocity",
-        mParams.wheel_front_right + "/velocity",
+        params_.wheel_back_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_back_right + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_right + "/" + HW_IF_VELOCITY,
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -83,12 +82,12 @@ InterfaceConfiguration Zoe2Controller::command_interface_configuration() const {
 
 InterfaceConfiguration Zoe2Controller::state_interface_configuration() const {
     std::vector<std::string> conf_names{
-        mParams.wheel_back_left + "/velocity",
-        mParams.wheel_front_left + "/velocity",
-        mParams.wheel_back_right + "/velocity",
-        mParams.wheel_front_right + "/velocity",
-        mParams.axle_yaw_front + "/position",
-        mParams.axle_yaw_back + "/position"
+        params_.wheel_back_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_left + "/" + HW_IF_VELOCITY,
+        params_.wheel_back_right + "/" + HW_IF_VELOCITY,
+        params_.wheel_front_right + "/" + HW_IF_VELOCITY,
+        params_.axle_yaw_front + "/" + HW_IF_POSITION,
+        params_.axle_yaw_back + "/" + HW_IF_POSITION
     };
 
     return {interface_configuration_type::INDIVIDUAL, conf_names};
@@ -98,32 +97,28 @@ controller_interface::return_type
 Zoe2Controller::update(const rclcpp::Time &time,
                       const rclcpp::Duration & /*period*/) {
 
-    std::shared_ptr<Twist> last_command_msg;
-    received_velocity_msg_ptr_.get([&](const auto &msg) {
+    std::shared_ptr<DriveCmdStamped> last_command_msg;
+    received_cmd_msg_ptr_.get([&](const auto &msg) {
         last_command_msg = msg;
     });
 
     if (last_command_msg == nullptr)
     {
-        RCLCPP_WARN(log(), "Velocity message received was a nullptr.");
+        RCLCPP_WARN(log(), "Command message received was a nullptr.");
         return controller_interface::return_type::ERROR;
     }
 
     const auto age_of_last_command = time - last_command_msg->header.stamp;
     // Brake if cmd_vel has timeout, override the stored command
-    if (age_of_last_command > cmd_vel_timeout_)
+    if (age_of_last_command > cmd_timeout_)
     {
-        last_command_msg->twist.linear.x = 0.0;
-        last_command_msg->twist.angular.z = 0.0;
+        last_command_msg->drive_cmd.speed = 0.0;
+        last_command_msg->drive_cmd.angle = 0.0;
     }
 
     // command may be limited further by SpeedLimit,
-    // without affecting the stored twist command
-    Twist command = *last_command_msg;
-    double & linear_command = command.twist.linear.x;
-    double & angular_command = command.twist.angular.z;
-
-
+    // without affecting the stored command
+    DriveCmdStamped command = *last_command_msg;
     previous_update_timestamp_ = time;
 
     previous_commands_.pop();
@@ -131,10 +126,7 @@ Zoe2Controller::update(const rclcpp::Time &time,
 
     // Compute wheel velocities
 
-    auto speed = linear_command;
-    auto radius = (std::abs(angular_command) < 1e-6) ? std::numeric_limits<double>::max() : (linear_command / angular_command);
-
-    controller->setTarget(radius, speed);
+    controller->setDriveCommand(command.drive_cmd.speed, command.drive_cmd.angle);
 
     controller->setVfl(frontLeft->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
     controller->setVfr(frontRight->feedback_vel.get().get_optional().value() * controller->getWheelRadius());
@@ -157,21 +149,28 @@ Zoe2Controller::update(const rclcpp::Time &time,
 controller_interface::CallbackReturn
 Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
 
-    const Twist empty_twist;
-    received_velocity_msg_ptr_.set([&](auto &msg) {
-        msg = std::make_shared<Twist>(empty_twist);
+    // update parameters if they have changed
+    if (param_listener_->is_old(params_))
+    {
+        params_ = param_listener_->get_params();
+        RCLCPP_INFO(get_node()->get_logger(), "Parameters were updated");
+    }
+
+    const DriveCmdStamped empty_command;
+    received_cmd_msg_ptr_.set([&](auto &msg) {
+        msg = std::make_shared<DriveCmdStamped>(empty_command);
     });
 
     // Fill last two commands with default constructed commands
-    previous_commands_.emplace(empty_twist);
-    previous_commands_.emplace(empty_twist);
+    previous_commands_.emplace(empty_command);
+    previous_commands_.emplace(empty_command);
 
     // initialize command subscriber
-    if (use_stamped_vel_)
+    if (use_stamped_cmd_)
     {
-        velocity_command_subscriber_ = get_node()->create_subscription<Twist>(
+        command_subscriber_ = get_node()->create_subscription<DriveCmdStamped>(
         DEFAULT_COMMAND_TOPIC, rclcpp::SystemDefaultsQoS(),
-        [this](const std::shared_ptr<Twist> msg) -> void
+        [this](const std::shared_ptr<DriveCmdStamped> msg) -> void
         {
             if (!subscriber_is_active_)
             {
@@ -183,19 +182,19 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
             {
             RCLCPP_WARN_ONCE(
                 get_node()->get_logger(),
-                "Received TwistStamped with zero timestamp, setting it to current "
+                "Received DriveCmdStamped with zero timestamp, setting it to current "
                 "time, this message will only be shown once");
             msg->header.stamp = get_node()->get_clock()->now();
             }
-            received_velocity_msg_ptr_.set([&](auto& value) { value = std::move(msg); });
+            received_cmd_msg_ptr_.set([&](auto& value) { value = std::move(msg); });
         });
     }
     else
     {
-        velocity_command_unstamped_subscriber_ =
-        get_node()->create_subscription<geometry_msgs::msg::Twist>(
+        command_unstamped_subscriber_ =
+        get_node()->create_subscription<DriveCmd>(
             DEFAULT_COMMAND_UNSTAMPED_TOPIC, rclcpp::SystemDefaultsQoS(),
-            [this](const std::shared_ptr<geometry_msgs::msg::Twist> msg) -> void
+            [this](const std::shared_ptr<DriveCmd> msg) -> void
             {
             if (!subscriber_is_active_)
             {
@@ -205,10 +204,10 @@ Zoe2Controller::on_configure(const rclcpp_lifecycle::State &) {
             }
 
             // Write fake header in the stored stamped command
-            std::shared_ptr<Twist> twist_stamped;
-            received_velocity_msg_ptr_.get([&](const auto& value) { twist_stamped = value; });
-            twist_stamped->twist = *msg;
-            twist_stamped->header.stamp = get_node()->get_clock()->now();
+            std::shared_ptr<DriveCmdStamped> command_stamped;
+            received_cmd_msg_ptr_.get([&](const auto& value) { command_stamped = value; });
+            command_stamped->drive_cmd = *msg;
+            command_stamped->header.stamp = get_node()->get_clock()->now();
             });
     }
     previous_update_timestamp_ = get_node()->get_clock()->now();
@@ -275,12 +274,12 @@ void Zoe2Controller::setVelocityCommand(
 
 controller_interface::CallbackReturn
 Zoe2Controller::on_activate(const rclcpp_lifecycle::State & /*state*/) {
-    frontLeft = getWheelHandleByName(mParams.wheel_front_left);
-    frontRight = getWheelHandleByName(mParams.wheel_front_right);
-    backLeft = getWheelHandleByName(mParams.wheel_back_left);
-    backRight = getWheelHandleByName(mParams.wheel_back_right);
-    backYaw = getYawStateIface(mParams.axle_yaw_back);
-    frontYaw = getYawStateIface(mParams.axle_yaw_front);
+    frontLeft = getWheelHandleByName(params_.wheel_front_left);
+    frontRight = getWheelHandleByName(params_.wheel_front_right);
+    backLeft = getWheelHandleByName(params_.wheel_back_left);
+    backRight = getWheelHandleByName(params_.wheel_back_right);
+    backYaw = getYawStateIface(params_.axle_yaw_back);
+    frontYaw = getYawStateIface(params_.axle_yaw_front);
 
     subscriber_is_active_ = true;
     

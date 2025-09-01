@@ -2,6 +2,7 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+import math
 
 
 def generate_launch_description():
@@ -51,7 +52,11 @@ def generate_launch_description():
             name='twist_modifier',
             # remappings=[('/cmd_vel_raw', '/cmd_vel_raw'),
             #             ('/cmd_vel_unstamped', '/cmd_vel')],
-            output='screen'
+            output='screen',
+            parameters=[{
+                'max_joy_speed': 1.0,
+                'max_joy_turning_angle': math.radians(25)
+            }]
         )
         
     ])
